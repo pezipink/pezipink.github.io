@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+ <title type="text">Pink Squirrel Labs: Posts tagged 'xrm'</title>
+ <link rel="self" href="http://www.pinksquirrellabs.com/feeds\xrm.atom.xml" />
+ <link href="http://www.pinksquirrellabs.com/tags\xrm.html" />
+ <id>urn:http-www-pinksquirrellabs-com:-tags-xrm-html</id>
+ <updated>2012-12-29T14:50:00Z</updated>
+ <entry>
+  <title type="text">Microsoft Dynamics CRM Type Provider preview</title>
+  <link rel="alternate" href="http://www.pinksquirrellabs.com/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/?utm_source=xrm&amp;utm_medium=Atom" />
+  <id>urn:http-www-pinksquirrellabs-com:-blog-2012-12-30-microsoft-dynamics-crm-type-provider-preview</id>
+  <published>2012-12-29T14:50:00Z</published>
+  <updated>2012-12-29T14:50:00Z</updated>
+  <author>
+   <name>pezi</name></author>
+  <content type="html">
+&lt;p&gt;Are you tired of generating strongly typed classes with millions of lines of C# using crmsvcutil.exe that often crashes? Fed up with having to re-generate the classes every time something in the schema changes? Feeling restricted by the LINQ provider's limitations? Ever wonder why you should need to know what attribute joins to what in your relationships to perform your joins? F# to the rescue!&lt;/p&gt;
+
+&lt;p&gt;I am working on a F# type provider than aims to solve a lot of these pains, and more besides! This is just a sneak preview with what is to come, I have not released any of this yet. First, here is an example of a rather silly but fairly complex query using the new type provider and the F# query syntax :&lt;/p&gt;
+
+&lt;div class="brush: fsharp"&gt;
+ &lt;div class="highlight"&gt;
+  &lt;table class="highlighttable"&gt;
+   &lt;tbody&gt;
+    &lt;tr&gt;
+     &lt;td class="linenos"&gt;
+      &lt;div class="linenodiv"&gt;
+       &lt;pre&gt;&lt;span class="normal"&gt; 1&lt;/span&gt;
+&lt;span class="normal"&gt; 2&lt;/span&gt;
+&lt;span class="normal"&gt; 3&lt;/span&gt;
+&lt;span class="normal"&gt; 4&lt;/span&gt;
+&lt;span class="normal"&gt; 5&lt;/span&gt;
+&lt;span class="normal"&gt; 6&lt;/span&gt;
+&lt;span class="normal"&gt; 7&lt;/span&gt;
+&lt;span class="normal"&gt; 8&lt;/span&gt;
+&lt;span class="normal"&gt; 9&lt;/span&gt;
+&lt;span class="normal"&gt;10&lt;/span&gt;
+&lt;span class="normal"&gt;11&lt;/span&gt;
+&lt;span class="normal"&gt;12&lt;/span&gt;
+&lt;span class="normal"&gt;13&lt;/span&gt;
+&lt;span class="normal"&gt;14&lt;/span&gt;
+&lt;span class="normal"&gt;15&lt;/span&gt;
+&lt;span class="normal"&gt;16&lt;/span&gt;
+&lt;span class="normal"&gt;17&lt;/span&gt;
+&lt;span class="normal"&gt;18&lt;/span&gt;
+&lt;span class="normal"&gt;19&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+     &lt;td class="code"&gt;
+      &lt;div&gt;
+       &lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nc"&gt;XRM&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;Common&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nn"&gt;XRM&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nn"&gt;TypeProvider&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;XrmDataProvider&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="s"&gt;"http://something/Organization.svc"&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;dc&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;XRM&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;GetDataContext&lt;/span&gt;&lt;span class="bp"&gt;()&lt;/span&gt;
+
+&lt;span class="k"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nc"&gt;TestRecord&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;
+&lt;span class="w"&gt;      &lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;int&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;test&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;"John%"&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;42&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;q&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;in&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;dc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_squirrel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;do&lt;/span&gt;&lt;span class="w"&gt;                            &lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;where&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_name&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;%&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;||&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_age&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;in&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;``N:1 &amp;lt;- new_new_forest_new_squirrel``&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;in&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;``N:1 &amp;lt;- owner_new_forest``&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;where&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_colour&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;|=|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;[|&lt;/span&gt;&lt;span class="s"&gt;"Pink"&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="s"&gt;"Red"&lt;/span&gt;&lt;span class="o"&gt;|])&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;where&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_name&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;"Sherwood"&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;where&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;"PEZI THE OWNER!"&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="k"&gt;select&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_name&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;!-- more--&gt;
+
+&lt;p&gt;This example illustrates several cool features of the F# type provider ;&lt;/p&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;No code generation here - these "virtual" types are magically created on the fly by the compiler, using the organization service's metadata capabilities. This provides full intellisense and only lazily loads the entity attributes and relationships on demand. If your schema changes and breaks something, the code will not compile.&lt;/li&gt;&lt;/ul&gt;
+
+&lt;div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;Where clauses can appear anywhere and be as complex as you want. the only restriction is that only one entity type is used in each clause - this is because mixing OR logic between entities is impossible to translate into the underlying QueryExpression tree.&lt;/li&gt;&lt;/ul&gt;
+
+&lt;div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;Relationships can be accessed via the SelectMany (for) syntax. In this example Squirrel is the ultimate child and the code is traversing up the relationships through its parents (forest, and then owner). Instead of needing to know or care about how these relationships are joined, this is handled for you in the magic. Additionally, should you care, the intellisense will show you exactly what attribute is being joined to what. It is also possible to start at a parent and traverse down the one-to-many relationships, as long as you don't branch off anywhere to more than one child as this is not supported in the underlying provider.&lt;/li&gt;&lt;/ul&gt;
+
+&lt;div&gt;&lt;/div&gt;
+
+&lt;p&gt;Custom operators! F# lets you define your own operators. Currently I am supporting =% (like) &amp;lt;&amp;gt;% (not like) |=| (in) and |&amp;lt;&amp;gt;| (not in) however it will be very easy to add more of these, or extensions to the relevant types to implement the wealth of other, sometimes rather exotic, XRM condition operators, of which almost all are not currently accessible from the existing LINQ provider, including in and not in.&lt;/p&gt;
+
+&lt;div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;Projection expression - not only can you access attributes and perform any transformation, you may have noticed it allows you to select entire parent entities - you cannot do this in the current LINQ provider because the QueryExpression is only capable of returning an single entity type which has to be the ultimate child that you are selecting. Any attributes from parents are kind of shoehorned into the result entity with aliases - more magic in the type provider enables you to select all the entities out as real CRM entities :)&lt;/li&gt;&lt;/ul&gt;
+
+&lt;div&gt;Joins are also still supported should you wish to use them explicitly for some reason. At runtime, these "virtual" entities get "erased down" to a XrmEntity which is a thin wrapper inheriting from Entity - this means the resulting objects you can use everywhere like you normally would in your CRM code.&lt;/div&gt;
+
+&lt;div&gt;&lt;/div&gt;
+
+&lt;div&gt;Lots of stuff to come - paging, many LINQ execution methods, ordering, possibly even an auto conversion to fetchxml which will enable aggregate operations...&lt;/div&gt;</content></entry></feed>

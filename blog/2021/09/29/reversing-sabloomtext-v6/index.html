@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Reversing - SabloomText_v6</title>
+    <meta name="description" content="Today we look at another crackme, SabloomText_v6!      The difficulty is rated at level 4.8 of 6 - I think perhaps it was more like a 4.  I am not going to say anything about it in this section as it would spoil a cool surprise if you want to try it yours...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="cracking, reverse engineering">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2021\09\29\reversing-sabloomtext-v6/">
+    <link rel="next" href="/blog\2021\04\04\reversing-bakunawa/">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/blog\2021\04\04\reversing-bakunawa/"><em>Reversing - Bakunawa</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Reversing - SabloomText_v6</h1>
+    <p class='date-and-tags'>
+<time datetime="2021-09-29" pubdate="true">2021-09-29</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>Today we look at another crackme, SabloomText_v6!</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/serial.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The difficulty is rated at level 4.8 of 6 - I think perhaps it was more like a 4.</p>
+
+<p>I am not going to say anything about it in this section as it would spoil a cool surprise if you want to try it yourself!</p>
+
+<p>Here is the link if you want to try it <a href="https://crackmes.one/crackme/60be2ad433c5d410b8842c95">Sabloom Text 6</a></p>
+
+<p>Tools used today are x64dbg, PEStudio, F# and C++</p>
+
+<p>(Apologies for the low quality pictures, I messed them up)</p>
+<!-- more-->
+
+<h2 id="first-impressions">First Impressions</h2>
+
+<p>As usual, we inspect the binary in PEStudio - it reveals a C++ program with some linked GUI libraries. Nothing striking or out of the ordinary here.</p>
+
+<p>Let&rsquo;s run the program and see what we have:</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/serial.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>A fully functioning text editor, complete with the ability to change the font! It is obviously modelled on Sublime Text, and the problem is of course to work out a username and password to &ldquo;register&rdquo; this piece of software!</p>
+
+<h2 id="looking-inside">Looking Inside</h2>
+
+<p>Attempting to launch the program with the debugger fails. The <code>IsDebuggerPresent</code> function is imported but it does not seem to be used anywhere. Other usual suspects such as <code>NtQueryInformationProcess</code> <code>OutputDebugString</code> and friends are also not present.</p>
+
+<p>Another common way to detect if the debugger is present is to check the <code>DebuggerPresent</code> flag in <a href="https://en.wikipedia.org/wiki/Process_Environment_Block">PEB</a> block which we can find at <code>[fs:30] + 2</code>. We can use a hardware breakpoint at this location to pause execution when something reads this memory. This leads to the follow piece of anti-debugging code</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/AntiDebug1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Which we can neutralise</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/AntiDebug2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>After this patch, the program is able to start with the debugger. I did discover another similar check later in the code, though it did not cause any trouble.</p>
+
+<p>The next task is to find where the username and serial are being checked. To do this I searched for the <code>GetDlgItemText</code> functions, since they are often used to read from input boxes. This led me straight to the following code that performs the serial check:</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/DlgTxt.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>All easy so far, let&rsquo;s have a look at the checking function!</p>
+
+<h2 id="the-real-work-begins">The Real Work Begins</h2>
+
+<p>First the code checks the username is 6 characters long. At this point it doesn&rsquo;t do anything else with it. The program then allocates two blocks of memory, sized <code>0x1081</code> and <code>0x37</code></p>
+
+<p>Then follows a ton of code that performs some processing loops of the password and this set of magic numbers, writing the results into one of the allocated memory blocks.</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/magic1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This is a zoomed-out picture of some of the code</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/passwordLong.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>As you can see, it is quite long. The code was quite obsfucated and was doing something simple; essentially this:</p>
+
+<div class="brush: C">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x37</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">passwordLength</span><span class="p">;</span>
+<span class="w">    </span><span class="n">scratch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">password</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">magic</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Several obsfucation techniques have been used. Firstly, instead of a loop with a single index, it uses six different indexes at the same time. They are calcuated by first storing negative offsets from the allocated memory blocks, then restoring them at the point they are needed. It also uses some negative indexes for the array pointers and other things to keep you confused. Knowing now the author likes to obsfucate things, we can expect more in the future.</p>
+
+<p>The next thing the program does is access another set of magic numbers, and for each one it shifts out each bit and stores them in their own byte within the larger section of allocated memory. The code that does this work is also fairly obsfucated using some techniques such as multiple pointers with 3 nested loops and annoying usage of the first 8 / 16 bits of the registers.</p>
+
+<p>The resulting memory is a large array of 0s and 1s</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/maze1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>One thing I did notice whilst reversing this lot is that it seems to treat the magic numbers in groups of 64 each. Before proceeding I decided to re-implement the code in F# and do some analysis / visualisation / playing with it.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">MazeSection</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Wall</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Passage</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Goal</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">encodedMaze</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[|</span><span class="w"> </span><span class="o">|]</span><span class="w">  </span><span class="c1">// too long to show</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">magic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[||]</span><span class="w"> </span><span class="c1">// too long to show</span>
+
+<span class="c1">// expand into an array of bits </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">byteToBits</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seq</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">shift</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="kt">byte</span><span class="w"> </span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">shift</span><span class="o">)</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="w"> </span><span class="o">}</span>
+
+<span class="c1">// the maze is split into 65 rows of 9 bytes each, where the 9th byte is padding.</span>
+<span class="c1">// remove the padding bytes and explode each byte into bits</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">maze</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">encodedMaze</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Array</span><span class="p">.</span><span class="n">mapi</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">9</span><span class="o">,</span><span class="w"> </span><span class="n">n</span><span class="o">)</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Array</span><span class="p">.</span><span class="n">filter</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">i</span><span class="o">,_)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="mi">0</span><span class="o">)</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Array</span><span class="p">.</span><span class="n">map</span><span class="w"> </span><span class="n">snd</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Array</span><span class="p">.</span><span class="n">collect</span><span class="w"> </span><span class="o">(</span><span class="n">byteToBits</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">map</span><span class="o">(</span><span class="k">function</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Passage</span><span class="o">)</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toArray</span><span class="o">)</span>
+
+<span class="n">maze</span><span class="o">.[</span><span class="mi">63</span><span class="o">*</span><span class="mi">64</span><span class="o">+</span><span class="mi">63</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">Goal</span><span class="w"> </span><span class="c1">// this is the goal at the bottom right (63,63)</span>
+
+<span class="c1">// draw maze</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">mutable</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="k">for</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">maze</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">with</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printf</span><span class="w"> </span><span class="s">"##"</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Passage</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printf</span><span class="w"> </span><span class="s">".."</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Goal</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printf</span><span class="w"> </span><span class="s">"GG"</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">63</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="n">printfn</span><span class="w"> </span><span class="s">""</span>
+<span class="w">        </span><span class="n">count</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="n">count</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<div class="figure"><img src="../../../../../img/sabloom/maze2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>It&rsquo;s a maze!</p>
+
+<h2 id="amazing">Amazing</h2>
+
+<p>This was quite a revelation! At this point I had to dig a bit further into the code to make sure it was actually a maze, and how it worked. Presumably the solution then is some encoded instructions to solving the maze - to do that I would need to know the start and end points of the maze. These turned out to be (1,1) and (63,63) respectively. To encode the instructions we&rsquo;ll need to understand exactly how the program tries to solve the maze from the decoded password - but first let&rsquo;s solve the maze!</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="n">maze</span><span class="o">.[</span><span class="mi">63</span><span class="o">*</span><span class="mi">64</span><span class="o">+</span><span class="mi">63</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">Goal</span><span class="w"> </span><span class="c1">// this is the goal at the bottom right (63,63)</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">getCell</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="c1">// if we go out of bounds then return Wall</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">64</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">64</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="k">else</span>
+<span class="w">    </span><span class="n">maze</span><span class="o">.[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">64</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="o">]</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">Direction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Up</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Down</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Left</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Right</span>
+
+<span class="c1">// we always move in twos</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">canMove</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="n">direction</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">direction</span><span class="w"> </span><span class="k">with</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Up</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Down</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Left</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">(</span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">(</span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Right</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">(</span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">(</span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">Wall</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">getCandidates</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="o">[</span><span class="n">Up</span><span class="o">;</span><span class="n">Down</span><span class="o">;</span><span class="n">Left</span><span class="o">;</span><span class="n">Right</span><span class="o">]</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">filter</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">canMove</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="n">d</span><span class="o">)</span>
+
+<span class="c1">// recursively traverse the maze until we get to the goal</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">solveMaze</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="nn">Set</span><span class="p">.</span><span class="n">contains</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="o">,</span><span class="n">col</span><span class="o">)</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">None</span><span class="w"> </span><span class="k">else</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">getCell</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Goal</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">Some</span><span class="w"> </span><span class="o">(</span><span class="nn">List</span><span class="p">.</span><span class="n">rev</span><span class="w"> </span><span class="n">path</span><span class="o">)</span><span class="w"> </span><span class="k">else</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">seen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">Set</span><span class="p">.</span><span class="n">add</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="o">,</span><span class="w"> </span><span class="n">col</span><span class="o">)</span><span class="w"> </span><span class="n">seen</span>
+<span class="w">    </span><span class="n">getCandidates</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="n">col</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">tryPick</span><span class="o">(</span><span class="k">function</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Up</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">solveMaze</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="o">(</span><span class="n">Up</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">path</span><span class="o">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Down</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">solveMaze</span><span class="w"> </span><span class="o">(</span><span class="n">row</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="o">(</span><span class="n">Down</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">path</span><span class="o">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Left</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">solveMaze</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">(</span><span class="n">col</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="o">(</span><span class="n">Left</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">path</span><span class="o">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Right</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">solveMaze</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">(</span><span class="n">col</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="n">seen</span><span class="w"> </span><span class="o">(</span><span class="n">Right</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">path</span><span class="o">))</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">solution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="n">solveMaze</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="nn">Set</span><span class="p">.</span><span class="n">empty</span><span class="w"> </span><span class="bp">[]</span><span class="o">).</span><span class="n">Value</span><span class="w"> </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here we use a simple brute-force recursive backtracking maze solver to walk the maze and find a path to the goal. Some details here were extracted from the reverse engineering of the maze algorithm - mainly that it always takes 2 steps in a given direction.</p>
+
+<h2 id="maze-algorithm">Maze Algorithm</h2>
+
+<p>To encode the solution path correctly, we need to know the instruction format. Of course, this was not straight forward and bogged down with some more obsfucated code. Essentially the program takes the decoded password and &ldquo;explodes out&rdquo; the bits like it did for the maze itself. Then, it processes the sequence of ones and zeroes in a modulo 3 fashion:</p>
+
+<ul>
+ <li>0 : Keep moving the same direction as last time</li>
+ <li>11 : Change the current direction + 1 mod 3</li>
+ <li>10 : Change the current direction &ndash; 1 mod 3</li></ul>
+
+<p>Where the directions are</p>
+
+<ul>
+ <li>1 : Right</li>
+ <li>2 : Down</li>
+ <li>3 : Left</li>
+ <li>4 : Up</li></ul>
+
+<p>This is quite clever based on an observation that although there&rsquo;s four directions, you only ever need three since you never need to go backwards, and three can be encoded in two bits. Notice that if the current byte is not zero, it needs to lookahead one - this makes it a little bit of a pain to generate.</p>
+
+<p>The code itself was quite long and featured a bunch of obsfucation tricks - in addition to the ones already encountered it also used some indirect jumps and other shenanigans:</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/weird1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Here&rsquo;s a bunch of code that was reading the realtime clock stamp, that was later used to invalidate the password if too long had been taken, in addition to another anti-debugging check. (I think - this code was never a problem)</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/rtsc.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>So, to generate the correct solution we first have to take our solution path and generate the correct set of 0s and 1s as per the instruction format above. Then, we need to take those bits and turn them into full bytes. The resulting set of numbers can be XOR&rsquo;d in sequence with the original set of magic numbers which should yield us the correct key - presumably it must be engineered to result as ascii, otherwise we won&rsquo;t be able to input it into the text box.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">// now we need to encode it back as a bunch of bytes. this is a bit tricky.</span>
+<span class="c1">// if the direction is the same we emit a 0 bit.  If it is different then </span>
+<span class="c1">// we emit 11 to move to the next direction, and 10 to move to the previous </span>
+<span class="c1">// direction where the order is 1 = right, 2 = down, 3 = left, 4 = up</span>
+<span class="c1">// we can do this with some ints but there&#39;s only a few cases so we&#39;ll just write</span>
+<span class="c1">// them out explictly</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">getBits</span><span class="w"> </span><span class="n">oldDirection</span><span class="w"> </span><span class="n">newDirection</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">oldDirection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newDirection</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="w"> </span><span class="k">else</span>
+<span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">oldDirection</span><span class="o">,</span><span class="w"> </span><span class="n">newDirection</span><span class="w"> </span><span class="k">with</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Right</span><span class="o">,</span><span class="w"> </span><span class="n">Down</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Down</span><span class="o">,</span><span class="w"> </span><span class="n">Left</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Left</span><span class="o">,</span><span class="w"> </span><span class="n">Up</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Up</span><span class="o">,</span><span class="w"> </span><span class="n">Right</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[</span><span class="mi">1</span><span class="o">;</span><span class="mi">1</span><span class="o">]</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[</span><span class="mi">1</span><span class="o">;</span><span class="mi">0</span><span class="o">]</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">generateBytes</span><span class="w"> </span><span class="n">currentByte</span><span class="w"> </span><span class="n">currentBit</span><span class="w"> </span><span class="n">outputBytes</span><span class="w"> </span><span class="n">inputBits</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">inputBits</span><span class="w"> </span><span class="k">with</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="bp">[]</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">outputBytes</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">rev</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="k">let</span><span class="w"> </span><span class="nv">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">currentByte</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="o">(</span><span class="n">h</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="n">currentBit</span><span class="o">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">currentBit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">then</span>
+<span class="w">            </span><span class="n">generateBytes</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="o">(</span><span class="n">by</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">outputBytes</span><span class="o">)</span><span class="w"> </span><span class="n">t</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span>
+<span class="w">            </span><span class="n">generateBytes</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">(</span><span class="n">currentBit</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="n">outputBytes</span><span class="w"> </span><span class="n">t</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">bits</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="o">((</span><span class="n">Right</span><span class="o">,</span><span class="bp">[]</span><span class="o">),</span><span class="w"> </span><span class="n">Right</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">solution</span><span class="o">)</span><span class="w"> </span><span class="c1">// an extra right here, the algo needs an extra 0 to get started</span>
+<span class="w">    </span><span class="o">||&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">fold</span><span class="w"> </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">prev</span><span class="o">,</span><span class="n">acc</span><span class="o">)</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="n">d</span><span class="o">,</span><span class="n">acc</span><span class="w"> </span><span class="o">@</span><span class="w"> </span><span class="n">getBits</span><span class="w"> </span><span class="n">prev</span><span class="w"> </span><span class="n">d</span><span class="o">))</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">snd</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">generateBytes</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="bp">[]</span><span class="w"> </span><span class="n">bits</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">chars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">mapi</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="kt">char</span><span class="w"> </span><span class="o">(</span><span class="n">magic</span><span class="o">.[</span><span class="n">i</span><span class="o">]</span><span class="w"> </span><span class="o">^^^</span><span class="w"> </span><span class="n">y</span><span class="o">)))</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">toArray</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">string</span><span class="o">(</span><span class="n">chars</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This yields is the key <code>zh3r0{mAzes_w3Re_1nv3nteD_by_EgyptianS_cb3c82b9}zh3r0{</code></p>
+
+<h1 id="finishing-up">Finishing Up</h1>
+
+<p>Inspecting the rest of the code yields some extra tricks as outlined above, with RTSC and more debugger checks. It also looks at the username, where a couple of the characters are explicty hardcoded, and the others reference some of the values from the password. The username is easily determined as <code>X3eR0o</code>, the author of the crackme. And a fantastic job they did of it!</p>
+  <footer>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/blog\2021\04\04\reversing-bakunawa/"><em>Reversing - Bakunawa</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2021\09\29\reversing-sabloomtext-v6/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

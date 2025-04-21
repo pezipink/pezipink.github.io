@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>BASIC’s 50th Anniversary … and more crazy F# type providers!</title>
+    <meta name="description" content="Did you know that it is the 50th anniversary of the BASIC programming language today? (1st May) No? Well why not! BASIC is the language that brought computers to the mainstream. Back in the day, if you had a computer, you learnt how to program it in basic...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, type providers">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2014\05\01\basic-s-50th-anniversary-and-more-crazy-f-type-providers/">
+    <link rel="next" href="/blog\2014\04\17\solving-puzzle-quest-with-f-part-1/">
+    <link rel="prev" href="/blog\2014\05\18\crud-operations-and-experimental-odbc-support-in-the-sqlprovider/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\05\18\crud-operations-and-experimental-odbc-support-in-the-sqlprovider/">&larr; <em>CRUD Operations and Experimental ODBC support in the SQLProvider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\04\17\solving-puzzle-quest-with-f-part-1/"><em>Solving Puzzle Quest with F# Part 1</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>BASIC’s 50th Anniversary … and more crazy F# type providers!</h1>
+    <p class='date-and-tags'>
+<time datetime="2014-05-01" pubdate="true">2014-05-01</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<p>Did you know that it is the <a href="http://time.com/69316/basic/">50th anniversary of the BASIC programming language today?</a> (1st May) No? Well why not! BASIC is the language that brought computers to the mainstream. Back in the day, if you had a computer, you learnt how to program it in basic. Infact, when you switched it on, that&rsquo;s what you were presented with. These computers <em>wanted</em> to be programmed. Thousands of people purchased these expensive computers purely to learn how to program them.</p>
+
+<p>I figured I should do something to mark the anniversary. Many of you will already know about my various crazy type providers, including <a href="http://www.pinksquirrellabs.com/blog/2014/02/02/the-minesweeper-type-provider">MineSweeper</a> and <a href="http://www.pinksquirrellabs.com/blog/2013/07/29/choose-your-own-adventure-type-provider/">Choose Your Own Adventrue</a>. So, I thought to myself, wouldn&rsquo;t it be great if we could write some equivalents of the very early BASIC games via a re-usable and extensible type provider? One which doesn&rsquo;t require you to write any type-providing code, but is abstracted away from all that &hellip;</p>
+<!-- more-->
+
+<h2>InteractiveProvider</h2>
+
+<p>Enter <em>InteractiveProvider</em> (which I just wrote this afternoon). Unfortunately, it doesn&rsquo;t yet support any BASIC (although <a href="http://trelford.com/blog/post/interpreter.aspx">Phil Trelford&rsquo;s Small Basic interpreter</a> is looking like a good fit). What it does do is abstract away all the voodoo magic of infinitely-recursive-type-providers, and allow you to write some fairly sophisticated type provider games by implementing a couple of interfaces. The type provider itself will scan assemblies in a given location to find types that implement the interfaces it uses, and the rest happens JUST LIKE MAGIC! There&rsquo;s not much content yet, I have converted some simple BASIC games from <a href="http://www.atariarchives.org/basicgames/">the legendary 101 BASIC games book</a>, and some of the my other type providers to work with it as examples, although I have some special plans up my sleeve for new games !</p>
+
+<p>To use it, grab and build the source from my <a href="https://github.com/pezipink/InteractiveProvider">github</a> and do something like the following in your friendly FSI session</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">#</span><span class="n">r</span><span class="w"> </span><span class="s">@"F:\git\InteractiveProvider\InteractiveProvider\bin\Debug\InteractiveProvider.dll"</span>
+
+<span class="k">open</span><span class="w"> </span><span class="nn">PinkSquirrels.Interactive</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">GamesType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">InteractiveProvider</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="w"> </span><span class="s">@"F:\git\InteractiveProvider\BASIC_Anniversary\bin\Debug\"</span><span class="o">&gt;</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">games</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GamesType</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The static parameter here is the directory to search for assemblies containing compatible games. Now when you press dot on the <em>games</em>value, you will be presented with a series of properties named &lsquo;<em>Start &lt;game&gt;&rsquo;</em>, one for each type it found implementing said interfaces (more on that below)</p>
+
+<h2></h2>
+
+<h2>THE GAMES!</h2>
+
+<p>There are currently a massive 3 games.</p>
+
+<h3>MineSweeper</h3>
+
+<p>Ronseal. See <a href="http://www.pinksquirrellabs.com/blog/2014/02/02/the-minesweeper-type-provider">this post</a>for more informations</p>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/image_8.png"><img style="display: inline; border: 0px;" title="image" src="../../../../../img/old/image_thumb_8.png" alt="image" width="793" height="263" border="0" /></a></p>
+
+<h3></h3>
+
+<h3>Rock Paper Scissors</h3>
+
+<p>Try your hand against the computer in this classic game!</p>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/image_9.png"><img style="display: inline; border: 0px;" title="image" src="../../../../../img/old/image_thumb_9.png" alt="image" width="642" height="190" border="0" /></a></p>
+
+<h3>Chemistry</h3>
+
+<p>My personal favourite, this introduces another ground-breaking type provider mechanic, the ability to input any sized number via successive properties! In this game you are a chemist and you must correctly dilute the fictional KRYPTOCYANIC acid.</p>
+
+<p></p>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/image_10.png"><img style="display: inline; border: 0px;" title="image" src="../../../../../img/old/image_thumb_10.png" alt="image" width="837" height="218" border="0" /></a></p>
+
+<p></p>
+
+<p></p>
+
+<h2>Writing Games</h2>
+
+<p>By this point you must be just crying out to write your own games. And I too am crying out for your pull requests. The way it works is as follows.</p>
+
+<p>There are two interfaces. IInteractiveState and IInteractiveServer</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">IInteractiveState</span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="k">abstract</span><span class="w"> </span><span class="k">member</span><span class="w"> </span><span class="n">DisplayText</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span>
+<span class="w">  </span><span class="k">abstract</span><span class="w"> </span><span class="k">member</span><span class="w"> </span><span class="n">DisplayOptions</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">(</span><span class="kt">string</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">obj</span><span class="o">)</span><span class="w"> </span><span class="kt">list</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">IInteractiveServer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="k">abstract</span><span class="w"> </span><span class="k">member</span><span class="w"> </span><span class="n">NewState</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span>
+<span class="w">  </span><span class="k">abstract</span><span class="w"> </span><span class="k">member</span><span class="w"> </span><span class="n">ProcessResponse</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">obj</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The type provider will pick up on any types that implement the server interface. Upon doing so, it will call Activator.CreateInstance and create an instance of the server type. From this type it will get an initial state from the <em>NewState</em> property.</p>
+
+<p>The state interface returns information to the type provider via <em>DisplayOptions</em>about what choices it should surface as properties, along with objects to pass back to the server when a property is selected. It also has a property <em>DisplayText</em> which is a string that will be placed on the property that leads to this state. In some games this is not desirable as it gives the player a preview of the next state, however there is a way around that (see <em>Rock Paper Scissors</em>)</p>
+
+<p>The objects themselves that implement these interfaces can be literally anything you like at all. The only caveat is that you must store all the information in the state which you require. When a property is accessed, the old state gets passed to the <em>ProcessResponse</em>function along with the object representing the selection, which can be anything, as previously defined in the <em>DisplayOptions</em> . In <em>MineSweeper</em>this is the int * int tuple of the grid square that was selected. In <em>Chemistry</em> it is a discriminated union type. <em>Rock Paper Scissors</em>uses something different again.</p>
+
+<p>Often it is a good choice to use a record type or discriminated union for your state. <em>Rock Paper Scissors</em>simply holds everything it needs to know about the game in one record type which both interfaces use to define their next behaviour. <em>Chemistry</em>uses multiple discriminated union cases and lots of pattern matching to work out the behaviour.</p>
+
+<h2></h2>
+
+<h2>Example</h2>
+
+<p>Here&rsquo;s a very simple example that has the player guess a number from 1 to 100. It uses a discriminated union to model the different states. There is no fail condition, you can just keep guessing until you win :)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">ExampleState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">target</span><span class="o">:</span><span class="w"> </span><span class="n">int</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Guess</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">lastGuess</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">int</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">int</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span>
+<span class="w">   </span><span class="k">interface</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">     </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">DisplayText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">       </span><span class="c1">// create the text that will appear on the property </span>
+<span class="w">       </span><span class="k">match</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"I HAVE PICKED A NUMBER FROM 1 TO 100! SEE IF YOU CAN GUESS IT!"</span><span class="w"> </span>
+<span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">Guess</span><span class="o">(</span><span class="n">last</span><span class="o">,</span><span class="n">targ</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">         </span><span class="k">if</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">targ</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="s">"WRONG!! MY NUMBER IS LESS THAN THAT! GUESS AGAIN FOOL!"</span><span class="w"> </span>
+<span class="w">         </span><span class="k">else</span><span class="w"> </span><span class="s">"WRONG!! MY NUMBER IS MORE THAN THAT! GUESS AGAIN FOOL!"</span><span class="w"> </span>
+<span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"YOU WIN!!"</span><span class="w"> </span>
+<span class="w">     </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">DisplayOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">       </span><span class="k">match</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="o">_</span><span class="w"> </span>
+<span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">Guess</span><span class="o">(_,_)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">         </span><span class="c1">// in all cases except for a win, show 1 - 100 properties </span>
+<span class="w">         </span><span class="o">[</span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span><span class="mi">100</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="o">.</span><span class="n">ToString</span><span class="bp">()</span><span class="o">,</span><span class="n">box</span><span class="w"> </span><span class="n">x</span><span class="o">)]</span><span class="w"> </span>
+<span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="bp">[]</span><span class="w"> </span><span class="c1">// game over</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">ExampleGame</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="k">interface</span><span class="w"> </span><span class="n">IInteractiveServer</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">NewState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="c1">// create the inital state </span>
+<span class="w">      </span><span class="n">Start</span><span class="w"> </span><span class="o">(</span><span class="nn">Utils</span><span class="p">.</span><span class="n">rnd</span><span class="o">.</span><span class="n">Next</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">101</span><span class="o">))</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">ProcessResponse</span><span class="o">(</span><span class="n">state</span><span class="o">,</span><span class="n">choice</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">      </span><span class="k">let</span><span class="w"> </span><span class="nv">newGuess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unbox</span><span class="o">&lt;</span><span class="n">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">choice</span><span class="w"> </span>
+<span class="w">      </span><span class="k">match</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">:?&gt;</span><span class="w"> </span><span class="n">ExampleState</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="n">target</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Guess</span><span class="o">(_,</span><span class="n">target</span><span class="o">)</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newGuess</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">failwith</span><span class="w"> </span><span class="s">"this case is not possible"</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="n">target</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Guess</span><span class="o">(_,</span><span class="n">target</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Guess</span><span class="o">(</span><span class="n">newGuess</span><span class="o">,</span><span class="n">target</span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p></p>
+
+<p>That's it! No ProvidedTypes or any other craziness in sight. Now if I fire up the type provider, I can play this smashing game as follows, it seems the computer picked exactly 50 on this first go!</p>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/image_11.png"><img style="display: inline; border: 0px;" title="image" src="../../../../../img/old/image_thumb_11.png" alt="image" width="986" height="141" border="0" /></a></p>
+
+<p>Watch this space for more exciting, much more complex games in the future! In the meantime, please have a go and write your own games, and submit me pull requests!</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\05\18\crud-operations-and-experimental-odbc-support-in-the-sqlprovider/">&larr; <em>CRUD Operations and Experimental ODBC support in the SQLProvider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\04\17\solving-puzzle-quest-with-f-part-1/"><em>Solving Puzzle Quest with F# Part 1</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2014\05\01\basic-s-50th-anniversary-and-more-crazy-f-type-providers/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

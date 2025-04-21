@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>C64 Sprite Previewer</title>
+    <meta name="description" content="In this post we will see how asi64 is more than your average macro assembler, by combining arbitrary disk io, functional programming techniques and code generation alongside your typical 6502 assembly code. The aim is to create a very simple sprite animat...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="C64, asi64, 6502, racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2018\09\17\c64-sprite-previewer/">
+    <link rel="next" href="/blog\2018\01\31\-fixed-memory-pool-design/">
+    <link rel="prev" href="/blog\2018\10\05\c64-macro-state-machine/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2018\10\05\c64-macro-state-machine/">&larr; <em>C64 Macro State Machine</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2018\01\31\-fixed-memory-pool-design/"><em>&ldquo;Fixed&rdquo; Memory Pool Design</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>C64 Sprite Previewer</h1>
+    <p class='date-and-tags'>
+<time datetime="2018-09-17" pubdate="true">2018-09-17</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\asi64.html">asi64</a>, <a href="/tags\6502.html">6502</a>, <a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>In this post we will see how <a href="http://pinksquirrellabs.com/blog/2017/05/30/asi64/">asi64</a> is more than your average macro assembler, by combining arbitrary disk io, functional programming techniques and code generation alongside your typical 6502 assembly code. The aim is to create a very simple sprite animation viewer, that writes the resulting C64 program by interleaving file parsing and machine code generation.</p>
+
+<p>Here&rsquo;s the program displaying some sprites that <a href="https://twitter.com/silverSpoon">@silverspoon</a> has started working on :) (in different, single colours for the fun of it)</p>
+
+<div class="figure"><img src="../../../../../img/asi/tc.gif" alt="" />
+ <p class="caption"></p></div>
+<!-- more-->
+
+<p>To read this post it would probably help to know some 6502 (though not essential), you can read the assembler syntax over at <a href="https://github.com/pezipink/Asi64">asi64&rsquo;s github</a> or from an <a href="http://pinksquirrellabs.com/blog/2017/05/30/asi64/">older post on it</a></p>
+
+<h2 id="sprites">Sprites</h2>
+
+<p>The C64 has 8 hardware sprites it can utilise. This means the video hardware can display up to 8 sprites at once. To animate something, you would use a series of sprites that you change between. To design these sprites there are various tools available (not like the 80s where you had to draw them manually on graph paper!). I have been using <a href="http://www.spritemate.com/">spritemate</a> which is a nice online tool.</p>
+
+<p>Spritemate is able to save the sprites in a variety of formats, including assembly code output for two of the popular C64 assemblers (KickAss and ACME).</p>
+
+<p>What I would like is a way whereby I can design a series of sprite animation frames in the tool, save a number of these files (each file containing n sprite-frames of animation for some entity), then have the assembler read them from disk and automatically display and animate each sprite on the C64 screen. This will provide a fast feedback loop to see what they look like on the machine, rather than having to mess around moving chunks of data and altering frame counts and animation code manually.</p>
+
+<p>To display sprites on the C64 you need to have a number of things in place. This post is not supposed to be a tutorial on how they work, so not everything will be explained.</p>
+
+<ul>
+ <li>The actual sprite data itself must live somewhere the VIC graphics chip can see it.</li>
+ <li>The last 8 bytes of screen memory indicate an offset into the sprite data telling the VIC which sprite to display for each of the 8 sprites.</li>
+ <li>Sprite colours and positions are set with bunch of memory-mapped registers on the VIC.</li></ul>
+
+<p>The details on how to configure the VIC for this are out of the scope of this post. Suffice to say, for my needs, all the sprite data will be stored at $2000, my screen data lives at $0400, the last 8 bytes of it (the sprite pointers) are at $7fe8.</p>
+
+<p>The sprites are used in multi-colour mode, which means they each have 4 colours. 3 of the colours are shared by all sprites (background, colour 1 and colour 2) and the last colour is individual to each sprite, set within 8 more VIC registers. For the sake of simplicty, this post ignores the individual colour, assuming they are all the same.</p>
+
+<h2 id="file-formats">File Formats</h2>
+
+<p>Since Asi64 extends Racket, it has the <a href="https://racket-lang.org/">full arsenal of Racket at its disposal</a>, including its ridiculous macro system, multiple programming paradigms, extensive libraries and packages. We can quite easily mix this code in with 6502 assembler to help generate code in any way you would like.</p>
+
+<p>Let&rsquo;s look at one of Spritemate&rsquo;s output formats, for <a href="http://theweb.dk/KickAssembler/Main.html#frontpage">KickAss</a> (which is a fantasic assmembler, and partly the inspiration for writing Asi64!)</p>
+
+<pre><code>// 4 sprites generated with spritemate on 9/14/2018, 9:03:32 PM
+// Byte 64 of each sprite contains multicolor (high nibble) &amp; color (low nibble) information
+
+LDA #$04 // sprite multicolor 1
+STA $D025
+LDA #$06 // sprite multicolor 2
+STA $D026
+
+
+// sprite 1 / multicolor / color: $0e
+sprite_1:
+.byte $0c,$00,$30,$0f,$00,$30,$0f,$ff
+.byte $f0,$03,$7d,$f0,$03,$ff,$c0,$01
+.byte $eb,$40,$00,$ff,$00,$01,$3c,$40
+.byte $00,$74,$00,$00,$54,$00,$00,$74
+.byte $00,$00,$fc,$00,$00,$fc,$00,$03
+.byte $ff,$0c,$03,$ff,$0c,$03,$ff,$0c
+.byte $0f,$ff,$cc,$0e,$fe,$cc,$3e,$fe
+.byte $f0,$3e,$fe,$f0,$3e,$fe,$f0,$8e
+
+// sprite 2 / multicolor / color: $0e
+sprite_2:</code></pre>
+
+<p>The interesting bits of this file are</p>
+
+<ul>
+ <li>How many sprite frames are in the file (each sprite is a frame of animation)</li>
+ <li>The sprite data itself, which of course is just a bunch of bytes</li>
+ <li>Additional colour data which we are ignoring for this post.</li></ul>
+
+<p>Since Asi64 is also Racket, we can write a function that will extract the contents of one of these files into a little structure:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">asi64</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">sprite-data</span><span class="w"> </span><span class="p">(</span><span class="n">frame-count</span><span class="w"> </span><span class="n">data</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">extract-sprite</span><span class="w"> </span><span class="n">filename</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let*))" style="color: inherit">let*</a></span><span class="w"> </span><span class="p">(</span><span class="c1">;read file as a sequence of lines</span>
+<span class="w">         </span><span class="p">[</span><span class="n">lines</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/file..rkt)._file-~3elines))" style="color: inherit">file-&gt;lines</a></span><span class="w"> </span><span class="n">filename</span><span class="p">)]</span>
+<span class="w">         </span><span class="c1">;count the amount of frames by looking at lines that end with :</span>
+<span class="w">         </span><span class="p">[</span><span class="n">frames</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._filter))" style="color: inherit">filter</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-suffix~3f))" style="color: inherit">string-suffix?</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="s2">":"</span><span class="p">))</span><span class="w"> </span><span class="n">lines</span><span class="p">))]</span>
+<span class="w">         </span><span class="c1">; extract the raw data as one big lump</span>
+<span class="w">         </span><span class="p">[</span><span class="n">data</span><span class="w"> </span><span class="p">(</span><span class="n">~&gt;&gt;</span>
+<span class="w">                </span><span class="n">lines</span>
+<span class="w">                </span><span class="c1">; filter to .byte rows </span>
+<span class="w">                </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._filter))" style="color: inherit">filter</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-prefix~3f))" style="color: inherit">string-prefix?</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="s2">".byte"</span><span class="p">)))</span>
+<span class="w">                </span><span class="c1">; clean up text leaving raw hex values</span>
+<span class="w">                </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="s2">".byte "</span><span class="w"> </span><span class="s2">""</span><span class="p">)))</span>
+<span class="w">                </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-replace))" style="color: inherit">string-replace</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="s2">"$"</span><span class="w"> </span><span class="s2">""</span><span class="p">)))</span>
+<span class="w">                </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-split))" style="color: inherit">string-split</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="s2">","</span><span class="p">)))</span>
+<span class="w">                </span><span class="c1">; flatten into one big list of numbers</span>
+<span class="w">                </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._flatten))" style="color: inherit">flatten</a></span><span class="p">)</span>
+<span class="w">                </span><span class="c1">; parse hex </span>
+<span class="w">                </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._string-~3enumber))" style="color: inherit">string-&gt;number</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="mi">16</span><span class="p">))))])</span>
+
+<span class="w">    </span><span class="p">(</span><span class="n">sprite-data</span><span class="w"> </span><span class="n">frames</span><span class="w"> </span><span class="n">data</span><span class="p">)))</span>
+<span class="w">              </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>And now we can quite easily scan the sprites directory for all files (we&rsquo;ll assume there&rsquo;s no more than 8) and pass them through this function to yield a bunch of structures containing the sprite data that can be used to help write the assembly code.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">sprites</span>
+<span class="w">  </span><span class="p">(</span><span class="n">~&gt;&gt;</span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Filesystem.html#(def._((lib._racket/private/base..rkt)._directory-list))" style="color: inherit">directory-list</a></span><span class="w"> </span><span class="s2">"..</span><span class="se">\\</span><span class="s2">sprites"</span><span class="w"> </span><span class="kd">#:build?</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/Manipulating_Paths.html#(def._((quote._~23~25kernel)._path-~3estring))" style="color: inherit">path-&gt;string</a></span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/list..rkt)._filter))" style="color: inherit">filter</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/string..rkt)._string-suffix~3f))" style="color: inherit">string-suffix?</a></span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="s2">".txt"</span><span class="p">)))</span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="n">extract-sprite</span><span class="p">)))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h2 id="6502">6502</h2>
+
+<p>Now we can start to write the actual program. Before we do anything else, we want to dump the raw sprite data that was collected from all the files into memory starting at $2000.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">C64</span><span class="p">{</span>
+
+<span class="w">     </span><span class="c1">; raw sprite data starts at $2000</span>
+<span class="w">     </span><span class="n">*=</span><span class="w"> </span><span class="n">$2000</span>
+<span class="w">     </span><span class="p">(</span><span class="n">write-values</span>
+<span class="w">       </span><span class="p">(</span><span class="n">~&gt;&gt;</span>
+<span class="w">         </span><span class="n">sprites</span>
+<span class="w">         </span><span class="c1">; extract the "data" field from the struct</span>
+<span class="w">         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="n">sprite-data-data</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._flatten))" style="color: inherit">flatten</a></span><span class="p">)))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We simply extract out the &ldquo;data&rdquo; field from the structs created earlier, and flatten it all into one big list. The &ldquo;write-values&rdquo; here is an asi64 form that simply instructs the assembler to write whatever numbers it is given to the current location.</p>
+
+<p>The next part is a lot more interesting. We need to setup each of the sprite pointers to point at the first frame of animation for each file that was loaded (we assume in this example there were a maximum of 8 sprites - there are multiplexing techniques you can use to display more)</p>
+
+<p>With the way the VIC is currently setup, the 8 sprite pointers start at $07f8, and the correct index to store in the first one so that it will point at the first frame of data we stored at $2000 is $80. Then, for each successive set of sprite data, we must increase the offset by the number of frames from the previous set, thus arriving at the first frame of the next set, and store that into the next pointer.</p>
+
+<p>That is a bit of a mouthful, hopefully the code will help to make it clear. In asi64, everything between curly braces is 6502 assembler which you can nest anywhere:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">      </span><span class="c1">; start our actual program at $1000</span>
+<span class="w">      </span><span class="n">*=</span><span class="w"> </span><span class="n">$1000</span>
+
+<span class="w">      </span><span class="c1">; enable all sprites</span>
+<span class="w">      </span><span class="n">lda</span><span class="w"> </span><span class="n">@$FF</span>
+<span class="w">      </span><span class="n">sta</span><span class="w"> </span><span class="n">$d015</span>
+
+<span class="w">      </span><span class="c1">; turn on multicolour mode for all sprites</span>
+<span class="w">      </span><span class="n">lda</span><span class="w"> </span><span class="n">@$FF</span>
+<span class="w">      </span><span class="n">sta</span><span class="w"> </span><span class="n">$d01c</span><span class="w"> </span>
+<span class="w">      </span><span class="n">lda</span><span class="w"> </span><span class="n">@$04</span><span class="w"> </span><span class="c1">; sprite multicolor 1</span>
+<span class="w">      </span><span class="n">sta</span><span class="w"> </span><span class="n">$D025</span>
+<span class="w">      </span><span class="n">lda</span><span class="w"> </span><span class="n">@$06</span><span class="w"> </span><span class="c1">; sprite multicolor 2</span>
+<span class="w">      </span><span class="n">sta</span><span class="w"> </span><span class="n">$D026</span>
+
+<span class="w">      </span><span class="c1">; set background colour to black</span>
+<span class="w">      </span><span class="n">lda</span><span class="w"> </span><span class="n">@0</span>
+<span class="w">      </span><span class="n">sta</span><span class="w"> </span><span class="n">$d021</span>
+
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span><span class="w"> </span><span class="p">(</span><span class="c1">; points at $2000</span>
+<span class="w">                 </span><span class="p">[</span><span class="n">data-index</span><span class="w"> </span><span class="n">$80</span><span class="p">]</span><span class="w"> </span>
+<span class="w">                 </span><span class="c1">; first sprite pointer </span>
+<span class="w">                 </span><span class="p">[</span><span class="n">sprite-pointer</span><span class="w"> </span><span class="n">$07f8</span><span class="p">]</span>
+<span class="w">                 </span><span class="p">[</span><span class="n">code</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="p">)])</span>
+<span class="w">                </span><span class="p">([</span><span class="n">s</span><span class="w"> </span><span class="n">sprites</span><span class="p">])</span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">new-code</span>
+<span class="w">               </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">; set the sprite pointer to the first frame</span>
+<span class="w">                </span><span class="c1">; for this animation</span>
+<span class="w">                </span><span class="n">lda</span><span class="w"> </span><span class="n">@data-index</span>
+<span class="w">                </span><span class="n">sta</span><span class="w"> </span><span class="n">sprite-pointer</span><span class="w">            </span>
+<span class="w">               </span><span class="p">}])</span><span class="w">    </span>
+<span class="w">          </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">sprite-data-frame-count</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="n">data-index</span><span class="p">)</span>
+<span class="w">                  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">sprite-pointer</span><span class="p">)</span>
+<span class="w">                  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">new-code</span><span class="w"> </span><span class="n">code</span><span class="p">))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The for/fold function builds up a list containing chunks of 6502 code, bringing along another 2 accumulators to track the sprite pointer and frame offset.</p>
+
+<p>Racket&rsquo;s for/fold actually returns all three accumulators as Racket &ldquo;multiple values&rdquo;. However, because asi64 only cares about 6502 code, it simply ignores the first two results, but it will then see a list of 6502 code which it will happily assemble.</p>
+
+<p>Next up is to position the sprites on the screen. To do this, you have to set some more VIC registers. $d000 is Sprite 1&rsquo;s X, $d001 is Sprite 1&rsquo;s Y, and so on for each sprite.</p>
+
+<p>We want to line the sprites up together at a fixed Y co-ordinate, but of course without overlapping on the X co-ordinates. A sprite is 24 pixels wide, so we&rsquo;ll factor that in.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">      </span><span class="c1">;position sprites</span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">x</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">8</span><span class="p">)])</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="n">lda</span><span class="w"> </span><span class="n">@</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$20</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">24</span><span class="p">))</span>
+<span class="w">          </span><span class="n">sta</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$d000</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span><span class="w">  </span><span class="c1">; x</span>
+<span class="w">          </span><span class="n">lda</span><span class="w"> </span><span class="n">@$D0</span>
+<span class="w">          </span><span class="n">sta</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$d000</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">2</span><span class="p">)))</span><span class="w"> </span><span class="c1">; y</span>
+<span class="w">        </span><span class="p">})</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is very easy since we can use all the bits of racket and the assembler together as one.</p>
+
+<h2 id="animation">Animation</h2>
+
+<p>Each animation has a set number of frames which we have extracted. What we will need to do is the following:</p>
+
+<ul>
+ <li>Wait for some time so the animations aren&rsquo;t ridiculously fast</li>
+ <li>Animate each sprite by changing its sprite pointer to the next frame, or wrapping back to the start</li></ul>
+
+<p>How do we know where each animation currently is? Well, we know which sprite we are dealing with, and we can read its current pointer value. With a bit of maths we can work out where its base pointer is, therefore which frame it is currently in, and what the pointer value will be when it is at the last frame.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/Delayed_Evaluation.html#(form._((lib._racket/promise..rkt)._delay))" style="color: inherit">delay</a></span><span class="w"> </span><span class="n">$5</span><span class="p">)</span>
+<span class="w">         </span><span class="n">lda</span><span class="w"> </span><span class="n">@</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/Delayed_Evaluation.html#(form._((lib._racket/promise..rkt)._delay))" style="color: inherit">delay</a></span>
+<span class="w">         </span><span class="n">sta</span><span class="w"> </span><span class="n">$42</span>
+
+<span class="n">:loop</span>
+<span class="w">         </span><span class="c1">; wait for the raster to hit the bottom of the screen</span>
+<span class="w">         </span><span class="n">lda</span><span class="w"> </span><span class="n">$d012</span>
+<span class="w">         </span><span class="n">cmp</span><span class="w"> </span><span class="n">@$ff</span>
+<span class="w">         </span><span class="n">bne</span><span class="w"> </span><span class="n">loop-</span>
+<span class="w">         </span><span class="c1">; decrease our delay by one</span>
+<span class="w">         </span><span class="n">ldx</span><span class="w"> </span><span class="n">$42</span>
+<span class="w">         </span><span class="n">dex</span>
+<span class="w">         </span><span class="c1">; if it is zero, branch out</span>
+<span class="w">         </span><span class="n">beq</span><span class="w"> </span><span class="n">change+</span>
+<span class="w">         </span><span class="c1">; otherwise store the new delay value and go back to waiting</span>
+<span class="w">         </span><span class="n">stx</span><span class="w"> </span><span class="n">$42</span>
+<span class="w">         </span><span class="n">jmp</span><span class="w"> </span><span class="n">loop-</span>
+<span class="n">:change</span>
+<span class="w">         </span><span class="c1">; reset delay</span>
+<span class="w">         </span><span class="n">ldx</span><span class="w"> </span><span class="n">@</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/Delayed_Evaluation.html#(form._((lib._racket/promise..rkt)._delay))" style="color: inherit">delay</a></span>
+<span class="w">         </span><span class="n">stx</span><span class="w"> </span><span class="n">$42</span>
+
+<span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/fold))" style="color: inherit">for/fold</a></span><span class="w"> </span><span class="p">([</span><span class="n">base-offset</span><span class="w"> </span><span class="n">$80</span><span class="p">]</span>
+<span class="w">                    </span><span class="p">[</span><span class="n">index</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span>
+<span class="w">                    </span><span class="p">[</span><span class="n">code</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="p">)])</span><span class="w">                   </span>
+<span class="w">                   </span><span class="p">([</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="n">sprites</span><span class="p">])</span>
+<span class="w">           </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">new-code</span>
+<span class="w">                  </span><span class="p">{</span>
+<span class="w">                   </span><span class="c1">;load sprite pointer value</span>
+<span class="w">                   </span><span class="n">ldx</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$07f8</span><span class="w"> </span><span class="n">index</span><span class="p">)</span>
+<span class="w">                   </span><span class="c1">;is it on the final frame?    </span>
+<span class="w">                   </span><span class="n">cpx</span><span class="w"> </span><span class="n">@</span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">base-offset</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="p">(</span><span class="n">sprite-data-frame-count</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span>
+<span class="w">                   </span><span class="n">bne</span><span class="w"> </span><span class="n">skip+</span>
+<span class="w">                   </span><span class="c1">;reset to its first frame</span>
+<span class="w">                   </span><span class="n">ldx</span><span class="w"> </span><span class="n">@base-offset</span>
+<span class="w">                   </span><span class="n">stx</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$07f8</span><span class="w"> </span><span class="n">index</span><span class="p">)</span>
+<span class="w">                   </span><span class="n">jmp</span><span class="w"> </span><span class="n">done+</span>
+<span class="w">                   </span><span class="n">:skip</span>
+<span class="w">                   </span><span class="c1">; move to next frame</span>
+<span class="w">                   </span><span class="n">inx</span>
+<span class="w">                   </span><span class="n">stx</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$07f8</span><span class="w"> </span><span class="n">index</span><span class="p">)</span>
+<span class="w">                   </span><span class="n">:done</span><span class="w">                   </span>
+<span class="w">                   </span><span class="p">}])</span>
+<span class="w">             </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/values.html#(def._((quote._~23~25kernel)._values))" style="color: inherit">values</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">base-offset</span><span class="w"> </span><span class="p">(</span><span class="n">sprite-data-frame-count</span><span class="w"> </span><span class="n">s</span><span class="p">))</span>
+<span class="w">                     </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">index</span><span class="p">)</span>
+<span class="w">                     </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n">new-code</span><span class="w"> </span><span class="n">code</span><span class="p">))))</span>
+<span class="w">         </span>
+<span class="w">         </span><span class="n">jmp</span><span class="w"> </span><span class="n">loop-</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Again here we are using our old friend for/fold to generate the code for us. Notice in this example, the generated code uses local labels of :skip and :done, it is able to do this since asi64 has a (fairly common) feature of being able to have many labels named the same thing. You tell it to jump to the nearest one it finds either in front or behid the current location by suffixing with + or - respectively.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>The full porgram has a few more features, but hopefully has exemplified the idea of mixing racket and 6502 together to help generating code. It is now very easy to dump some new files into the directory, regardless of how many frames they have, compile and run the program to see them animated in the emulator (or on the real machine!)</p>
+
+<p>If you want to know more about how the sprites work on the C64, check out <a href="http:///www.codebase64.org">codebase</a> which is chock full of great information.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2018\10\05\c64-macro-state-machine/">&larr; <em>C64 Macro State Machine</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2018\01\31\-fixed-memory-pool-design/"><em>&ldquo;Fixed&rdquo; Memory Pool Design</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2018\09\17\c64-sprite-previewer/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

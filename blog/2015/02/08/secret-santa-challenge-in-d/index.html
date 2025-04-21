@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Secret Santa challenge in D</title>
+    <meta name="description" content="I attended the first London meetup group for the D programming language last week with my friend David. Near the end we had a chance to try and solve a cool programming problem called the secret santa challenge.  _disclaimer - I am a complete D 'lol newb'...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="D">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2015\02\08\secret-santa-challenge-in-d/">
+    <link rel="next" href="/blog\2015\01\23\enigma-machine-type-provider-edition/">
+    <link rel="prev" href="/blog\2015\03\01\introducing-the-mixin-type-provider/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2015\03\01\introducing-the-mixin-type-provider/">&larr; <em>Introducing - The Mixin Type Provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2015\01\23\enigma-machine-type-provider-edition/"><em>Enigma Machine – Type Provider Edition</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Secret Santa challenge in D</h1>
+    <p class='date-and-tags'>
+<time datetime="2015-02-08" pubdate="true">2015-02-08</time> :: <span class="tags"><a href="/tags\D.html">D</a></span></p>
+  </header>
+
+<p>I attended the first London meetup group for the D programming language last week with my friend David. Near the end we had a chance to try and solve a cool programming problem called the secret santa challenge.</p>
+
+<p><em>disclaimer &ndash; I am a complete D 'lol newb' so there might be nicer stuff I could do with syntax etc! Also I have not yet fixed my syntax highlighter to include auto, mixin, assert, and others</em></p>
+<!-- more-->
+
+<h2>The Challenge</h2>
+
+<p>The secret santa problem is deceptively simple. You are given a list of names like so.</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">enum</span><span class="w"> </span><span class="nb">string</span><span class="p">[]</span><span class="w"> </span><span class="n">names</span><span class="w"> </span><span class="p">=</span><span class="w"> </span>
+<span class="p">[</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Vicky Pollard"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Keith Pollard"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Ian Smith"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Dave Pollard"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Maria Osawa"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Mark Kelly"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"John Pollard"</span><span class="p">,</span><span class="w"> </span>
+<span class="w"> </span><span class="s">"Sarah Kelly"</span><span class="w"> </span>
+<span class="p">];</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Each person must give and receive a present. A person may not give to themselves, nor may they give to anyone else in their family as determined by their last names.</p>
+
+<p>Clearly, this problem can easily be brute forced, but that would not be at all efficient and would not work with large sets of data.</p>
+
+<p>We did not have a lot of time for this, and initially David and I designed an way to try and ensure that when sorted, family members would not appear next to each other. This would allow us to then perform one pass over the array and assign a present to each neighbour with a special wrap-around case at the end. To achieve this we assigned weights to the members, and where there were more than one family member, the weight would increase by some arbitrarily large amount, to split them away from the others.</p>
+
+<p>This algorithm worked for the data in question (which is not the same as above, I have added some to it) but I later realised that our algorithm had 2 fatal flaws.</p>
+
+<ol>
+ <li>It relies on having some families with around the same amount of members in each. If you have one big family and several loners, it would dump most of the family members together at the end of the array</li>
+ <li>There was no way to guarantee the start and end members would not be from the same family</li></ol>
+
+<p>It should be possible to still use a weighting approach if you calculated some ratios, but I thought there might be a simpler way.</p>
+
+<h2>A revised algorithm</h2>
+
+<p>After thinking about this on the train home from work a few days ago, and trying lots of different stuff in my head, I eventually realised the the real problem here is the biggest family. If x is how big a family is, and you sort the data by x, you can guarantee that by skipping ahead max(x) positions that you will never encounter another of the same family member (unless the problem is unsolvable).</p>
+
+<p>D is a multi-paradigm language and with this algorithm I have used a mainly imperative style, allowing me to make the minimum amount of passes on the data.</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">struct</span><span class="w"> </span><span class="n">person</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">string</span><span class="w"> </span><span class="n">first</span><span class="p">;</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">string</span><span class="w"> </span><span class="n">last</span><span class="p">;</span><span class="w"> </span>
+<span class="p">};</span>
+
+<span class="nb">string</span><span class="w"> </span><span class="n">distribute</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="nb">string</span><span class="p">[]</span><span class="w"> </span><span class="n">names</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w"> </span><span class="k">assert</span><span class="p">(</span><span class="n">names</span><span class="p">.</span><span class="n">length</span><span class="p">%</span><span class="mi">2</span><span class="p">==</span><span class="mi">0</span><span class="p">);</span><span class="w"> </span>
+<span class="w"> </span><span class="kt">int</span><span class="p">[</span><span class="nb">string</span><span class="p">]</span><span class="w"> </span><span class="n">familyCount</span><span class="p">;</span><span class="w"> </span>
+<span class="w"> </span><span class="n">person</span><span class="p">[]</span><span class="w"> </span><span class="n">people</span><span class="p">;</span>
+
+<span class="w"> </span><span class="c1">// create people and max family count </span>
+<span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">maxFamilyMembers</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span>
+<span class="w"> </span><span class="k">foreach</span><span class="p">(</span><span class="n">name</span><span class="p">;</span><span class="n">names</span><span class="p">)</span><span class="w"> </span>
+<span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">split</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">split</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w"> </span>
+<span class="w">   </span><span class="k">assert</span><span class="p">(</span><span class="n">split</span><span class="p">.</span><span class="n">length</span><span class="p">==</span><span class="mi">2</span><span class="p">);</span><span class="w"> </span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span><span class="w"> </span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span>
+<span class="w">   </span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">last</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">familyCount</span><span class="p">)</span><span class="w"> </span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">     </span><span class="n">count</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">++</span><span class="n">familyCount</span><span class="p">[</span><span class="n">p</span><span class="p">.</span><span class="n">last</span><span class="p">];</span><span class="w"> </span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span><span class="k">else</span><span class="w"> </span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">     </span><span class="n">count</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">familyCount</span><span class="p">[</span><span class="n">p</span><span class="p">.</span><span class="n">last</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="p">&gt;</span><span class="w"> </span><span class="n">maxFamilyMembers</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span><span class="w"> </span>
+<span class="w">     </span><span class="n">maxFamilyMembers</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w">   </span>
+<span class="w">   </span><span class="n">people</span><span class="w"> </span><span class="p">~=</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w"> </span>
+<span class="w"> </span><span class="p">}</span>
+
+<span class="w"> </span><span class="c1">// sort by family count </span>
+<span class="w"> </span><span class="n">people</span><span class="p">.</span><span class="n">sort</span><span class="p">!((</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="n">familyCount</span><span class="p">[</span><span class="n">p1</span><span class="p">.</span><span class="n">last</span><span class="p">]</span><span class="w"> </span><span class="p">&gt;</span><span class="w"> </span><span class="n">familyCount</span><span class="p">[</span><span class="n">p2</span><span class="p">.</span><span class="n">last</span><span class="p">]);</span>
+
+<span class="w"> </span><span class="nb">string</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w"> </span>
+<span class="w"> </span><span class="c1">// assign presents using max count as an offset </span>
+<span class="w"> </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="p">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="n">people</span><span class="p">.</span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="p">++)</span>
+<span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">people</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">people</span><span class="p">[(</span><span class="n">i</span><span class="p">+</span><span class="n">maxFamilyMembers</span><span class="p">)%</span><span class="n">people</span><span class="p">.</span><span class="n">length</span><span class="p">];</span><span class="w"> </span>
+<span class="w">   </span><span class="n">result</span><span class="w"> </span><span class="p">~=</span><span class="w"> </span><span class="n">join</span><span class="p">([</span><span class="n">source</span><span class="p">.</span><span class="n">first</span><span class="p">,</span><span class="s">" "</span><span class="p">,</span><span class="n">source</span><span class="p">.</span><span class="n">last</span><span class="p">,</span><span class="s">" -&gt; "</span><span class="p">,</span><span class="n">dest</span><span class="p">.</span><span class="n">first</span><span class="p">,</span><span class="s">" "</span><span class="p">,</span><span class="n">dest</span><span class="p">.</span><span class="n">last</span><span class="p">,</span><span class="s">"\n"</span><span class="p">]);</span><span class="w"> </span>
+<span class="w"> </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">(</span><span class="nb">string</span><span class="p">[]</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">results</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">distribute</span><span class="p">(</span><span class="n">names</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">writeln</span><span class="p">(</span><span class="n">results</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">readln</span><span class="p">();</span><span class="w"> </span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>You will see in the first section I mix the splitting of strings and creating people, counting the families and remembering the biggest family in the same pass. The data is then sorted by the family counts, and finally presents are distributed using the maxFamilyCount as an offset and modulus wrap-around logic.</p>
+
+<p>Clearly, it isn&rsquo;t very random in its gift giving &ndash; and your hands are quite tied on this as you must make sure opposing family members cancel each other out before you start using loners to pair with trailing family members. However, you could quite easily random sort each family in place. It is also possible to go in opposite direction within the present-giving part, or even go forwards and backwards together at the same time. Whilst the pairs would be the same, the giver/receiver would be reversed in the other direction.</p>
+
+<h2>Metaprogramming 1</h2>
+
+<p>I am mainly interested in D for its awesome metaprogramming features, and given I know a list of names at compile time I should be able to turn this into a metaprogram and have the compiler work this out instead of it happening at runtime, right? How can I go about that? Brace yourselves, it is quite difficult.</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">(</span><span class="nb">string</span><span class="p">[]</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="n">results</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">distribute</span><span class="p">(</span><span class="n">names</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">writeln</span><span class="p">(</span><span class="n">results</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">readln</span><span class="p">();</span><span class="w"> </span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>D has a rather nifty feature called <em>Compile Time Function Evaluation (CTFE)</em> which essentially lets you call any compatible function (with obvious constraints) either at runtime or compile time, and this is determined <em>at the call site</em>! So here I simply change <em>auto</em> to <em>static</em> and the compiler executed the same function during compilation and inlined the result for me. Pretty cool!</p>
+
+<h2>Metaprogramming 2</h2>
+
+<p>D has a very powerful constructed called a <em>mixin</em> which is different from the same-named construct in other languages. During compilation, D will interpret strings passed to a mixin, and assuming they are interpretable (the D compiler hosts a D interpreter!), the compiler will insert their definitions as if you had written them in the source code yourself. You can think T4 code gen on acid and steroids simultaneously. Whilst you might be thinking &ldquo;strings! surely not&rdquo;. Whilst the strings are a bit, will, stringy, they lead themselves to easy and interesting manipulation techniques (as opposed to splicing quoted code expressions or similar) and they are still evaluated at compile time, so you do something wrong, you will know about it up-front.</p>
+
+<p>Let&rsquo; see how we can use a mixin to generate some code. I have decided that I would like a struct created for each person, and each struct will have a method <em>giveTo()</em>that will return a string with some text that shows which person they are giving to this year. To achieve this I will modify the distribute function to create the equivalent code strings instead:</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nb">string</span><span class="w"> </span><span class="n">code</span><span class="p">;</span><span class="w"> </span>
+<span class="c1">// assign presents using max count as an offset </span>
+<span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="p">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="n">people</span><span class="p">.</span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="p">++)</span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">people</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">people</span><span class="p">[(</span><span class="n">i</span><span class="p">+</span><span class="n">maxFamilyMembers</span><span class="p">)%</span><span class="n">people</span><span class="p">.</span><span class="n">length</span><span class="p">];</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">myName</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">join</span><span class="p">([</span><span class="n">source</span><span class="p">.</span><span class="n">first</span><span class="p">,</span><span class="n">source</span><span class="p">.</span><span class="n">last</span><span class="p">]);</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">theirName</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">join</span><span class="p">([</span><span class="n">dest</span><span class="p">.</span><span class="n">first</span><span class="p">,</span><span class="s">" "</span><span class="p">,</span><span class="n">dest</span><span class="p">.</span><span class="n">last</span><span class="p">]);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">code</span><span class="w"> </span>
+<span class="w">    </span><span class="p">~=</span><span class="w"> </span><span class="s">"struct "</span><span class="w"> </span>
+<span class="w">    </span><span class="p">~</span><span class="w"> </span><span class="n">myName</span><span class="w"> </span>
+<span class="w">    </span><span class="p">~</span><span class="w"> </span><span class="s">"{ string giveTo() { return \"This year I am giving to "</span><span class="w"> </span>
+<span class="w">    </span><span class="p">~</span><span class="w"> </span><span class="n">theirName</span><span class="w"> </span>
+<span class="w">    </span><span class="p">~</span><span class="w"> </span><span class="s">"\"; } "</span><span class="w"> </span>
+<span class="w">    </span><span class="p">~</span><span class="w"> </span><span class="s">"}\n"</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span>
+
+<span class="k">return</span><span class="w"> </span><span class="n">code</span><span class="p">;</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now in the main program I can write</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">(</span><span class="nb">string</span><span class="p">[]</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">mixin</span><span class="p">(</span><span class="n">distribute</span><span class="p">(</span><span class="n">names</span><span class="p">));</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">vp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">VickyPollard</span><span class="p">();</span><span class="w"> </span>
+<span class="w">  </span><span class="n">writeln</span><span class="p">(</span><span class="n">vp</span><span class="p">.</span><span class="n">giveTo</span><span class="p">());</span><span class="w"> </span>
+<span class="w">  </span><span class="n">readln</span><span class="p">();</span><span class="w"> </span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In this way I am using the CTFE to feed the mixin code-generation facility, which in turn verifies and inserts the code as if it had been written where the mixin statement is. This means I can now access the <em>VickyPollard</em> struct and call her <em>giveTo()</em>method. This is not dynamic &ndash; all statically checked at compile time! Combining these CTFE and mixins can be extremely powerful for generating code. D has another feature called <em>mixin templates</em> that let you define commonly used code blocks to insert into other places, which is more like the <em>mixin</em>from some other languages, except this is just a scope of code that can contain almost anything at all. (I think, I am still new to this!)</p>
+
+<h2>One more thing</h2>
+
+<p>D has single inheritance, interfaces and a really a long stream of other nice bits such as <em>Uniform Function Call Syntax (UFCS)</em> which is basically like automatic extension methods. What I would like to show in this post however is a feature called <em>alias this.</em> You can write a bunch of these in your classes / structs, the effect it has is that the compiler can then treat your class as if it was the same type of <em>member.</em>This allows almost multiple inheritance but is also very useful when combined with the metaprogramming features (although perhaps this will not be apparent from this silly example)</p>
+
+<p>Lets say I would like each of my new structs to also be a person. I could use inheritance this for but lets not do that &ndash; instead I will create a static immutable person object inside each one than then <em>alias this</em>it. I have changed the string-code to output the equivalent of the following</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">struct</span><span class="w"> </span><span class="n">VickyPollard</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">private</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">immutable</span><span class="w"> </span><span class="n">me</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="s">"Vicky"</span><span class="p">,</span><span class="s">"Pollard"</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">string</span><span class="w"> </span><span class="n">giveTo</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="k">return</span><span class="w"> </span><span class="s">"This year I am giving to Mark Kelly"</span><span class="p">;}</span><span class="w"> </span>
+<span class="w">  </span><span class="k">alias</span><span class="w"> </span><span class="n">me</span><span class="w"> </span><span class="k">this</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>and now I can fire up any of my mixin generated types and pass them anywhere that accepts <em>person</em> even though they are not a <em>person</em> at all.</p>
+
+<div class="brush: d">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">void</span><span class="w"> </span><span class="n">printPerson</span><span class="p">(</span><span class="n">person</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="n">writeln</span><span class="p">(</span><span class="s">"this is person "</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">first</span><span class="p">,</span><span class="s">" "</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">last</span><span class="p">);</span><span class="w"> </span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">(</span><span class="nb">string</span><span class="p">[]</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">mixin</span><span class="p">(</span><span class="n">distribute</span><span class="p">(</span><span class="n">names</span><span class="p">));</span><span class="w"> </span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">vp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">VickyPollard</span><span class="p">();</span><span class="w"> </span>
+<span class="w">  </span><span class="n">printPerson</span><span class="p">(</span><span class="n">vp</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="n">writeln</span><span class="p">(</span><span class="n">vp</span><span class="p">.</span><span class="n">giveTo</span><span class="p">());</span><span class="w"> </span>
+<span class="w">  </span><span class="n">readln</span><span class="p">();</span><span class="w"> </span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Pretty cool! This post just explored a couple of the features in D I have played around with so far, but I am working on a roguelike game - the traditional thing I do when learning new languages - so I may write about other interesting language features as I make use of them.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2015\03\01\introducing-the-mixin-type-provider/">&larr; <em>Introducing - The Mixin Type Provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2015\01\23\enigma-machine-type-provider-edition/"><em>Enigma Machine – Type Provider Edition</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2015\02\08\secret-santa-challenge-in-d/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

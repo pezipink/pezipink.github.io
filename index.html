@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Pink Squirrel Labs</title>
+    <meta name="description" content="Pink Squirrel Labs">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="squirrels, fpga, digital logic, fairylog, C64, 6502, reverse engineering, books, xrm, cracking, racket, asi64, sqlprovider, macros, C, compilers, game programming, drey, raspberry pi, type providers, roguelike, all, electronics, scurry, robotics, fsharp, programming languages, D">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/index.html">
+
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <h2><a href='/blog\2021\09\29\reversing-sabloomtext-v6/'>Reversing - SabloomText_v6</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2021-09-29" pubdate="true">2021-09-29</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>Today we look at another crackme, SabloomText_v6!</p>
+
+<div class="figure"><img src="../../../../../img/sabloom/serial.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The difficulty is rated at level 4.8 of 6 - I think perhaps it was more like a 4.</p>
+
+<p>I am not going to say anything about it in this section as it would spoil a cool surprise if you want to try it yourself!</p>
+
+<p>Here is the link if you want to try it <a href="https://crackmes.one/crackme/60be2ad433c5d410b8842c95">Sabloom Text 6</a></p>
+
+<p>Tools used today are x64dbg, PEStudio, F# and C++</p>
+
+<p>(Apologies for the low quality pictures, I messed them up)</p>
+  <footer>
+    <a href='/blog\2021\09\29\reversing-sabloomtext-v6/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2021\04\04\reversing-bakunawa/'>Reversing - Bakunawa</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2021-04-04" pubdate="true">2021-04-04</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>In this post we&rsquo;ll look at another crackme, Bakunawa!</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/title.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This one was listed as level 5 (Very Hard) and certainly was not without its difficulties!</p>
+
+<p>Featuring a sort-of virtual machine executing real x86 instructions encoded into an odd binary file as a point of obsfucation, this took me quite a long time to figure out. I built some tools in the process and finally a Keygen program once the algorithm was identified and reversed.</p>
+
+<p>Major spoilers follow, <a href="https://crackmes.one/crackme/5b135f4033c5d41557b02271">here&rsquo;s the link</a> if you want to have a go yourself!</p>
+
+<p>Tools used today are x64dbg, PEStudio, IDA Pro, F# and C++</p>
+  <footer>
+    <a href='/blog\2021\04\04\reversing-bakunawa/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2020\07\25\slope-function-generator/'>Slope / Function Generator</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2020-07-25" pubdate="true">2020-07-25</time> :: <span class="tags"><a href="/tags\electronics.html">electronics</a></span></p>
+  </header>
+
+<p>In this post we&rsquo;ll look at the design of a <a href="https://en.wikipedia.org/wiki/Function_generator">function generator</a> that outputs slope waveforms with adjustable rise and fall times. This can be used in modular synthesis as an <a href="https://en.wikipedia.org/wiki/Envelope_(music)">envelope</a>, or <a href="https://en.wikipedia.org/wiki/CV/gate">control voltage</a> to modulate some other parameter in your synthesiser. This post is purely electronics with no CPUs allowed on the scene.</p>
+
+<p></p>
+
+<p>For all the circuits and fragments in this post, I have linked to simulations you can play with. I was going to embed them, but there is no way to prevent all the simulations starting at once and killing your CPU, so I&rsquo;ll leave it to your discretion :)</p>
+  <footer>
+    <a href='/blog\2020\07\25\slope-function-generator/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2019\07\21\reversing-kreker-v2-exe/'>Reversing - Kreker_V2.exe</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2019-07-21" pubdate="true">2019-07-21</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>In this article we&rsquo;ll look at another crackme. This one was pretty difficult and has a bunch of cool stuff in it, including the injection and execution of obfsucated code into another process.</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/1.png" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2019\07\21\reversing-kreker-v2-exe/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2019\05\08\reversing-xor0-crackme-1/'>Reversing - xor0_crackme_1</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2019-05-08" pubdate="true">2019-05-08</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>In a <a href="http://pinksquirrellabs.com/blog/2018/01/01/reversing-lcm6-exe/">previous article</a> I described the process of reverse-engineering a <a href="https://crackmes.one/lasts">crackme</a>. These are programs designed to be broken with various counter-mesaures and challenges. As a break from my hardware work, I thought I would have a go at another one.</p>
+  <footer>
+    <a href='/blog\2019\05\08\reversing-xor0-crackme-1/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2019\04\23\fairylog-multiplexer-macros/'>Fairylog : Multiplexer Macros</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2019-04-23" pubdate="true">2019-04-23</time> :: <span class="tags"><a href="/tags\fairylog.html">fairylog</a>, <a href="/tags\fpga.html">fpga</a>, <a href="/tags\digital-logic.html">digital logic</a>, <a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>Multiplexers and demultiplexers are common tools in digital logic design. In Verilog, they are fairly simple to create whilst the amount of signals are small. In this post we&rsquo;ll look at how Fairylog&rsquo;s macros can make short work of generating mux/demux of any complexity, greatly reducing the amount of work and scope for hard-to-find bugs</p>
+
+<div class="figure"><img src="../../../../../img/fairylog/mux.png" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2019\04\23\fairylog-multiplexer-macros/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2019\04\17\fairylog/'>Fairylog</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2019-04-17" pubdate="true">2019-04-17</time> :: <span class="tags"><a href="/tags\fpga.html">fpga</a>, <a href="/tags\racket.html">racket</a>, <a href="/tags\digital-logic.html">digital logic</a>, <a href="/tags\fairylog.html">fairylog</a></span></p>
+  </header>
+
+<p>Over the last few months I have been working on yet another new language, this time for programming FPGAs. This post will provide a short introduction to Fairylog by way of building some custom hardware to read a pair of Nintendo pads.</p>
+
+<blockquote class="twitter-tweet" data-lang="en">
+ <p lang="en" dir="ltr">Realtime 24bit colour rotozoomer controlled by a NES pad. CPU, video hardware and assembler built in my various <a href="https://twitter.com/racketlang?ref_src=twsrc%5Etfw">@racketlang</a> langs. Display from <a href="https://twitter.com/adafruit?ref_src=twsrc%5Etfw">@adafruit</a>. Debugger and supporting tools <a href="https://twitter.com/hashtag/csharp?src=hash&amp;amp;ref_src=twsrc%5Etfw">#csharp</a> &amp; <a href="https://twitter.com/hashtag/fsharp?src=hash&amp;amp;ref_src=twsrc%5Etfw">#fsharp</a>. Complete with dramatic music! 😃 <a href="https://twitter.com/hashtag/fpga?src=hash&amp;amp;ref_src=twsrc%5Etfw">#fpga</a> <a href="https://t.co/8gVNfg4uLD">pic.twitter.com/8gVNfg4uLD</a></p>&mdash; Ross McKinlay (@pezi_pink) <a href="https://twitter.com/pezi_pink/status/1103716209537794048?ref_src=twsrc%5Etfw">March 7, 2019</a></blockquote>
+
+<script async="async" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <footer>
+    <a href='/blog\2019\04\17\fairylog/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2018\11\21\c64-remote-programmer/'>C64 Remote Programmer</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2018-11-21" pubdate="true">2018-11-21</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\C.html">C</a>, <a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\raspberry-pi.html">raspberry pi</a>, <a href="/tags\electronics.html">electronics</a>, <a href="/tags\asi64.html">asi64</a>, <a href="/tags\6502.html">6502</a></span></p>
+  </header>
+
+<p>In this post I will describe a small electronics project designed to enable the remote programming of a real Commodore 64 that is switched on and running. To achieve this, several parts are involed, utilising some custom circuitry and communications protocol, a Raspberry Pi, a C program, a 6502 assembler program and a little F# program to finish it off.</p>
+
+<div class="figure"><img src="../../../../../img/prog/programmer1.jpg" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2018\11\21\c64-remote-programmer/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2018\10\05\c64-macro-state-machine/'>C64 Macro State Machine</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2018-10-05" pubdate="true">2018-10-05</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\asi64.html">asi64</a>, <a href="/tags\macros.html">macros</a>, <a href="/tags\6502.html">6502</a>, <a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>In this post we will see how <a href="http://www.pinksquirrellabs.com/blog/2017/05/30/asi64/">asi64&rsquo;s</a> (<a href="[https://racket-lang.org/">Racket&rsquo;s</a>) macro system can massively reduce the amount of 6502 assembly code you have to write, beyond what a typical macro assembler can achieve.</p>
+  <footer>
+    <a href='/blog\2018\10\05\c64-macro-state-machine/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2018\09\17\c64-sprite-previewer/'>C64 Sprite Previewer</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2018-09-17" pubdate="true">2018-09-17</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\asi64.html">asi64</a>, <a href="/tags\6502.html">6502</a>, <a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>In this post we will see how <a href="http://pinksquirrellabs.com/blog/2017/05/30/asi64/">asi64</a> is more than your average macro assembler, by combining arbitrary disk io, functional programming techniques and code generation alongside your typical 6502 assembly code. The aim is to create a very simple sprite animation viewer, that writes the resulting C64 program by interleaving file parsing and machine code generation.</p>
+
+<p>Here&rsquo;s the program displaying some sprites that <a href="https://twitter.com/silverSpoon">@silverspoon</a> has started working on :) (in different, single colours for the fun of it)</p>
+
+<div class="figure"><img src="../../../../../img/asi/tc.gif" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2018\09\17\c64-sprite-previewer/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<footer>
+ <ul class="pagination">
+  <li class="page-item disabled"><a class="page-link" href="#">
+    <quote>&larr;</quote></a></li>
+  <li class="page-item active"><a class="page-link" href="/index.html">1</a></li>
+  <li class="page-item"><a class="page-link" href="/index-2.html">2</a></li>
+  <li class="page-item"><a class="page-link" href="/index-3.html">3</a></li>
+  <li class="page-item"><a class="page-link" href="/index-4.html">4</a></li>
+  <li class="page-item"><a class="page-link" href="/index-5.html">5</a></li>
+  <li class="page-item"><a class="page-link" href="/index-2.html">
+    <quote>&rarr;</quote></a></li></ul></footer>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

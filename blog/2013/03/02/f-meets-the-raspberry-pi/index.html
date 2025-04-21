@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>F# meets the Raspberry Pi</title>
+    <meta name="description" content="...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="digital logic, electronics, fsharp, raspberry pi">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2013\03\02\f-meets-the-raspberry-pi/">
+    <link rel="next" href="/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/">
+    <link rel="prev" href="/blog\2013\07\04\last-fi/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2013\07\04\last-fi/">&larr; <em>Last-Fi</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/"><em>Microsoft Dynamics CRM Type Provider preview</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>F# meets the Raspberry Pi</h1>
+    <p class='date-and-tags'>
+<time datetime="2013-03-02" pubdate="true">2013-03-02</time> :: <span class="tags"><a href="/tags\digital-logic.html">digital logic</a>, <a href="/tags\electronics.html">electronics</a>, <a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\raspberry-pi.html">raspberry pi</a></span></p>
+  </header>
+  <!-- more-->
+
+<p>I got a Pi for my birthday! A great excuse to get back into electronics.</p>
+
+<p>After unsuccessfully struggling to get the F# compiler to build under the stable version of mono for Debian Wheezy, I realised that F# programs work just fine if you build normally from a windows computer, throw in FSharp.Core.dll in the /bin/ and copy it over. So I have a setup now where I work with VS2012 / Sublime and sync the executable and libraries with WinScp (or indeed the Scp plugin for FAR Manager).</p>
+
+<p>Next up is to get access to the hardware. I built <a href="http://www.open.com.au/mikem/bcm2835/index.html">this C library</a> as a shared object, dumped it in with the other binaries of my project and it worked through P/Invoke with no hassle at all !</p>
+
+<p>I've quite a bit of electronics experience, so after I did some basic tests that the various I/O pins could be set to output and switch from High to Low, I skipped the traditional "hello world" of hardware (blinking an LED) and figured I'd try something a little bit more ambitious. I have a little LCD screen laying around in my old gear, it's a standard LCD driven by the <a href="http://en.wikipedia.org/wiki/Hitachi_HD44780_LCD_controller">Hitachi HD4480 LCD Controller</a>. You can use these in 8-bit or 4-bit mode, with the 8 bit mode needing 4 more I/O pins. I'm using the 4 bit mode because I don't really have that many pins and it's pretty easy (although a little fiddly) to use it in 4-bit mode.</p>
+
+<p>I'm using a total of 7 I/O pins, E (enable), RS (switch between command and character mode), RW (I'm not actually using this right now) , and then DB4 through DB7 which are the 4 input bits (they are the higher nibble of the full 8 bits). This is the circuit :</p>
+
+<p><img src="../../../../../img/old/lcd_s.jpg" alt="" /></p>
+
+<p>In this schematic the Pi pins relate to the actual physical pin numbers, however in the code a mapping is needed over to what the Pi internally calls its GPIO pins. I created an enum for this purposes, only containing the pins I am using for now</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">GPIOPins</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_11</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">17u</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_12</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">18u</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_13</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">27u</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_15</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">22u</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_16</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">23u</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_18</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">24u</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Pin_22</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">25u</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>For example the physical pin 11 maps to GPIO number 17. Infact when I first hooked this circuit up and wrote all the code to perform the LCD initilization I couldn't get it to work. Thankfully I happen to have a 16 channel logic analyzer in my scope so I hooked up all the inputs, set it to a single sweep triggering on the rising edge of the Enable pin over 500ms and noticed that the RW pin was always high - strange (I neglected to take a picture of the waveforms for this post :( ). Turns out that the Pi user manual is WRONG, I have got a slightly later revision of the board where pin 13 is mapped to 27, not 21!</p>
+
+<p>The next bit of code imports a couple of the functions from the C library and creates a couple of mini functions around them</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">[&lt;</span><span class="n">DllImportAttribute</span><span class="o">(</span><span class="s">"libbcm2835.so"</span><span class="o">,</span><span class="w"> </span><span class="n">EntryPoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"bcm2835_init"</span><span class="o">)&gt;]</span>
+<span class="k">extern</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">bcm2835_init</span><span class="bp">()</span>
+
+<span class="o">[&lt;</span><span class="n">DllImport</span><span class="o">(</span><span class="s">"libbcm2835.so"</span><span class="o">,</span><span class="w"> </span><span class="n">EntryPoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"bcm2835_gpio_fsel"</span><span class="o">)&gt;]</span>
+<span class="k">extern</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="n">bcm2835_gpio_fsel</span><span class="o">(</span><span class="n">GPIOPins</span><span class="w"> </span><span class="n">pin</span><span class="o">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">mode_out</span><span class="o">);</span>
+
+<span class="o">[&lt;</span><span class="n">DllImport</span><span class="o">(</span><span class="s">"libbcm2835.so"</span><span class="o">,</span><span class="w"> </span><span class="n">EntryPoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"bcm2835_gpio_write"</span><span class="o">)&gt;]</span>
+<span class="k">extern</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="n">bcm2835_gpio_write</span><span class="o">(</span><span class="n">GPIOPins</span><span class="w"> </span><span class="n">pin</span><span class="o">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">value</span><span class="o">);</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">fsel</span><span class="w"> </span><span class="n">pin</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bcm2835_gpio_fsel</span><span class="o">(</span><span class="n">pin</span><span class="o">,</span><span class="n">value</span><span class="o">)</span><span class="w">                        </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">write</span><span class="w"> </span><span class="n">pin</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bcm2835_gpio_write</span><span class="o">(</span><span class="n">pin</span><span class="o">,</span><span class="n">value</span><span class="o">)</span><span class="w">            </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">wait</span><span class="w"> </span><span class="o">(</span><span class="n">ms</span><span class="o">:</span><span class="n">int</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">System</span><span class="p">.</span><span class="nn">Threading</span><span class="p">.</span><span class="nn">Thread</span><span class="p">.</span><span class="n">Sleep</span><span class="o">(</span><span class="n">ms</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>To use the LCD you write some bits to the data pins, then bring the Enable pin high for a few us then pull it low again ("pulse"). The LCD then does something depending on the input bits. In order to prepare it for 4-bit use I first have to send it a few 0x03 (0011) packets as per the spec indicates. Then I can switch it into 4-bit mode (0x2). From this point on, I can use all the 8-bit commands from the spec. Because I'm running in 4 bit mode I have to send the high nibble first, pulse, then send the low nibble. I wrapped some of the LCD functionality up in a F# record type (note: all this code is just a first stab, everything with hardware is inherently to do with mutating state so I won't be using a lot of the real functional features of the language just yet, but I'll see what I can do about that later)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">LCDCommands</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">AllLow</span><span class="w"> </span><span class="o">=</span><span class="w">          </span><span class="mi">0</span><span class="n">b00000000</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Clear</span><span class="w"> </span><span class="o">=</span><span class="w">           </span><span class="mi">0</span><span class="n">b00000001</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Home</span><span class="w"> </span><span class="o">=</span><span class="w">            </span><span class="mi">0</span><span class="n">b00000010</span><span class="w">   </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">FourBit</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="mi">0</span><span class="n">b00100000</span><span class="w">   </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">TwoLine</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="mi">0</span><span class="n">b00001100</span><span class="w">    </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">DisplayOn</span><span class="w"> </span><span class="o">=</span><span class="w">       </span><span class="mi">0</span><span class="n">b00001100</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">CursorOn</span><span class="w"> </span><span class="o">=</span><span class="w">        </span><span class="mi">0</span><span class="n">b00000001</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">AutoIncCursor</span><span class="w"> </span><span class="o">=</span><span class="w">   </span><span class="mi">0</span><span class="n">b00000110</span><span class="w">    </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Line2</span><span class="w"> </span><span class="o">=</span><span class="w">           </span><span class="mi">0</span><span class="n">xC0</span>
+<span class="w">        </span>
+<span class="k">type</span><span class="w"> </span><span class="nc">LCD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">E</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span><span class="n">RW</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span><span class="n">RS</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span>
+<span class="w">             </span><span class="n">DB4</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span><span class="n">DB5</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span><span class="n">DB6</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span><span class="n">DB7</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">GPIOPins</span><span class="o">;</span><span class="w"> </span><span class="o">}</span>
+<span class="w">    </span><span class="k">with</span><span class="w"> </span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">lcd</span><span class="p">.</span><span class="nf">Pulse</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="c1">// toggles enable </span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">E</span><span class="w"> </span><span class="k">true</span><span class="o">;</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">E</span><span class="w"> </span><span class="k">false</span><span class="o">;</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">lcd</span><span class="p">.</span><span class="nf">WriteNibble</span><span class="o">(</span><span class="n">value</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="c1">// write the lower four bits to the data pins and pulses</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB7</span><span class="w"> </span><span class="o">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="o">)</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB6</span><span class="w"> </span><span class="o">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="o">)</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB5</span><span class="w"> </span><span class="o">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="o">)</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB4</span><span class="w"> </span><span class="o">(</span><span class="n">value</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="n">x1</span><span class="o">)</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">Pulse</span><span class="bp">()</span>
+<span class="w">        </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">lcd</span><span class="p">.</span><span class="nf">WriteByte</span><span class="o">(</span><span class="n">value</span><span class="o">)</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteNibble</span><span class="o">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">4</span><span class="o">)</span><span class="w"> </span><span class="c1">// write high nibble first</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteNibble</span><span class="o">(</span><span class="n">value</span><span class="o">)</span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">lcd</span><span class="p">.</span><span class="nf">Command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteByte</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I have captured some of the LCD commands in another enum - some of these have to be OR'd together as per the spec. I've just encoded the ones I'm going to use. The there's the pulse which toggles enable with a tiny delay. Because I'm in 4 bit mode I'll always be writing nibbles with a pulse at the end - the WriteByte function simply writes the high nibble first then the low nibble as the spec indicates. The last function is just a wrapper so I can directly use the LCDCommand enum.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">member</span><span class="w"> </span><span class="n">lcd</span><span class="p">.</span><span class="nf">Initialize</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="c1">// I am only using the (annoyingly fiddly) 4 bit mode</span>
+<span class="w">        </span><span class="c1">// assume 1000ms or so has passed since program start up</span>
+<span class="w">        </span><span class="c1">// make sure pins are set to output</span>
+<span class="w">        </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">E</span><span class="w">   </span><span class="k">true</span><span class="o">;</span><span class="w"> </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">RW</span><span class="w">  </span><span class="k">true</span>
+<span class="w">        </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">RS</span><span class="w">  </span><span class="k">true</span><span class="o">;</span><span class="w"> </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB4</span><span class="w"> </span><span class="k">true</span>
+<span class="w">        </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB5</span><span class="w"> </span><span class="k">true</span><span class="o">;</span><span class="w"> </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB6</span><span class="w"> </span><span class="k">true</span>
+<span class="w">        </span><span class="n">fsel</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">DB7</span><span class="w"> </span><span class="k">true</span>
+<span class="w">        </span><span class="c1">// zero them all out</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">Command</span><span class="w"> </span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">AllLow</span>
+<span class="w">        </span><span class="c1">// to start with we are only writing special wakeup nibbles</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteNibble</span><span class="o">(</span><span class="mi">0</span><span class="n">x3</span><span class="o">);</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1">// as per spec, first call has a 5ms wait</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteNibble</span><span class="o">(</span><span class="mi">0</span><span class="n">x3</span><span class="o">);</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteNibble</span><span class="o">(</span><span class="mi">0</span><span class="n">x3</span><span class="o">);</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="c1">// now set into 4 bit mode and send 8 bits in 2 nibbles from now on</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteNibble</span><span class="o">(</span><span class="mi">0</span><span class="n">x2</span><span class="o">)</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">Command</span><span class="o">(</span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">FourBit</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">TwoLine</span><span class="o">)</span><span class="w">     </span><span class="c1">// set 5x8 mode 2 lines</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">Command</span><span class="o">(</span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">DisplayOn</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">CursorOn</span><span class="o">)</span><span class="w">  </span><span class="c1">// switch it on</span>
+<span class="w">        </span><span class="n">lcd</span><span class="o">.</span><span class="n">Command</span><span class="o">(</span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">AutoIncCursor</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is the startup sequence - set all the pins to Output, zero them all out, and then follow the startup sequence as per the spec. initially I have to just use nibbles, until the wake-up sequence is complete, then I can set it to 4-bit mode and use full byte commands. Once the display is in 4-bit mode I switch it to 5x8 mode with 2 lines and switch the screen on with a flashing cursor and so on.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">member</span><span class="w"> </span><span class="n">lcd</span><span class="p">.</span><span class="nf">WriteText</span><span class="o">(</span><span class="n">text</span><span class="o">:</span><span class="kt">string</span><span class="o">,</span><span class="n">clear</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">clear</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">Command</span><span class="o">(</span><span class="nn">LCDCommands</span><span class="p">.</span><span class="n">Clear</span><span class="o">)</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">RS</span><span class="w"> </span><span class="k">true</span><span class="o">;</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="nn">Encoding</span><span class="p">.</span><span class="nn">ASCII</span><span class="p">.</span><span class="n">GetBytes</span><span class="o">(</span><span class="n">text</span><span class="o">)</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">iter</span><span class="o">(</span><span class="n">int</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteByte</span><span class="o">)</span>
+<span class="w">        </span><span class="n">write</span><span class="w"> </span><span class="n">lcd</span><span class="o">.</span><span class="n">RS</span><span class="w"> </span><span class="k">false</span><span class="o">;</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">1</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Lastly a function to output some text. To do this you have to set the LCD into character output mode by pulling RS high; then you can send ASCII codes and the LCD will print them.</p>
+
+<p>Pulling this all together I wrote that classic silly number-guessing game you write when learning to program, with the output on the LCD:</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">[&lt;</span><span class="n">EntryPoint</span><span class="o">&gt;]</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">main</span><span class="w"> </span><span class="n">argv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">try</span>
+<span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="n">bcm2835_init</span><span class="bp">()</span><span class="w"> </span><span class="k">with</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="k">true</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">lcd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">E</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_11</span><span class="o">;</span><span class="w"> </span><span class="n">RW</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_12</span><span class="o">;</span><span class="w"> </span><span class="n">RS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_13</span><span class="o">;</span><span class="w"> </span>
+<span class="w">                        </span><span class="n">DB4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_15</span><span class="o">;</span><span class="w"> </span><span class="n">DB5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_16</span><span class="o">;</span><span class="w"> </span><span class="n">DB6</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_18</span><span class="o">;</span><span class="w"> </span><span class="n">DB7</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">GPIOPins</span><span class="p">.</span><span class="n">Pin_22</span><span class="w"> </span><span class="o">}</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="n">wait</span><span class="w"> </span><span class="mi">1000</span>
+<span class="w">            </span><span class="n">lcd</span><span class="o">.</span><span class="n">Initialize</span><span class="bp">()</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">loop</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">attempts</span><span class="w"> </span><span class="o">=</span><span class="w">                </span>
+<span class="w">                 </span><span class="k">try</span>
+<span class="w">                    </span><span class="k">let</span><span class="w"> </span><span class="nv">guess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="bp">()</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Int32</span><span class="p">.</span><span class="n">Parse</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="n">guess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="k">then</span><span class="w">                     </span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"CORRECT!!"</span><span class="o">,</span><span class="k">true</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteByte</span><span class="o">(</span><span class="mi">0</span><span class="n">xC0</span><span class="o">);</span><span class="w"> </span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"YOU WIN!"</span><span class="o">,</span><span class="k">false</span><span class="o">)</span>
+<span class="w">                    </span><span class="k">elif</span><span class="w"> </span><span class="n">attempts</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"WRONG!!"</span><span class="o">,</span><span class="k">true</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteByte</span><span class="o">(</span><span class="mi">0</span><span class="n">xC0</span><span class="o">);</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"YOU LOSE!!"</span><span class="o">,</span><span class="k">false</span><span class="o">)</span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"WRONG!! "</span><span class="o">,</span><span class="k">true</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">((</span><span class="k">if</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">guess</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="s">"&lt; "</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s">"&gt; "</span><span class="o">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">guess</span><span class="o">.</span><span class="n">ToString</span><span class="bp">()</span><span class="o">,</span><span class="k">false</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteByte</span><span class="o">(</span><span class="mi">0</span><span class="n">xC0</span><span class="o">);</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                        </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"GUESS AGAIN!"</span><span class="o">,</span><span class="k">false</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">loop</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="o">(</span><span class="n">attempts</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">)</span>
+<span class="w">                 </span><span class="k">with</span>
+<span class="w">                 </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printfn</span><span class="w"> </span><span class="s">"Number not reconigsed. Try again"</span>
+<span class="w">                        </span><span class="n">loop</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">attempts</span>
+<span class="w">                        </span>
+<span class="w">            </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"Guess a number"</span><span class="o">,</span><span class="k">true</span><span class="o">)</span>
+<span class="w">            </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteByte</span><span class="o">(</span><span class="mi">0</span><span class="n">xC0</span><span class="o">);</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="n">lcd</span><span class="o">.</span><span class="n">WriteText</span><span class="o">(</span><span class="s">"0 &lt;---&gt; 50"</span><span class="o">,</span><span class="k">false</span><span class="o">)</span>
+<span class="w">            </span><span class="n">loop</span><span class="w"> </span><span class="o">(</span><span class="nn">System</span><span class="p">.</span><span class="n">Random</span><span class="o">(</span><span class="nn">DateTime</span><span class="p">.</span><span class="nn">Now</span><span class="p">.</span><span class="n">Millisecond</span><span class="o">).</span><span class="n">Next</span><span class="o">(</span><span class="mi">51</span><span class="o">))</span><span class="w"> </span><span class="mi">0</span>
+
+<span class="w">            </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printfn</span><span class="w"> </span><span class="s">"failed to init"</span>
+<span class="w">    </span><span class="k">with</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">ex</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printfn</span><span class="w"> </span><span class="s">"exception thrown : %s"</span><span class="w"> </span><span class="o">&lt;|</span><span class="w"> </span><span class="n">ex</span><span class="o">.</span><span class="n">ToString</span><span class="bp">()</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="nn">Console</span><span class="p">.</span><span class="n">Read</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here's a pic of it working ..</p>
+
+<p><img src="../../../../../img/old/WP_20130302_004.jpg" alt="" /></p>
+
+<p>Cool! This was just a silly project to test everything is working properly - I can take over the world now.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2013\07\04\last-fi/">&larr; <em>Last-Fi</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/"><em>Microsoft Dynamics CRM Type Provider preview</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2013\03\02\f-meets-the-raspberry-pi/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

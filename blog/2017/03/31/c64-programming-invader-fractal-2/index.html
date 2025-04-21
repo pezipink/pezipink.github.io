@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>C64 Programming - Invader Fractal #2</title>
+    <meta name="description" content="In the last post we discovered how to decode 15-bit symmetric invaders into a chacrater set. This time around we will make them fractal!  The invaders from the last post occupy exactly one character each. The aim is to now select an invader at random, and...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="C64, 6502">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2017\03\31\c64-programming-invader-fractal-2/">
+    <link rel="next" href="/blog\2017\02\28\c64-programming-invader-fractal/">
+    <link rel="prev" href="/blog\2017\05\30\asi64/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\05\30\asi64/">&larr; <em>Asi64</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\02\28\c64-programming-invader-fractal/"><em>C64 Programming - Invader Fractal</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>C64 Programming - Invader Fractal #2</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-03-31" pubdate="true">2017-03-31</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\6502.html">6502</a></span></p>
+  </header>
+
+<p>In the <a href="http://pinksquirrellabs.com/blog/2017/02/28/c64-programming-invader-fractal/">last post</a> we discovered how to decode 15-bit symmetric invaders into a chacrater set. This time around we will make them fractal!</p>
+
+<p>The invaders from the last post occupy exactly one character each. The aim is to now select an invader at random, and then draw it one size bigger, using other random invaders as its &ldquo;pixels&rdquo; like this</p>
+
+<div class="figure"><img src="../../../../../img/invaders/7.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Then, the process can be repeated again, drawing an even bigger invader which is formed by drawing even bigger &ldquo;pixels&rdquo; which are composed of the size 2 invaders, like this!</p>
+
+<div class="figure"><img src="../../../../../img/invaders/8.png" alt="" />
+ <p class="caption"></p></div>
+<!-- more-->
+
+<h3 id="a-plan-of-action">A plan of action</h3>
+
+<p>Writing in ASM is very different to high level languages. You can&rsquo;t simply jump in and start writing code with only a very loose idea, at least some stuff has to be planned out up ahead if you want to get anywhere without wasting time. (Well, I guess with more experience this get easier &hellip; )</p>
+
+<p>In order to draw the first level of invader, we are going to need the following high-level elements</p>
+
+<ul>
+ <li>A way of selecting a random invader and calculating where in character set memory it sits</li>
+ <li>An algorithm that takes each bit of each row of the invader in turn, and draws another invader into video memory if the bit is set</li>
+ <li>Another alogrithm that does a very similar thing to the previous one, on a bigger scale</li></ul>
+
+<p>I have a small not-very-random number generator routine originally called <code>rng</code>. Its implementation is out of the scope of this post, but you can call it as follows</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">jsr</span><span class="w"> </span><span class="n">rng</span><span class="w">		</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p><code>jsr</code> is an opcode that jumps to the named routine, after first pushing the current location on the stack, then when it encounters an <code>rts</code> it returns execution to the calling code. The <code>rng</code> routine will leave a not particularly random number inside the accumulator ready for use.</p>
+
+<h3 id="choosing-an-invader">Choosing an invader</h3>
+
+<p>The program I wrote populates a character set at memory location $2000 with 254 sort of unique invaders, using the technique described in the previous post and the <code>rng</code> routine. I defined characters 0 and 1 in the set manually, where 0 is blank and 1 has every pixel set. A character in memory is layed out as 8*8 contiguous bytes, each one represeting the pixels that are switched on for each row. Therefore, the location in memory of character <code>n</code> is <code>$2000 + (n * 8)</code>. The 6502 does not have any multiplication instructions - although you can of course write your own by using a combination of adding and bit shifting, which would be fast. However, for this task we will just write a loop that adds 8 n times.</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="nl">draw_invader:</span><span class="w"> </span><span class="n">subroutine</span>
+<span class="w">    </span><span class="c1">; store the address at $3E and 3F</span>
+<span class="w">    </span><span class="c1">; starting at $2000 where the character memory begins</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mh">$0</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$3E</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mh">$20</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$3F</span>
+<span class="w">    </span><span class="c1">;; pick random invader number</span>
+<span class="w">    </span><span class="k">jsr</span><span class="w"> </span><span class="n">rng</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$3D</span>
+<span class="w">    </span><span class="c1">;; add 8 for each count</span>
+<span class="kp">.calc_address</span>
+<span class="w">    </span><span class="k">clc</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mi">8</span>
+<span class="w">    </span><span class="k">adc</span><span class="w"> </span><span class="mh">$3E</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$3E</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="o">*+</span><span class="mi">4</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$3F</span>
+<span class="w">    </span><span class="k">dec</span><span class="w"> </span><span class="mh">$3D</span>
+<span class="w">    </span><span class="k">bne</span><span class="w"> </span><span class="kp">.calc_address</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is fairly straight forward - the address is 16 bits, and we store it in location $3E and $3F in the zero-page (an arbitary choice) so that it can be used with the indirect addressing mode later, as discussed in the previous article. A random number from 0&ndash;255 is generated and stored in $3D, and then we enter a loop that adds 8 to the address, decreases $3D and loops until $3D is zero. One new thing here is the operand following the <code>bcc</code> instruction, <code>*+4</code>. The * tells the assembler to use the current location, which you can then offset by some number. Effectively this skips the <code>inc $3F</code> instruction, which saves having to use a label to do it. Oviously, this technique is error prone and hard to read, but it makes sense for stuff you have to do all the time, like this addition of an 8 bit number to a 16 bit one. The &ldquo;subroutine&rdquo; keyword tells the assembler to uniquely name any labels following it that start with a ".", this is so you don&rsquo;t have to keep dreaming up globally unique label names for your different routines.</p>
+
+<h3 id="drawing-an-invader">Drawing an Invader</h3>
+
+<p>Now we have the correct address, we can work out how to draw the invader. The C64 screen is 40*25 characters. A character is 8*8 pixels, although the invaders are only actually using 5*5 of them, which will be useful later since it means we can fit one massive invader on the screen, just!</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mh">$00</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$44</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mh">$04</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$45</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The video memory starts at $0400, and clearly we are going to need to keep track of where we are in order to draw the invader, so another 16 bit address ($0400) is placed in the zero-page at locations $44 and $45 (more random locations).</p>
+
+<p>Now the algorithm can begin:</p>
+
+<ul>
+ <li>Read the current byte of the invader</li>
+ <li>For each bit of the byte, determine if it is set</li>
+ <li>If it is, pick a random invader character and store it at the current video memory location</li>
+ <li>Increase the video location by one</li>
+ <li>At the end of the byte, move down to the next row in video memory, at column 0</li>
+ <li>Loop 5 times</li></ul>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">    </span><span class="k">ldx</span><span class="w"> </span><span class="p">#</span><span class="mi">5</span><span class="w">                      </span><span class="c1">; 5 lines</span>
+<span class="kp">.draw_line</span>
+<span class="w">    </span><span class="k">ldy</span><span class="w"> </span><span class="p">#</span><span class="mi">0</span><span class="w">                      </span><span class="c1">;clear y, not using it here</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">(</span><span class="mh">$3E</span><span class="p">),</span><span class="n">y</span><span class="w">                 </span><span class="c1">;load current invader byte</span>
+<span class="kp">.loop</span>
+<span class="w">    </span><span class="k">pha</span><span class="w">                         </span><span class="c1">;preserve it on the stack</span>
+<span class="w">    </span><span class="k">and</span><span class="w"> </span><span class="p">#</span><span class="mi">1</span><span class="w">                      </span><span class="c1">;check current bit for 1 or 0</span>
+<span class="w">    </span><span class="k">beq</span><span class="w"> </span><span class="kp">.skip</span>
+<span class="w">    </span><span class="k">jsr</span><span class="w"> </span><span class="n">rng</span><span class="w">                     </span><span class="c1">;pick random invader</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="p">(</span><span class="mh">$40</span><span class="p">),</span><span class="n">y</span><span class="w">                 </span><span class="c1">;draw to screen offset by y</span>
+<span class="kp">.skip</span>
+<span class="w">    </span><span class="k">pla</span><span class="w">                         </span><span class="c1">;restore from stack</span>
+<span class="w">    </span><span class="k">iny</span><span class="w">                         </span><span class="c1">;increase y offset</span>
+<span class="w">    </span><span class="k">cpy</span><span class="w"> </span><span class="p">#</span><span class="mi">5</span><span class="w">                      </span><span class="c1">;are we finished yet? </span>
+<span class="w">    </span><span class="k">beq</span><span class="w"> </span><span class="kp">.finish_line</span><span class="w">            </span><span class="c1">;(invaders are 5x5 so no point looking at remaning bits)</span>
+<span class="w">    </span><span class="k">lsr</span><span class="w">                         </span><span class="c1">;if no, then bit shift one right</span>
+<span class="w">    </span><span class="k">clc</span><span class="w">                         </span><span class="c1">;to process next bit, and loop</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="kp">.loop</span>
+<span class="kp">.finish_line</span>
+<span class="w">    </span><span class="k">dex</span><span class="w">                         </span><span class="c1">;move to next line if x still &gt; 0</span>
+<span class="w">    </span><span class="k">beq</span><span class="w"> </span><span class="kp">.finish</span><span class="w"> </span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mi">39</span><span class="w">                     </span><span class="c1">;add 39 to the video address </span>
+<span class="w">    </span><span class="k">adc</span><span class="w"> </span><span class="mh">$40</span><span class="w">                     </span><span class="c1">;which will move to the next row</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$40</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="o">*+</span><span class="mi">4</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$41</span>
+
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$3E</span><span class="w">                     </span><span class="c1">;add 1 to the invader address to</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="o">*+</span><span class="mi">4</span><span class="w">                     </span><span class="c1">;move to its next byte</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$3F</span><span class="w">    </span>
+<span class="w">    </span><span class="k">clc</span><span class="w">    </span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="kp">.draw_line</span><span class="w">              </span><span class="c1">;loop</span>
+<span class="w">    </span>
+<span class="kp">.finish</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The indirect addressing is used nicely here, with the Y register effectively offseting the video location and acting as a counter at the same time, whilst X is used to count the rows. The rest of the stuff should be pretty self explanatory by now - the only new thing here is the slighly odd looking</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">clc</span>
+<span class="k">bcc</span><span class="w"> </span><span class="kp">.label</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>All this does is force a branch, so it is similar to <code>jmp</code> although my reading indicates it is better to use this style since it makes the code more re-locatable.</p>
+
+<h3 id="the-final-invader">The Final Invader!</h3>
+
+<p>The final piece is to draw one massive invader composed of smaller invaders from the previous step across the whole screen.</p>
+
+<ul>
+ <li>Choose an invader at random</li>
+ <li>Process the bits as per the first algorithm</li>
+ <li>For a set bit, store the desired video memory location and call the other algorithm</li>
+ <li>Update the video memory to start at the next location</li>
+ <li>Loop</li></ul>
+
+<p>Essentially this routine will seed the other one - the code that sets the video memory location of $0400 is removed from the previous routine, and instead the new routine sets this up before calling it. Because the first routine modifies those numbers, I have chosen to store the actual location in another zero-page address so that is easier to reason about in the top level routine. This isn&rsquo;t really necessary but it simplies the problem.</p>
+
+<p>Since the algorithm is mostly the same, I will just highlight a few of the different parts:</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kp">.loop</span>
+<span class="w">    </span><span class="k">pha</span><span class="w">                         </span><span class="c1">;preserve on stack</span>
+<span class="w">    </span><span class="k">and</span><span class="w"> </span><span class="p">#</span><span class="mi">1</span><span class="w">                      </span><span class="c1">;check current bit for 1 or 0</span>
+<span class="w">    </span><span class="k">beq</span><span class="w"> </span><span class="kp">.skip</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="mh">$44</span><span class="w">                     </span><span class="c1">;copy video memory location</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$40</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="mh">$45</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$41</span>
+<span class="w">    </span><span class="k">txa</span><span class="w">                         </span><span class="c1">; preserve registers</span>
+<span class="w">    </span><span class="k">pha</span>
+<span class="w">    </span><span class="k">tya</span>
+<span class="w">    </span><span class="k">pha</span>
+<span class="w">    </span><span class="k">jsr</span><span class="w"> </span><span class="n">draw_invader</span><span class="w">            </span><span class="c1">; call other routine</span>
+<span class="w">    </span><span class="k">pla</span><span class="w">                         </span><span class="c1">; restore registers</span>
+<span class="w">    </span><span class="k">tay</span>
+<span class="w">    </span><span class="k">pla</span>
+<span class="w">    </span><span class="k">tax</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Notice here we copy the data from the addresses $44 and $45 into $40 and $41 where the <code>draw_invader</code> routine reads from. Then, since both routines use the X and Y registers, we have to push the current contents onto the stack so that they can be recovered after the subroutine has executed. Then we simply generate a random invader number, call the other routine and then restore the status of the registers from the stack.</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kp">.skip</span>
+<span class="w">    </span><span class="k">iny</span><span class="w">                         </span><span class="c1">;increase y offset</span>
+<span class="w">    </span><span class="k">cpy</span><span class="w"> </span><span class="p">#</span><span class="mi">5</span><span class="w">                      </span><span class="c1">;are we finished yet? </span>
+<span class="w">    </span><span class="k">beq</span><span class="w"> </span><span class="kp">.finish_line</span><span class="w">            </span><span class="c1">;(invaders are 5x5 so no point looking at remaning bits)</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mi">8</span><span class="w">                      </span><span class="c1">;update video memory location</span>
+<span class="w">    </span><span class="k">adc</span><span class="w"> </span><span class="mh">$44</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$44</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="o">*+</span><span class="mi">4</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$45</span>
+<span class="w">    </span><span class="k">pla</span><span class="w">                         </span><span class="c1">;restore from stack</span>
+<span class="w">    </span><span class="k">lsr</span><span class="w">                         </span><span class="c1">;if no then shift one right</span>
+<span class="w">    </span><span class="k">clc</span><span class="w">                         </span><span class="c1">;to process next bit and loop</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="kp">.loop</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Once again, this is mostly the same as before, except now we update the video address by 8 bytes to move into the next &ldquo;mega pixel&rdquo; or &ldquo;grid location&rdquo;.</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kp">.finish_line</span>
+<span class="w">    </span><span class="k">pla</span>
+<span class="w">    </span><span class="k">dex</span>
+<span class="w">    </span><span class="k">beq</span><span class="w"> </span><span class="kp">.finish</span>
+<span class="w">    </span><span class="k">lda</span><span class="w"> </span><span class="p">#</span><span class="mi">167</span><span class="w">        </span><span class="c1">;update video memory location to next row</span>
+<span class="w">    </span><span class="k">adc</span><span class="w"> </span><span class="mh">$44</span>
+<span class="w">    </span><span class="k">sta</span><span class="w"> </span><span class="mh">$44</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="o">*+</span><span class="mi">4</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$45</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$42</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="o">*+</span><span class="mi">4</span>
+<span class="w">    </span><span class="k">inc</span><span class="w"> </span><span class="mh">$43</span>
+<span class="w">    </span><span class="k">clc</span>
+<span class="w">    </span><span class="k">bcc</span><span class="w"> </span><span class="kp">.draw_line</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Again, very similar to before, and now we also move down 5 rows and back to column zero. This is what the magic number 167 is doing.</p>
+
+<p>And as if by magic!</p>
+
+<div class="figure"><img src="../../../../../img/invaders/9.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>You might be thinking, Ross! Why are you repeating yourself in the code!! And that would be a good question. Unlike higher level languages, quite often it doesn&rsquo;t pay to re-use code in asm. It is always slower for a start, since you are introducing more subroutine calls, more stack usage and so forth. Of course I have no doubts that there are a million other ways to write this, in various degrees of cleverness, but all in all I am happy that I got it to work, and the result is quite pleasing! I have learnt quite a lot from this mini-project, and have bunch of ideas on what to do next :)</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\05\30\asi64/">&larr; <em>Asi64</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\02\28\c64-programming-invader-fractal/"><em>C64 Programming - Invader Fractal</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2017\03\31\c64-programming-invader-fractal-2/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

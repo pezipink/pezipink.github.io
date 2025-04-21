@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Fun with a toy robotic arm!</title>
+    <meta name="description" content="This post is intended to show how easy it is to use the F# programming language in order to explore new libraries and get stuff going quickly. It also shows the usage of various great F# features such as Record Types, Discriminated Unions, Computation Exp...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2014\02\01\fun-with-a-toy-robotic-arm/">
+    <link rel="next" href="/blog\2014\01\17\visualizing-linq-with-graphviz/">
+    <link rel="prev" href="/blog\2014\02\01\the-amazing-squirrelify-type-provider/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\02\01\the-amazing-squirrelify-type-provider/">&larr; <em>The amazing Squirrelify type provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\01\17\visualizing-linq-with-graphviz/"><em>Visualizing LINQ with GraphViz</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Fun with a toy robotic arm!</h1>
+    <p class='date-and-tags'>
+<time datetime="2014-02-01" pubdate="true">2014-02-01</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a></span></p>
+  </header>
+
+<p>This post is intended to show how easy it is to use the F# programming language in order to explore new libraries and get stuff going quickly. It also shows the usage of various great F# features such as Record Types, Discriminated Unions, Computation Expressions and Async workflows, whilst also using a bit of mutable state, integrating with various other 3rd party .NET libraries (including use of an XBOX pad and even a Kinect!), and even some low level bit shifting and masking stuff.</p>
+
+<p>F# is definitely NOT just for number crunching programs!</p>
+
+<p>So, the step-son got a toy robotic arm for Christmas (no, not from me), which he has largely ignored. Partly this was due to the lack of batteries in it, which we addressed recently. However, he still wasn't really interested in it, so I figured I would have a play with it instead (a couple of weeks ago). It was either that or write documentation for the <a href="https://github.com/fsprojects/SQLProvider">SQLProvider</a>.</p>
+
+<p><a href="http://localhost:3000/img/old/b696_edge_robotic_arm_kit.jpg"><img style="display: inline; border: 0px;" title="b696_edge_robotic_arm_kit" src="http://localhost:3000/img/old/b696_edge_robotic_arm_kit_thumb.jpg" alt="b696_edge_robotic_arm_kit" width="244" height="187" border="0" /></a></p>
+<!-- more-->
+
+<p>This is it. It&rsquo;s just a toy one &ndash; I had a real one a few years back but I blew it up after making a rather silly mistake (electricity, how I love and hate thee.) The one in the picture has a controller &ndash; this one doesn&rsquo;t, it has a USB interface instead. It comes with some rubbish software which lets you control the various joints and gripper with the mouse, and a way to &ldquo;program&rdquo; it, which basically involves recording sequences and pauses. It doesn&rsquo;t have any sensors, and uses motors not servos so you are not able to accurately position it at all.</p>
+
+<p>However, I figured it would still be fun to mess around with. Luckily, <a href="http://notbrainsurgery.livejournal.com/38622.html">someone had already reversed engineered the USB communications</a>, which saved me quite a bit of time. I grabbed <a href="http://sourceforge.net/projects/libusbdotnet/">libusb</a>, added the device to it, then used FSI to try and locate it.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">#</span><span class="n">r</span><span class="s">@"F:\utils\LibUsbDotNet\LibUsbDotNet.dll"</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">LibUsbDotNet</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">arm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">LibUsbDotNet</span><span class="p">.</span><span class="nn">UsbDevice</span><span class="p">.</span><span class="nn">AllDevices</span><span class="p">.</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">usb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">LibUsbDotNet</span><span class="p">.</span><span class="nn">UsbDevice</span><span class="p">.</span><span class="n">OpenUsbDevice</span><span class="o">(</span><span class="nn">Main</span><span class="p">.</span><span class="n">UsbDeviceFinder</span><span class="o">(</span><span class="mi">4711</span><span class="o">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Well, that was almost too easy. Found it straight away! Now to work out how to send the packets of data it is expecting. Evidently it expects three bytes, the bits of the first control the state of the various motors in the arm and gripper, and the second controls the base and the third the light. After quite a bit of messing about with the somewhat confusing libusb library,I managed to get something to work - switching the light on and off seemed the least destructive as I wouldn&rsquo;t be able to quickly stop the motors at this point!</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">mutable</span><span class="w"> </span><span class="n">packet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">Main</span><span class="p">.</span><span class="n">UsbSetupPacket</span><span class="bp">()</span><span class="w"> </span>
+<span class="n">packet</span><span class="o">.</span><span class="n">RequestType</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="mi">0</span><span class="n">x40</span><span class="w"> </span>
+<span class="n">packet</span><span class="o">.</span><span class="n">Request</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span>
+<span class="n">packet</span><span class="o">.</span><span class="n">Value</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">int16</span><span class="w"> </span><span class="mi">0</span><span class="n">x100</span>
+
+<span class="c1">//on! </span>
+<span class="n">usb</span><span class="o">.</span><span class="n">ControlTransfer</span><span class="o">(&amp;</span><span class="n">packet</span><span class="o">,[|</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b1uy</span><span class="o">|],</span><span class="mi">3</span><span class="o">)</span>
+
+<span class="c1">//off! </span>
+<span class="n">usb</span><span class="o">.</span><span class="n">ControlTransfer</span><span class="o">(&amp;</span><span class="n">packet</span><span class="o">,[|</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">|],</span><span class="mi">3</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>woohoo, now I know it will work, time to model the various actions of the arm using F#&rsquo;s awesome discriminated unions!</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">Direction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Up</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Down</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Stop</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">GripDirection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Open</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Close</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">GripStop</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">Rotation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Clockwise</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">AntiClockwise</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">RotationStop</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">LightAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">On</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Off</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">Action</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Wrist</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">Direction</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Elbow</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">Direction</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Shoulder</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">Direction</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Grip</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">GripDirection</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Base</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">Rotation</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Light</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">LightAction</span><span class="w"> </span>
+<span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">   </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">ToCommand</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">     </span><span class="k">match</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">     </span><span class="c1">// FOR BYTE 1 (ARM) </span>
+<span class="w">     </span><span class="c1">// STOP patterns are designed to be cleared to blank out existing 1&#39;s </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Grip</span><span class="o">(</span><span class="n">GripStop</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000011uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00001100uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Elbow</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00110000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b11000000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Grip</span><span class="o">(</span><span class="n">Close</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000001uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Grip</span><span class="o">(</span><span class="n">Open</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000010uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Wrist</span><span class="o">(</span><span class="n">Up</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000100uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Wrist</span><span class="o">(</span><span class="n">Down</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00001000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Elbow</span><span class="o">(</span><span class="n">Up</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00010000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Elbow</span><span class="o">(</span><span class="n">Down</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00100000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Up</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b01000000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Down</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b10000000uy</span><span class="w"> </span>
+<span class="w">     </span><span class="c1">// BYTE 2 (BASE) </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Base</span><span class="o">(</span><span class="n">RotationStop</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000011uy</span><span class="w"> </span><span class="c1">// Clear this </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Base</span><span class="o">(</span><span class="n">AntiClockwise</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000001uy</span><span class="w"> </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Base</span><span class="o">(</span><span class="n">Clockwise</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000010uy</span><span class="w"> </span>
+<span class="w">     </span><span class="c1">// BYTE 3 (LIGHT) </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Light</span><span class="o">(</span><span class="n">Off</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000001uy</span><span class="w"> </span><span class="c1">// Clear this </span>
+<span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="n">Light</span><span class="o">(</span><span class="n">On</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">0</span><span class="n">b00000001uy</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>As you can see I mapped the bit patterns for the various actions and including some special ones that can be used to clear the relevant bits and effectively stop that function. For example, the gripper can be opening, closing, or doing nothing. In order to make sure its doing nothing, you have to make sure both the relevant bits are 0 as either might be set.</p>
+
+<p>The arm is fully capable of using any combination of all of its functions at the same time, so to facilitate that I wrote this small function that given a list of the above actions, will create and execute a command by masking the bit patterns together.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">executeActions</span><span class="w"> </span><span class="n">actions</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">(</span><span class="n">state</span><span class="o">,</span><span class="n">actions</span><span class="o">)</span><span class="w"> </span>
+<span class="w">  </span><span class="o">||&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">fold</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">;</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span><span class="n">action</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="n">action</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;(~~~</span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">);</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Elbow</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;(~~~</span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">);</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;(~~~</span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">);</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Grip</span><span class="o">(</span><span class="n">GripStop</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;(~~~</span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">);</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Base</span><span class="o">(</span><span class="n">RotationStop</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">;</span><span class="n">b</span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;(~~~</span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">);</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Base</span><span class="o">(_)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">;</span><span class="n">b</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">;</span><span class="n">c</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Light</span><span class="o">(</span><span class="n">Off</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">;</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;(~~~</span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">)|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Light</span><span class="o">(</span><span class="n">On</span><span class="o">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="o">;</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[|</span><span class="n">a</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">ToCommand</span><span class="bp">()</span><span class="o">;</span><span class="n">b</span><span class="o">;</span><span class="n">c</span><span class="o">|])</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|&gt;</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="n">cmd</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">       </span><span class="k">let</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">usb</span><span class="o">.</span><span class="n">ControlTransfer</span><span class="o">(&amp;</span><span class="n">amp</span><span class="o">;</span><span class="n">packet</span><span class="o">,</span><span class="n">cmd</span><span class="o">,</span><span class="mi">3</span><span class="o">)</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span>
+<span class="w">       </span><span class="n">cmd</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Well, this was great! I created a load of mini functions in FSI and I control the arm by the power of F#. I quickly decided that greater things could be achieved though, next thing up was to get it to work with my XBOX pad! Once again, this was really very simple to do. I looked for a library, found <a href="http://brandonpotter.wordpress.com/2009/12/28/xbox-controller-in-net-3-5-with-3-lines-of-code/">this</a>, downloaded it, referenced it in my FSI project and I was reading data within about 1 minute after the download finished!</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">#</span><span class="n">r</span><span class="s">@"X9Tech.XBox.Input.dll"</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">X9Tech.XBox.Input</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">xcm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">XBoxControllerManager</span><span class="bp">()</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">controller</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xcm</span><span class="o">.</span><span class="n">GetConnectedControllers</span><span class="bp">()</span><span class="o">.[</span><span class="mi">0</span><span class="o">]</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I then created a F# record type to hold the pad state, and a function to read it</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">ControllerState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">LShoulder</span><span class="o">:</span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">RShoulder</span><span class="o">:</span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">LStickUp</span><span class="o">:</span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">LStickDown</span><span class="o">:</span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">RStickUp</span><span class="o">:</span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">RStickDown</span><span class="o">:</span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">    </span><span class="n">DPadUp</span><span class="o">:</span><span class="w"> </span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">DPadDown</span><span class="o">:</span><span class="w"> </span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">StartPressed</span><span class="o">:</span><span class="w"> </span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">LTriggerPressed</span><span class="o">:</span><span class="kt">bool</span><span class="o">;</span><span class="w"> </span><span class="n">RTriggerPressed</span><span class="o">:</span><span class="kt">bool</span><span class="w"> </span><span class="o">}</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">getState</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">LShoulder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ButtonShoulderLeftPressed</span><span class="w"> </span>
+<span class="w">    </span><span class="n">RShoulder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ButtonShoulderRightPressed</span><span class="w"> </span>
+<span class="w">    </span><span class="n">LStickUp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ThumbLeftY</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">75</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span>
+<span class="w">    </span><span class="n">LStickDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ThumbLeftY</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">35</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span>
+<span class="w">    </span><span class="n">RStickUp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ThumbRightY</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">75</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span>
+<span class="w">    </span><span class="n">RStickDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ThumbRightY</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">35</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span>
+<span class="w">    </span><span class="n">DPadUp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ButtonUpPressed</span><span class="w"> </span>
+<span class="w">    </span><span class="n">DPadDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ButtonDownPressed</span><span class="w"> </span>
+<span class="w">    </span><span class="n">StartPressed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">ButtonStartPressed</span><span class="w"> </span>
+<span class="w">    </span><span class="n">LTriggerPressed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">TriggerLeftPosition</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">25</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span>
+<span class="w">    </span><span class="n">RTriggerPressed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">controller</span><span class="o">.</span><span class="n">TriggerRightPosition</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">25</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>SUPER! at this stage I hit a bit of a problem. What I really need is to understand when something on the pad changes so that I can react to it. An event mechanism of some description. For that I would need to remember the old state, compare it to a new state then raise an event, call some passed-in function that is supposed to do something with the information, or simply return a list of stuff that has changed. Once again, F# discriminated unions are awesome for this as I can very easily represent all the possible events with one type</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">ControllerEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">LShoulder</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">RShoulder</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">LTrigger</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">RTrigger</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">LStickUp</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">LStickDown</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">RStickUp</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">RStickDown</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">PadUp</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">PadDown</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">bool</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I use a little trick to create the &ldquo;events&rdquo; .. first a tiny function that accepts a tuple of bool * ControllerEvent, if the bool true it returns Some(event), else None. This way I can create my &ldquo;events&rdquo; in a list, then use List.choose over them to extract all the things that have changed</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">getEvents</span><span class="w"> </span><span class="n">oldState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let</span><span class="w"> </span><span class="nv">f</span><span class="w"> </span><span class="o">(</span><span class="n">b</span><span class="o">,</span><span class="n">r</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">Some</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">None</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let</span><span class="w"> </span><span class="nv">newState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getState</span><span class="bp">()</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let</span><span class="w"> </span><span class="nv">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">[</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">LShoulder</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">LShoulder</span><span class="o">,</span><span class="w"> </span><span class="n">LShoulder</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">LShoulder</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">RShoulder</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">RShoulder</span><span class="o">,</span><span class="w"> </span><span class="n">RShoulder</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">RShoulder</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">LTriggerPressed</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">LTriggerPressed</span><span class="o">,</span><span class="w"> </span><span class="n">LTrigger</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">LTriggerPressed</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">RTriggerPressed</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">RTriggerPressed</span><span class="o">,</span><span class="w"> </span><span class="n">RTrigger</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">RTriggerPressed</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">LStickDown</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">LStickDown</span><span class="o">,</span><span class="w"> </span><span class="n">LStickDown</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">LStickDown</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">LStickUp</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">LStickUp</span><span class="o">,</span><span class="w"> </span><span class="n">LStickUp</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">LStickUp</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">RStickDown</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">RStickDown</span><span class="o">,</span><span class="w"> </span><span class="n">RStickDown</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">RStickDown</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">RStickUp</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">RStickUp</span><span class="o">,</span><span class="w"> </span><span class="n">RStickUp</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">RStickUp</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">DPadDown</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">DPadDown</span><span class="o">,</span><span class="w"> </span><span class="n">PadDown</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">DPadDown</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">DPadUp</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">DPadUp</span><span class="o">,</span><span class="w"> </span><span class="n">PadUp</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">DPadUp</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">f</span><span class="o">(</span><span class="n">newState</span><span class="o">.</span><span class="n">StartPressed</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">oldState</span><span class="o">.</span><span class="n">StartPressed</span><span class="o">,</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="n">newState</span><span class="o">.</span><span class="n">StartPressed</span><span class="o">)</span><span class="w"> </span>
+<span class="w">  </span><span class="o">]</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">choose</span><span class="w"> </span><span class="n">id</span><span class="w"> </span>
+<span class="w">  </span><span class="o">(</span><span class="n">newState</span><span class="o">,</span><span class="n">events</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Piece of cake right! In order to use this, I will have to poll the pad at certain intervals &ndash; uh-oh &ndash; this is going to require threaded code to work properly without blocking the FSI process! No matter&hellip; F# Async to the rescue! I simply create a function <em>pollPad</em> that implements a recursive async function with a small delay in it. Each time the function calls itself, it passes the old state of the pad through. There is a small delay, and then a new state is generated, any changes that have happened are executed. Really it should use the function above to compose a single three byte command rather then sending each one individually, but who cares, it works :)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">pollPad</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getState</span><span class="bp">()</span><span class="w"> </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[|</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">|]</span><span class="w"> </span><span class="c1">// initial state, everything off </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">poll</span><span class="w"> </span><span class="n">controllerState</span><span class="w"> </span><span class="n">robotState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w"> </span><span class="k">do</span><span class="o">!</span><span class="w"> </span><span class="nn">Async</span><span class="p">.</span><span class="n">Sleep</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="c1">// a wee delay </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="o">(</span><span class="n">newState</span><span class="o">,</span><span class="n">events</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getEvents</span><span class="w"> </span><span class="n">controllerState</span><span class="w"> </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">   </span><span class="o">(</span><span class="n">robotState</span><span class="o">,</span><span class="n">events</span><span class="o">)</span><span class="w"> </span>
+<span class="w">   </span><span class="o">||&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">fold</span><span class="o">(</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">         </span><span class="k">match</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LShoulder</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Grip</span><span class="o">(</span><span class="n">Close</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RShoulder</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Grip</span><span class="o">(</span><span class="n">Open</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LTrigger</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Base</span><span class="o">(</span><span class="n">Clockwise</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RTrigger</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Base</span><span class="o">(</span><span class="n">AntiClockwise</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LStickUp</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Up</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LStickDown</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Down</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RStickUp</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Up</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RStickDown</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Down</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Light</span><span class="o">(</span><span class="n">On</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">PadUp</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Up</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">PadDown</span><span class="w"> </span><span class="o">(</span><span class="k">true</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Down</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LShoulder</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RShoulder</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Grip</span><span class="o">(</span><span class="n">GripStop</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LTrigger</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RTrigger</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Base</span><span class="o">(</span><span class="n">RotationStop</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LStickUp</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">LStickDown</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RStickUp</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">RStickDown</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">Start</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Light</span><span class="o">(</span><span class="n">Off</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">PadUp</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span>
+<span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="n">PadDown</span><span class="w"> </span><span class="o">(</span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="o">[</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Stop</span><span class="o">)</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="n">acc</span><span class="o">)</span><span class="w"> </span>
+<span class="w"> </span><span class="k">return</span><span class="o">!</span><span class="w"> </span><span class="n">poll</span><span class="w"> </span><span class="n">newState</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w"> </span><span class="n">poll</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="n">s</span>
+
+<span class="n">pollPad</span><span class="bp">()</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Async</span><span class="p">.</span><span class="n">Start</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Awesome! At this stage I got all the kids playing with it via the pad, and we managed to pickup and deposit various toys, and even my nose :)</p>
+
+<p>Well, cool as it was at this stage (not to mention the pad being very handy for easily resetting it to some good state) I was not to be deterred from my original aim which was to be able to program it in some way. So I figured, what would be really cool is if i could have a mini language that could control it, and chunks of control could be combined together to form bigger programs. For this I could use the very awesome F# computation expression.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">ArmLanguage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Command</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">Action</span><span class="w"> </span><span class="kt">list</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">int</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">RobotBuilder</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let</span><span class="w"> </span><span class="nv">mutable</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[|</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">;</span><span class="mi">0</span><span class="n">b0uy</span><span class="o">|]</span><span class="w"> </span>
+<span class="w">  </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Delay</span><span class="o">(</span><span class="n">f</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f</span><span class="bp">()</span><span class="w"> </span>
+<span class="w">  </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Bind</span><span class="o">(</span><span class="n">x</span><span class="o">,</span><span class="w"> </span><span class="n">f</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="n">delay</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="n">delay</span><span class="o">;</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="n">x</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Command</span><span class="w"> </span><span class="n">actions</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">executeActions</span><span class="w"> </span><span class="n">actions</span><span class="w"> </span><span class="n">state</span><span class="o">;</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="n">x</span><span class="w"> </span>
+<span class="w">  </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Return</span><span class="o">(</span><span class="n">x</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">robot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RobotBuilder</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In just a few short lines I am able to define a new language construct that can be used to control the robot. It uses mutable state to remember the current state of the arm, this is so successive commands can be properly masked together and not overwrite any existing state with a load of zeroes. It can now be used like so:</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">closeGrip</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">robot</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">[(</span><span class="n">Grip</span><span class="o">(</span><span class="n">Close</span><span class="o">))]</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1700</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Grip</span><span class="o">(</span><span class="n">GripStop</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span>
+<span class="o">}</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">openGrip</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">robot</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">[(</span><span class="n">Grip</span><span class="o">(</span><span class="n">Open</span><span class="o">))]</span><span class="w"> </span>
+<span class="w">  </span><span class="o">`</span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1700</span><span class="w"> </span>
+<span class="w">  </span><span class="o">`</span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Grip</span><span class="o">(</span><span class="n">GripStop</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="o">`</span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span>
+<span class="o">}`</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>But what&rsquo;s better than that is that these can now be combined together to form more complex behaviours !</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">flickVs</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">robot</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">openGrip</span><span class="bp">()</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Up</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Up</span><span class="o">);</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Up</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Down</span><span class="o">);</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="c1">// stop at peak </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Down</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Up</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Down</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Up</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Down</span><span class="o">);</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Down</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="mi">1500</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Wrist</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Elbow</span><span class="o">(</span><span class="n">Stop</span><span class="o">);</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">closeGrip</span><span class="bp">()</span><span class="w"> </span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Notice here that I have called openGrip() and closeGrip() within another robot { } expression. You could nest these down many levels if you wished. This particular program repeatedly flicks the V sign at my girlfriend who is sitting across the room. Hilarious I&rsquo;m sure!</p>
+
+<p>Using my new found robot arm language, I thought it would be a good idea to try and integrate something with my Kinect. I thought I could have the arm go all the way up to its highest point when my arm (elbow, actually) is high in the air, and down to its lowest point when my elbow is at seating level. Because the arm has no sensors and doesn&rsquo;t use servos, this was never going to work properly as all I can do is estimate how far the arm will move in a given amount of time and try to track where it should be, which is rubbish at best. However, I timed it a few times, did a bunch of maths to work out how to synchronise the sensor readings from the Kinect and the time resolution, plus a bunch of scaling to normalize the numbers coming out of the Kinect into something I can use.</p>
+
+<p>I&rsquo;m not going to show all the code here, but I quickly whipped in the RX framework so I could use Observable.Sample to bring the events from the Kinect under control with my calculated timing, and when the elbow joint is above or below my current perceived position of the arm it would issue a command to move up or down.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">  </span><span class="c1">// right so we know this event will fire every 500ms, so if we need to move up or down </span>
+<span class="w">  </span><span class="c1">// at least 500ms worth (which is 1/12th of the total distance) then do so, otherwise do nothing </span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="n">abs</span><span class="o">(</span><span class="n">kElbowPos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">e</span><span class="o">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">minInterval</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">kElbowPos</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="c1">//down? </span>
+<span class="w">      </span><span class="n">robot</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">        </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Down</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">        </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="o">(</span><span class="n">int</span><span class="w"> </span><span class="n">resolution</span><span class="o">)</span><span class="w"> </span>
+<span class="w">        </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">}</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span>
+<span class="w">      </span><span class="n">printfn</span><span class="w"> </span><span class="s">"down"</span><span class="w"> </span>
+<span class="w">      </span><span class="n">kElbowPos</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kElbowPos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">minInterval</span><span class="w"> </span>
+<span class="w">      </span><span class="n">aShoulderPos</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">aShoulderPos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">resolution</span><span class="w"> </span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="c1">// up? </span>
+<span class="w">      </span><span class="n">robot</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">      </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Up</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">      </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sleep</span><span class="w"> </span><span class="o">(</span><span class="n">int</span><span class="w"> </span><span class="n">resolution</span><span class="o">)</span><span class="w"> </span>
+<span class="w">      </span><span class="k">let!</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Command</span><span class="o">([</span><span class="n">Shoulder</span><span class="o">(</span><span class="n">Stop</span><span class="o">)])</span><span class="w"> </span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">}</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span>
+<span class="w">    </span><span class="n">printfn</span><span class="w"> </span><span class="s">"up"</span><span class="w"> </span>
+<span class="w">    </span><span class="n">kElbowPos</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kElbowPos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">minInterval</span><span class="w"> </span>
+<span class="w">    </span><span class="n">aShoulderPos</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">aShoulderPos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">resolution</span><span class="w"> </span>
+<span class="w">    </span><span class="n">kElbowPos</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">e</span><span class="w"> </span>
+<span class="w">    </span><span class="n">printfn</span><span class="w"> </span><span class="s">"new kinect postion %A"</span><span class="w"> </span><span class="n">kElbowPos</span><span class="w"> </span>
+<span class="w">    </span><span class="n">printfn</span><span class="w"> </span><span class="s">"new arm postion %A"</span><span class="w"> </span><span class="n">aShoulderPos</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Ok so it wasn&rsquo;t a brilliant first attempt, but it sort of worked a bit and the children were mighty impressed to see the robot arm attempt to follow their own arm going up and down :)</p>
+
+<p>Anyways, enough of this! Once again F# continues to impress with its awesome ability to get stuff done quickly, and well. You can easily integrate to a whole bunch of different libraries, model the domain quickly and effectively, and provide all the constructs you could possibly need to achieve any modern programming task, not to mention having a load of fun in the process - and all of this is just a few hours! F# for president!</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\02\01\the-amazing-squirrelify-type-provider/">&larr; <em>The amazing Squirrelify type provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\01\17\visualizing-linq-with-graphviz/"><em>Visualizing LINQ with GraphViz</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2014\02\01\fun-with-a-toy-robotic-arm/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

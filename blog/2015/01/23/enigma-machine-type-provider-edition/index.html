@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Enigma Machine – Type Provider Edition</title>
+    <meta name="description" content="Following up from @isaac_abraham's awesome F# Enigma machine emulator, I decided it would be 10x cooler if it was in a type provider, because let's face it, everything is 10x cooler once it's in a type provider.  Here a some pictures of it in action!...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, type providers">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2015\01\23\enigma-machine-type-provider-edition/">
+    <link rel="next" href="/blog\2014\12\24\the-north-pole-type-provider-escape-from-santa-s-grotto/">
+    <link rel="prev" href="/blog\2015\02\08\secret-santa-challenge-in-d/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2015\02\08\secret-santa-challenge-in-d/">&larr; <em>Secret Santa challenge in D</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\12\24\the-north-pole-type-provider-escape-from-santa-s-grotto/"><em>The North Pole Type Provider: Escape from Santa’s Grotto!</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Enigma Machine – Type Provider Edition</h1>
+    <p class='date-and-tags'>
+<time datetime="2015-01-23" pubdate="true">2015-01-23</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<p>Following up from <a href="https://twitter.com/isaac_abraham">@isaac_abraham&rsquo;s</a> awesome <a href="https://cockneycoder.wordpress.com/2014/12/24/demystifying-the-enigma-machine-with-f/">F# Enigma machine emulator</a>, I decided it would be 10x cooler if it was in a type provider, because let&rsquo;s face it, everything is 10x cooler once it&rsquo;s in a type provider.</p>
+
+<p>Here a some pictures of it in action!</p>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/enigma1.jpg"><img style="display: inline; border-width: 0px;" title="enigma1" src="../../../../../img/old/enigma1_thumb.jpg" alt="enigma1" width="538" height="338" border="0" /></a> <a href="http://www.pinksquirrellabs.com/img/old/enigma2.png"><img style="display: inline; border-width: 0px;" title="enigma2" src="../../../../../img/old/enigma2_thumb.png" alt="enigma2" width="604" height="338" border="0" /></a></p>
+<!-- more-->
+
+<p>As you can see, it uses an extensive property system that presents a menu along with the various controls to setup your enigma machine, and then finally to translate some text. This TP is written with my <a href="https://github.com/pezipink/InteractiveProvider">InteractiveProvider</a>as per usual. On my first attempt at this during my lunch break today, I did succeed but I was growing increasingly frustrated with the somewhat contrived mechanism with which to process responses from properties, the text to display in intellisense, and the properties to show.</p>
+
+<p></p>
+
+<h2>The Old System</h2>
+
+<p>The InteractiveProvider (henceforth known as IP) presents a very flexible yet slightly complicated interface with which to generate types. Essentially, you implement <em>IInteractiveState</em> on some state object of your design, and <em>IInteractiveServer</em> on another type, which deals with processing responses. The IP will display intellisense and options via the state, and when the user selects a property, the server decides what to do with it and returns some new state.</p>
+
+<p>This is very cool as your state object can be whatever you like &ndash; record types, DU&rsquo;s, or full classes. Responses to property access can similar be of any type you like, and can be different on each property if you like. The problems with this system are</p>
+
+<ol>
+ <li>The creation of the text and properties is separate from the response handling of that property. This can make it hard to read and reason about.</li>
+ <li>It is a bit unsafe because everything gets boxed, unboxed, and each time the server has to deal with a response, based on the current state you have to make sure you are dealing with the correct types coming back from the TP which can be a hit messy and detract from what you are really trying to do</li>
+ <li>Although each state might require its own unique data, there is not any way to represent one thing without threading all the previous state through. For example, if I want the user to enter a bunch of letters via properties until they press the [End] property, I can&rsquo;t do this with just a string, Id have to carry the rest of whatever data I was using as well. This gets unwieldy quickly. There is no way to separate concerns.</li>
+ <li>Again on with point 3, because of this it is not really possible to create re-usable chunks of state that perform common functions such as accepting input.</li></ol>
+
+<p></p>
+
+<h2></h2>
+
+<h2>The new system</h2>
+
+<p>In order to address this, I introduced another layer of abstraction, &lsquo;cos you can never have too many layers of abstraction right? :)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">InteractiveState</span><span class="o">&lt;</span><span class="k">&#39;</span><span class="n">a</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">displayOptions</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">&#39;</span><span class="n">a</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="kt">string</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">obj</span><span class="o">)</span><span class="w"> </span><span class="kt">list</span><span class="w"> </span>
+<span class="w">    </span><span class="n">displayText</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">&#39;</span><span class="n">a</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span>
+<span class="w">    </span><span class="n">processResponse</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">&#39;</span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">obj</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">&#39;</span><span class="n">a</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">ProcessResponse</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">processResponse</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="o">.</span><span class="n">state</span><span class="o">,</span><span class="w"> </span><span class="n">o</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="k">interface</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">     </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">DisplayOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">displayOptions</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">state</span><span class="w"> </span>
+<span class="w">     </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">DisplayText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">displayText</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">state</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This new record type is essentially a super-duper state object. It brings together the creation of stuff and the processing of responses into the same place. You can see it takes 3 functions and a bit of state, &lsquo;a.</p>
+
+<ul>
+ <li><em>displayOptions</em>will be called with the current <em>&lsquo;a</em> and is expected to generate a list of properties to display and a boxed version of some type that will be passed back to the server when the user selects that property.</li>
+ <li><em>displayText</em> will be called with the current <em>&lsquo;a</em> and used to generate what appears in intellisense when this type is currently selected (more on this later)</li>
+ <li><em>processResponse</em>will be called with the current &lsquo;<em>a</em> and is expected to return a new <em>IInteractiveState</em></li></ul>
+
+<p>Because this is a generic type, it does mean when you start to use these together, they are going to need the same <em>&lsquo;a</em> which is a bit of a pain, but it is readily solved by creating a DU of all the possible types that the various states in your system need.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">EnigmaTypes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Core</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nn">EnigmaCore</span><span class="p">.</span><span class="n">Enigma</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Strings</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Rotors</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">MachineRotor</span><span class="w"> </span>
+<span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">   </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">Enigma</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Core</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">failwith</span><span class="w"> </span><span class="s">""</span><span class="w"> </span>
+<span class="w">   </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Strings</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">failwith</span><span class="w"> </span><span class="s">""</span><span class="w"> </span>
+<span class="w">   </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">Rotor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Rotors</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">failwith</span><span class="w"> </span><span class="s">""</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is not very nice but a very reasonable trade off for the power attained. Now the server object itself becomes very simple (infact this can be generalized as well)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">Enigma</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="k">interface</span><span class="w"> </span><span class="n">IInteractiveServer</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">NewState</span><span class="o">:</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">start</span><span class="bp">()</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">ProcessResponse</span><span class="o">(</span><span class="n">state</span><span class="o">:</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="o">,</span><span class="w"> </span><span class="n">response</span><span class="o">:</span><span class="w"> </span><span class="kt">obj</span><span class="o">):</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">      </span><span class="k">let</span><span class="w"> </span><span class="nv">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="n">state</span><span class="o">:?&gt;</span><span class="n">InteractiveState</span><span class="o">&lt;</span><span class="n">EnigmaTypes</span><span class="o">&gt;)</span><span class="w"> </span>
+<span class="w">      </span><span class="n">state</span><span class="o">.</span><span class="n">ProcessResponse</span><span class="o">(</span><span class="n">response</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h2></h2>
+
+<h2>Start Your Engines!</h2>
+
+<p>Now the system is ready to rock! You will notice when the server starts it calls <em>start()</em> to obtain its first state. All the states are now just instances of record types. <em>start()</em> looks like this</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">start</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">displayOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">[</span><span class="s">"Begin!"</span><span class="o">,</span><span class="n">box</span><span class="w"> </span><span class="bp">()</span><span class="o">]</span><span class="w"> </span>
+<span class="w">     </span><span class="n">displayText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"Welcome to the type provider Enigma machine!"</span><span class="w"> </span>
+<span class="w">     </span><span class="n">processResponse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">e</span><span class="o">,_)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mainMenu</span><span class="o">(</span><span class="n">e</span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="o">_</span><span class="w"> </span>
+<span class="w">     </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Core</span><span class="w"> </span><span class="n">defaultEnigma</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>this is as simple as it gets and not doing much interesting, you can see it returns one property &ldquo;Begin!&rdquo; along with a boxed unit type. I don&rsquo;t care about the response type as there is only one property so I know it must be that being selected.</p>
+
+<p><em>processResponse</em> simply creates the next state using the function <em>mainMenu( .. )</em> which it passes the current state, in this case the default version of the enigma machine.</p>
+
+<p><em>mainMenu(..)</em> is much more interesting and too long to show here, so I will show some extracts / condensed versions</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">MainMenuResponses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Nothing</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SelectLeftRotor</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SelectMiddleRotor</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SelectRightRotor</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SelectReflector</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SetWheelPosition</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SetRingPosition</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">CreatePlugMapping</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Translate</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">mainMenu</span><span class="o">(</span><span class="n">enigma</span><span class="o">:</span><span class="n">EnigmaTypes</span><span class="o">)</span><span class="w"> </span><span class="o">=</span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">displayOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">    </span><span class="o">[</span><span class="s">"# "</span><span class="o">,</span><span class="n">box</span><span class="w"> </span><span class="n">Nothing</span><span class="o">;</span><span class="w"> </span>
+<span class="w">     </span><span class="s">"Select a new left rotor"</span><span class="o">,</span><span class="n">box</span><span class="w"> </span><span class="n">SelectLeftRotor</span><span class="w"> </span>
+<span class="w">     </span><span class="s">"Select a new middle rotor"</span><span class="o">,</span><span class="n">box</span><span class="w"> </span><span class="nn">SelectMiddleRotor</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="o">]</span><span class="w"> </span>
+<span class="w">    </span><span class="n">displayText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printMachine</span><span class="w"> </span><span class="n">enigma</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span>
+<span class="w">    </span><span class="n">processResponse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">e</span><span class="o">,</span><span class="n">r</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">      </span><span class="k">match</span><span class="w"> </span><span class="n">unbox</span><span class="o">&lt;</span><span class="n">MainMenuResponses</span><span class="o">&gt;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Nothing</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mainMenu</span><span class="o">(</span><span class="n">e</span><span class="o">)</span><span class="w"> </span>
+<span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">SelectLeftRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">        </span><span class="n">enterText</span><span class="o">(</span><span class="s">""</span><span class="o">,[</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span><span class="mi">8</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">sprintf</span><span class="w"> </span><span class="s">"Rotor %i"</span><span class="w"> </span><span class="n">i</span><span class="o">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">(</span><span class="kt">string</span><span class="w"> </span><span class="n">i</span><span class="o">)],</span><span class="w"> </span>
+<span class="w">          </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"Choose the rotor to place on the left"</span><span class="o">),</span><span class="w"> </span>
+<span class="w">          </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getRotor</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">,</span><span class="w"> </span><span class="n">WheelPosition</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w">            </span><span class="n">mainMenu</span><span class="o">(</span><span class="n">Core</span><span class="w"> </span><span class="n">e</span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="o">),</span><span class="w"> </span>
+<span class="w">          </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p></p>
+
+<p>The first bits are pretty straight forward, it shows the various menu options and boxes which one was selected using the DU defined above. <em>processResponse</em> then unboxes the return value, matches on it, then does something with the result.</p>
+
+<p>In this case, it is calling another function called <em>enterText &ndash;</em> and this is where it gets really cool! <em>enterText</em> is defined as follows</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">enterText</span><span class="o">(</span><span class="n">state</span><span class="o">:</span><span class="kt">string</span><span class="o">,</span><span class="n">options</span><span class="o">,</span><span class="n">genDisplayText</span><span class="o">,</span><span class="n">continuation</span><span class="o">,</span><span class="n">repeatCondition</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">displayOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">options</span><span class="w"> </span>
+<span class="w">    </span><span class="n">displayText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">genDisplayText</span><span class="w"> </span><span class="n">d</span><span class="w"> </span>
+<span class="w">    </span><span class="n">processResponse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">current</span><span class="o">:</span><span class="n">EnigmaTypes</span><span class="o">,</span><span class="n">c</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">      </span><span class="k">let</span><span class="w"> </span><span class="nv">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">current</span><span class="o">.</span><span class="n">String</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">c</span><span class="w"> </span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="n">repeatCondition</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">enterText</span><span class="o">(</span><span class="n">s</span><span class="o">,</span><span class="n">options</span><span class="o">,</span><span class="n">genDisplayText</span><span class="o">,</span><span class="n">continuation</span><span class="o">,</span><span class="n">repeatCondition</span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="o">_</span><span class="w"> </span>
+<span class="w">      </span><span class="k">else</span><span class="w"> </span><span class="n">continuation</span><span class="w"> </span><span class="n">s</span><span class="w"> </span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Strings</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This function is designed based on the observation that when I want to accept an arbitrary amount of text from the user, the following is required</p>
+
+<ol>
+ <li>A list of what inputs to be shown</li>
+ <li>A way of knowing when to stop accepting more inputs (and recursively creating more types)</li>
+ <li>A continuation function, that accepts the completed output and then generates some other state.</li></ol>
+
+<p>What is really awesome with is is that the <em>enterText</em> function simply takes a string &ndash; it doesn&rsquo;t know or care about the Enigma object &ndash; this is made possible by the fact that we can now create a closure over the previous state&rsquo;s data within the continuation lambda function, allowing us to decouple the recursive-text-entering portion of the type system. Very nice!</p>
+
+<h2>Engage Turbo Mode!</h2>
+
+<p>Great! now I can create re-usable state chunks and control stuff via closures. However, there is one more usually contrived problem that this system solves very well. Let&rsquo;s take the menu function <em>Adjust Wheel Position</em>. This one is a little bit of a pain because it requires several steps &ndash; first you must pick which wheel you want to manipulate, then you choose the letter you wish to set it to. Usually you would have to model these as separate states, which would be confusing if you wanted to do the same thing somewhere else - but now you can actually <em>compose</em> these functions and closures together so that the whole intent and flow is clear within the same definition. For example :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">selectMachineRotor</span><span class="o">(</span><span class="n">continutation</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="o">{</span><span class="w"> </span><span class="n">displayOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">     </span><span class="o">[</span><span class="s">"Left Wheel"</span><span class="o">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="n">LeftRotor</span><span class="w"> </span>
+<span class="w">      </span><span class="s">"Middle Wheel"</span><span class="o">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="n">MiddleRotor</span><span class="w"> </span>
+<span class="w">      </span><span class="s">"Right Wheel"</span><span class="o">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="n">RightRotor</span><span class="o">]</span><span class="w"> </span>
+<span class="w">    </span><span class="n">displayText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"Select a rotor."</span><span class="w"> </span>
+<span class="w">    </span><span class="n">processResponse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">current</span><span class="o">,</span><span class="n">c</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">    </span><span class="n">continutation</span><span class="w"> </span><span class="o">(</span><span class="n">c</span><span class="o">:?&gt;</span><span class="n">MachineRotor</span><span class="o">)</span><span class="w"> </span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rotors</span><span class="w"> </span><span class="nn">MachineRotor</span><span class="p">.</span><span class="n">LeftRotor</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This function accepts a continuation function and asks the user to select a wheel, and calls the continuation function with their choice</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">|</span><span class="w"> </span><span class="n">SetRingPosition</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let</span><span class="w"> </span><span class="nv">apply</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">function</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">LeftRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">fst</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Left</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">RingSetting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">},</span><span class="w"> </span><span class="n">snd</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Left</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">MiddleRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Middle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">fst</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Middle</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">RingSetting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">},</span><span class="w"> </span><span class="n">snd</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Middle</span><span class="o">}</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">RightRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">fst</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Right</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">RingSetting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">},</span><span class="w"> </span><span class="n">snd</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Right</span><span class="w"> </span><span class="o">}</span>
+
+<span class="w">  </span><span class="n">selectMachineRotor</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">rotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">   </span>
+<span class="w">    </span><span class="n">enterText</span><span class="o">(</span><span class="s">""</span><span class="o">,[</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="o">..</span><span class="sc">&#39;Z&#39;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">sprintf</span><span class="w"> </span><span class="s">"%c"</span><span class="w"> </span><span class="n">i</span><span class="o">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">(</span><span class="kt">string</span><span class="w"> </span><span class="n">i</span><span class="o">)],</span><span class="w"> </span>
+<span class="w">      </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"Choose a letter"</span><span class="o">),</span><span class="w"> </span>
+<span class="w">      </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">        </span><span class="k">let</span><span class="w"> </span><span class="nv">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apply</span><span class="w"> </span><span class="o">(</span><span class="n">RingSetting</span><span class="w"> </span><span class="n">s</span><span class="o">.[</span><span class="mi">0</span><span class="o">])</span><span class="w"> </span><span class="n">rotor</span><span class="w"> </span>
+<span class="w">        </span><span class="n">mainMenu</span><span class="o">(</span><span class="n">Core</span><span class="w"> </span><span class="n">e</span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="o">),</span><span class="w"> </span>
+<span class="w">      </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>When the <em>SetRingPosition</em> menu item is selected, it returns the <em>selectMachineRotor</em> function, and the continuation function passed to uses the <em>enterText</em> function allowing the user to pick a letter, and finally the result is applied to the Enigma object and the whole thin is returned back to the main menu. Very cool!</p>
+
+<p>Straight away this is useful as the <em>AdjustWheelPosition</em> menu item has to do a very similar thing</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">|</span><span class="w"> </span><span class="n">SetWheelPosition</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">  </span><span class="k">let</span><span class="w"> </span><span class="nv">apply</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">function</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">LeftRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="n">fst</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Left</span><span class="o">,</span><span class="w"> </span><span class="n">l</span><span class="o">)</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">MiddleRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Middle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="n">fst</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Middle</span><span class="o">,</span><span class="w"> </span><span class="n">l</span><span class="o">)</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">RightRotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="n">fst</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Enigma</span><span class="o">.</span><span class="n">Right</span><span class="o">,</span><span class="w"> </span><span class="n">l</span><span class="o">)</span><span class="w"> </span><span class="o">}</span>
+
+<span class="w">  </span><span class="n">selectMachineRotor</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">rotor</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">    </span><span class="n">enterText</span><span class="o">(</span><span class="s">""</span><span class="o">,[</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="o">..</span><span class="sc">&#39;Z&#39;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">sprintf</span><span class="w"> </span><span class="s">"%c"</span><span class="w"> </span><span class="n">i</span><span class="o">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">(</span><span class="kt">string</span><span class="w"> </span><span class="n">i</span><span class="o">)],</span><span class="w"> </span>
+<span class="w">      </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"Choose a letter"</span><span class="o">),</span><span class="w"> </span>
+<span class="w">      </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">        </span><span class="k">let</span><span class="w"> </span><span class="nv">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apply</span><span class="w"> </span><span class="o">(</span><span class="n">WheelPosition</span><span class="w"> </span><span class="n">s</span><span class="o">.[</span><span class="mi">0</span><span class="o">])</span><span class="w"> </span><span class="n">rotor</span><span class="w"> </span>
+<span class="w">        </span><span class="n">mainMenu</span><span class="o">(</span><span class="n">Core</span><span class="w"> </span><span class="n">e</span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="o">),</span><span class="w"> </span>
+<span class="w">      </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">false</span><span class="o">)</span><span class="w"> </span><span class="o">)</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IInteractiveState</span><span class="w"> </span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p></p>
+
+<h2>Conclusion</h2>
+
+<p>The IP has had a bit of a face-lift which makes it easier to write and read what is going on. Plus you can have an Enigma machine in a type provider. Who wouldn&rsquo;t want that! The code is a little bit of a mess at the moment, but I should clean it up soon and move the new super-state into the common interfaces project.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2015\02\08\secret-santa-challenge-in-d/">&larr; <em>Secret Santa challenge in D</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\12\24\the-north-pole-type-provider-escape-from-santa-s-grotto/"><em>The North Pole Type Provider: Escape from Santa’s Grotto!</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2015\01\23\enigma-machine-type-provider-edition/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Programming in Racket #1</title>
+    <meta name="description" content="Over the last few days I have been learning Racket, a language derived from Scheme.  The main selling point of Racket is its extensive macro system that lets you do everything from the simplest macros through to redefining the entire language (yes you can...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2017\01\14\programming-in-racket-1/">
+    <link rel="next" href="/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/">
+    <link rel="prev" href="/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/">&larr; <em>Star Wars : Rogue One, Type Provider edition</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/"><em>Don Syme 2.0 : Cow Herding Edition Type Provider</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Programming in Racket #1</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-01-14" pubdate="true">2017-01-14</time> :: <span class="tags"><a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>Over the last few days I have been learning <a href="http://docs.racket-lang.org/index.html">Racket</a>, a language derived from Scheme.&#160; The main selling point of Racket is its <a href="http://docs.racket-lang.org/reference/Macros.html">extensive macro system</a> that lets you do everything from the simplest macros through to redefining the entire language (yes you can even get rid of the parens!).&#160; It is a programming language programming language. In fact, Racket is more of a customisable programming language infrastructure / engine with a default language on top of it.</p>
+<!-- more-->
+
+<p>Now, we won’t get to anything too crazy in this post since, well, the mental stuff I have wrote I’d not be happy to show you yet (there will be a little macro though!), but I have been working on the <a href="http://adventofcode.com/2015">Advent of Code 2015</a> problems with an eye for attempting to discover the various language features and interesting things it has to offer - rather than the primary objective being to solve the Advent of Code puzzles. Here is some of what I have learnt so far.</p>
+
+<p> 
+ <h2>Day 1</h2> 
+ <p>Day 1 of AOC has us help tracking Santa’s position in a lift.&#160; This is seemingly a job for our good old friend fold.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2017_56_45-emacs@DESKTOP-2DMNUOL_1.png"><img title="2017-01-13 17_56_45-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 17_56_45-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2017_56_45-emacs@DESKTOP-2DMNUOL_thumb_1.png" width="533" height="65" /></a></p> 
+ <p>As you would imagine, Racket has all the usual functional programming higher-order functions, but it also contains a boat-load of “<a href="http://docs.racket-lang.org/reference/for.html">iterators/comprehensions</a>” (such as this<em>for/fold</em>) that allow us perform map, fold and friends in a variety of forms, using a shorthand notation.&#160; These can be used to directly create the various in-built data types, such as sets, vectors, lists and dictionaries.</p> 
+ <p>Nothing too crazy going on here, we fold over each character in each string, and create a single accumulator<em>level</em>which is increased if the current character is a (, otherwise it is decreased.</p> 
+ <p>Part 2 of this puzzle has us perform the same thing, but the requirement is to find out at what index into the sequence that Santa first hits floor –1</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2018_03_38-emacs@DESKTOP-2DMNUOL_2.png"><img title="2017-01-13 18_03_38-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 18_03_38-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2018_03_38-emacs@DESKTOP-2DMNUOL_thumb_2.png" width="486" height="149" /></a></p> 
+ <p>To achieve this, Racket allows us to simply add an additional accumulator to the fold, in this case called<em>index</em>which is increased on each iteration.&#160; An optional break clause is added (nice!) which causes the fold to terminate early, as soon as the level is equal to minus one, leaving the index at the required value.</p> 
+ <p>In this case we must always return 2 accumulator values.&#160; Unlike most languages,<a href="http://docs.racket-lang.org/reference/eval-model.html?q=multiple%20values#%28part._values-model%29">Racket allows you to return more than one value</a> (note this is different from something like F# which uses Tuples, it is still only returning a single value!).&#160; One of the ways to achieve this is using the<em>values</em> function, as demonstrated here.</p> 
+ <h2>Day 2</h2> 
+ <p>For day two, those Elves need some help working out how much wrapping paper they need, and then how much ribbon they need in the second part of the puzzle.&#160; Here we can try out some basic pattern matching, which comes in a<a href="http://docs.racket-lang.org/reference/match.html?q=match#%28form._%28%28lib._racket%2Fmatch..rkt%29._match%29%29">million different forms</a>, all which can be nested in each other.&#160;</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2018_35_13-emacs@DESKTOP-2DMNUOL_1.png"><img title="2017-01-13 18_35_13-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 18_35_13-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2018_35_13-emacs@DESKTOP-2DMNUOL_thumb_1.png" width="426" height="320" /></a></p> 
+ <p>The<em><a href="http://docs.racket-lang.org/reference/match.html?q=match#%28form._%28%28lib._racket%2Fmatch..rkt%29._match-let%2A%29%29">match-let*</a></em> construct here is used to introduce local function bindings that can optionally use the vast variety of pattern matching functionality from<em>racket/match</em>.&#160; Each expression on the right hand side is matched with the pattern on the left.&#160; You can see the first binding introduced in the function<em>dimensions</em> matches on the parameter<em>args</em> using the<em>list</em>pattern.&#160; My pattern expects three elements in the list to be present and will bind them to<em>l</em>,<em>w</em>and h respectively.</p> 
+ <p>The subsequent bindings are not using any special pattern matching, in the normal format for<em>let</em>, simply binding to the results of some mathematical functions using the previously bound values.&#160; Note that this is possible because we are using the *’d version of<em>match-let (match-let*)</em>, else you do not have access to values that have been bound during the same expression.</p> 
+ <p>The<em>ribbon</em> function is very similar, however since we need only the minimum two elements of the list to determine the length, the<em>args</em> list is sorted as part of the matching expression input.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2018_46_31-emacs@DESKTOP-2DMNUOL_1.png"><img title="2017-01-13 18_46_31-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 18_46_31-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2018_46_31-emacs@DESKTOP-2DMNUOL_thumb_1.png" width="542" height="260" /></a></p> 
+ <p>So far, without writing any macros, this is the closest I have managed to get to F#s’s pipeline operator.&#160; The higher-order function<em>day2</em> uses the<em>let*</em> function to introduce a series of bindings that shadow each other, using the data introduced from the previous one.&#160; You will notice the second line uses a lambda function, the lambda symbol is optional and can equally be the much longer<em>lambda</em> keyword.</p> 
+ <p>The second call to map has to explicitly call<em>curry</em> in order to partially apply the inner<em>map</em> function with the function<em>string-&gt;number</em>.&#160; Unlike F#, vanilla Racket does not have implicit partial application (for good reasons).&#160;</p> 
+ <h2>Day 3</h2> 
+ <p>Santa needs our help to guide him around delivering presents.&#160; At the end, we need to provide the amount of distinct houses we have delivered presents to.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2020_12_11-emacs@DESKTOP-2DMNUOL_1.png"><img title="2017-01-13 20_12_11-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 20_12_11-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2020_12_11-emacs@DESKTOP-2DMNUOL_thumb_1.png" width="335" height="187" /></a></p> 
+ <p>Racket provides us with a fundamental<em><a href="http://docs.racket-lang.org/reference/structures.html?q=match">struct</a></em>type. It supports structural equality out of the box and also pattern matching support, as you would expect, alongside a ton of other stuff I am not going to talk about here.&#160; The intend of this code should be fairly obvious, and also shows the use of the standard<em>match</em> construct that is used as a normal expression.&#160; Here I have used<em>match-let</em> first to de-structure the point into its<em>x</em> and<em>y</em> values which are then used in the subsequence match to create a new point.</p> 
+ <p>The next part is more interesting.&#160; Since we only need to count each distinct location a present is delivered to, this sounds like a job for a<em>set</em> which Racket provides as a fundamental type from within<em><a href="http://docs.racket-lang.org/reference/sets.html">racket/set</a></em>.&#160; Like F#, attempting to add something to the set that already exists has no effect, and is perfect for what is required here.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2020_26_49-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 20_26_49-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 20_26_49-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2020_26_49-emacs@DESKTOP-2DMNUOL_thumb.png" width="555" height="192" /></a></p> 
+ <p>A few new things introduced here, including something I omitted from the code above in part 2 of day 1.&#160;<em><a href="http://docs.racket-lang.org/reference/let.html?q=let-values#%28form._%28%28quote._~23~25kernel%29._let-values%29%29">let-values</a></em> is similar to<em>let</em>in that it introduces local bindings, with the difference being that it is especially designed to receive<em><a href="http://docs.racket-lang.org/reference/eval-model.html?q=multiple%20values#%28part._values-model%29">multiple values</a></em> that I mentioned earlier.&#160; Since the fold here uses two accumulators, it ultimately returns two values (as opposed to, say, a pair or a list) which are then bound to<em>c</em>and<em>v</em>for use within the following body of the<em>let</em>.&#160; This is a common pattern in Racket, with many functions having –<em>values</em> versions of them.</p> 
+ <p>The rest is fairly straight forward, we fold Santa and his visited locations through the instructions, and at the end return the count of the set.</p> 
+ <p>Part 2 is much more interesting, the arrival of RoboSanta means we need to keep track of two locations and alternate each instruction between Santa and RoboSanta.&#160; An initial obvious solution is to simply add an extra location accumulator, and a flag that flips between iterations to determine how moves next.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2020_34_55-emacs@DESKTOP-2DMNUOL_1.png"><img title="2017-01-13 20_34_55-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 20_34_55-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2020_34_55-emacs@DESKTOP-2DMNUOL_thumb_1.png" width="571" height="261" /></a></p> 
+ <p>However, I thought this would be a good opportunity to have a look at how Racket deals with<a href="http://docs.racket-lang.org/reference/sequences_streams.html">streams</a>.&#160; I would like to eliminate the flag based logic and instead return successive pairs of the input stream so that Santa and RoboSanta can be updated in lock-step.&#160; It seems the<em>generator</em> is the tool for the job from<em><a href="http://docs.racket-lang.org/reference/Generators.html?q=generator#%28form._%28%28lib._racket%2Fgenerator..rkt%29._generator%29%29">racket/generator</a></em>.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2021_14_25-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 21_14_25-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 21_14_25-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2021_14_25-emacs@DESKTOP-2DMNUOL_thumb.png" width="273" height="200" /></a></p> 
+ <p>A few new things here. Firstly the special<em>generator</em> form will evaluate the body you give it, suspending after<em><a href="http://docs.racket-lang.org/reference/Generators.html?q=generator#%28def._%28%28lib._racket%2Fgenerator..rkt%29._yield%29%29">yield</a></em> is called.&#160; In fact, this is basically a co-routine, something I will have to look more closely at later.&#160; Other new things introduced here are<em><a href="http://docs.racket-lang.org/reference/match.html?q=define%2Fmatch#%28form._%28%28lib._racket%2Fmatch..rkt%29._define%2Fmatch%29%29">define/match</a></em>, which allows you do define a function that immediately matches on the parameters you give it.&#160; In this case, I use the<em>list-rest</em>pattern to extract the first two elements as<em>a</em>and<em>b</em> with the rest of the list as<em>tail</em>.&#160; The pair of<em>a</em>and<em>b</em>is then yielded via<em>cons</em> and the function is called recursively on the tail.</p> 
+ <p>The last wildcard pattern matches when the list runs out, and returns<em>(void).&#160;</em>I am not sure if this is totally necessary, but when consuming this sequence using the function<em><a href="http://docs.racket-lang.org/reference/sequences.html?q=in-producer#%28def._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._in-producer%29%29">in-producer</a></em> it required you to give it an expression that determines when it should stop.&#160; Omitting the data access code for brevity, the reformed version of the fold looks like this</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2021_22_53-emacs@DESKTOP-2DMNUOL_1.png"><img title="2017-01-13 21_22_53-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 21_22_53-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2021_22_53-emacs@DESKTOP-2DMNUOL_thumb_1.png" width="522" height="261" /></a></p> 
+ <p>Here<em>match-let*</em> is used again to simulate a pipeline of data, first extracting and then moving Santa and RoboSanta, updating the visited location set and finally returning the accumulated data. It is about the same amount of code as before, but perhaps the generator will come in handy later!</p> 
+ <h2>Day 4</h2> 
+ <p>I am going to skip this since it was very easy and I didn’t learn much about the language other than how to create md5 hashes and bit masking.</p> 
+ <h2>Day 5</h2> 
+ <p>Santa is in a pickle working out which strings have been naughty and nice.&#160; This problem obviously screams “regex!” but, frankly, regex can get in the sea. No one ever had fun writing regex. Instead I am going to do it manually, and as an additional target try to perform only one pass over each string and break processing early if a bad string is detected.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2021_59_44-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 21_59_44-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 21_59_44-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2021_59_44-emacs@DESKTOP-2DMNUOL_thumb.png" width="388" height="239" /></a></p> 
+ <p><em>define/match</em> is back on the scene to create some functions that match on multiple values (rather than lists).&#160; Nothing new in the first function, however the second shows a new pattern<em>or</em> being used inside the pattern match.&#160; It could equally have been written with one pattern for each letter, but this is a tiny glimpse into the power of Racket’s pattern matching (which of course I know hardly any of yet)</p> 
+ <p>I decided to track if a bad pair has been detected, count the amount of vowels and count the amount of occurrences for letters that appear twice.&#160; My<em>by-pairs</em> generator is no good for this, needing something more like F#’s<em>Seq.windowed</em>, I decided to simply pass along the previous character as another accumulator.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2022_07_29-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 22_07_29-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 22_07_29-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2022_07_29-emacs@DESKTOP-2DMNUOL_thumb.png" width="455" height="336" /></a></p> 
+ <p>A couple of interesting things here.&#160; If at any point<em>is-bad-pair?</em> returns true, the fold stops on the next iteration due to<em>break bad?</em> clause. (Breaking Bad!) Lastly the perhaps slightly mysterious looking<em><a href="http://docs.racket-lang.org/reference/match.html?q=match-*#%28form._%28%28lib._racket%2Fmatch..rkt%29._match%2A%29%29">match*</a></em> at the bottom uses some new pattern matching forms.&#160; ? allows you to pass a function which will be called on the respective value and only match if it returns true.&#160; In this case I have inlined a lambda that matches if there are at least three vowels.&#160; The last case uses the<em>not</em>pattern to ensure at least one letter appeared twice.</p> 
+ <p>Part two is much more sinister, and took me quite some time to come up with a nicer solution for it that didn’t have to do multiple or n2 iterations on the data.&#160; Mostly because I had read the problem incorrectly, several times. The first part is easy, and will introduce another matching concept.&#160; The string must have at least one occurrence of the same letter, either side of any letter.&#160;</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2022_15_28-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 22_15_28-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 22_15_28-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2022_15_28-emacs@DESKTOP-2DMNUOL_thumb.png" width="446" height="73" /></a></p> 
+ <p>In Racket, if you use the same identifier to bind the results of patterns to, like I have done here with<em>a,</em>this means<em>they must be equal</em>. Otherwise it wouldn’t make any sense, would it?&#160; In this case, it is simple to see if the same letter exists on both sides of some other letter. Very nice!</p> 
+ <p>The second part is trickier.&#160; The requirement is that the string must have at least two instances of the same pair of letters, but not where they overlap.&#160; So “jkjk” is ok, “aaaa” is ok, but “aaa” is not. To fulfil this we can examine the next 3 characters in the string.&#160; If they are all the same, we can add a pair of them to our “seen pairs” set, and then continue processing recursively,<em>skipping</em> the second character, which is critical to the algorithm skipping overlapping pairs.&#160; All other cases of pairs are just added to the set.&#160; In all cases, before adding to the set, we can check if the pair already exists, if it does then the condition is satisfied and the process can prematurely end.&#160; The first version looked like this</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2022_23_12-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 22_23_12-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 22_23_12-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2022_23_12-emacs@DESKTOP-2DMNUOL_thumb.png" width="451" height="260" /></a></p> 
+ <p>This should all be familiar by now.&#160; Again, using the rather nifty matching allows us to specify the case where 3 identifiers are the same, solves this with ease.&#160; The thing I don’t like about this is the repetition of the code that checks if a pair s in a set, then recursively calls the routine again, adding to the set if not.&#160; This code is basically identical in each case, other than the pair construction.&#160; You could try and create a local function to help with this, but there is a better way.</p> 
+ <h2>Macros</h2> 
+ <p>The solution is to introduce a new piece of syntax that can write the repetitive stuff for us.&#160; Like everything else in Racket,<a href="http://docs.racket-lang.org/reference/Macros.html?q=match-*">macros</a> come in a million different forms, and are (or can be) lexically scoped.&#160; I am going to use one of the many short-hand ways of writing a small macro,<em><a href="http://docs.racket-lang.org/reference/stx-patterns.html?q=define-syntax-rule#%28form._%28%28lib._racket%2Fprivate%2Fmisc..rkt%29._define-syntax-rule%29%29">define-syntax-rule</a></em> and have it scoped inside the<em>au</em>x<em></em>function.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2022_29_16-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 22_29_16-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 22_29_16-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2022_29_16-emacs@DESKTOP-2DMNUOL_thumb.png" width="461" height="80" /></a></p> 
+ <p>This very simple form defines a macro called<em>step</em>.&#160; It expects two expressions as inputs.&#160; Unlike a normal function, these are compile time constructs, and the input expressions here are<em>the program itself</em> rather than data at run time.&#160; The following body defines a syntax template which the macro expander will use to replace the call site.&#160; Here I have simply wrote the same repetitive code, substituting the two bits of program I have passed in where applicable.&#160; Now the function can be re-written as follows</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/2017-01-13%2022_34_48-emacs@DESKTOP-2DMNUOL.png"><img title="2017-01-13 22_34_48-emacs@DESKTOP-2DMNUOL" style="margin: 8px 0px 12px; display: inline" alt="2017-01-13 22_34_48-emacs@DESKTOP-2DMNUOL" src="../../../../../img/old/2017-01-13%2022_34_48-emacs@DESKTOP-2DMNUOL_thumb.png" width="449" height="254" /></a></p> 
+ <p>Beware here that the<em>define-syntax-rule</em> form can be a bit misleading with its ease of use. It is also very limiting and to do the really powerful stuff you will want to revert to monsters such as<em><a href="http://docs.racket-lang.org/syntax/Parsing_Syntax.html?q=syntax-parse#%28form._%28%28lib._syntax%2Fparse..rkt%29._syntax-parse%29%29">syntax/parse</a></em> which provides comprehensive pattern matching capabilities for program structure and composition.</p> 
+ <h2>Conclusion</h2> 
+ <p>I am liking Racket after messing around with it for a few days.&#160; I did some crazy stuff not shown here with macros, and hopefully in following posts I will be able to cover more on building languages using the metaprogramming features Racket provides to do some cool (or completely ridiculous) things.</p></p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/">&larr; <em>Star Wars : Rogue One, Type Provider edition</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/"><em>Don Syme 2.0 : Cow Herding Edition Type Provider</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2017\01\14\programming-in-racket-1/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

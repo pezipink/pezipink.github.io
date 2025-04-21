@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Slope / Function Generator</title>
+    <meta name="description" content="In this post we'll look at the design of a function generator that outputs slope waveforms with adjustable rise and fall times. This can be used in modular synthesis as an envelope, or control voltage to modulate some other parameter in your synthesiser. ...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="electronics">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2020\07\25\slope-function-generator/">
+    <link rel="next" href="/blog\2019\07\21\reversing-kreker-v2-exe/">
+    <link rel="prev" href="/blog\2021\04\04\reversing-bakunawa/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2021\04\04\reversing-bakunawa/">&larr; <em>Reversing - Bakunawa</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\07\21\reversing-kreker-v2-exe/"><em>Reversing - Kreker_V2.exe</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Slope / Function Generator</h1>
+    <p class='date-and-tags'>
+<time datetime="2020-07-25" pubdate="true">2020-07-25</time> :: <span class="tags"><a href="/tags\electronics.html">electronics</a></span></p>
+  </header>
+
+<p>In this post we&rsquo;ll look at the design of a <a href="https://en.wikipedia.org/wiki/Function_generator">function generator</a> that outputs slope waveforms with adjustable rise and fall times. This can be used in modular synthesis as an <a href="https://en.wikipedia.org/wiki/Envelope_(music)">envelope</a>, or <a href="https://en.wikipedia.org/wiki/CV/gate">control voltage</a> to modulate some other parameter in your synthesiser. This post is purely electronics with no CPUs allowed on the scene.</p>
+
+<p></p>
+
+<p>For all the circuits and fragments in this post, I have linked to simulations you can play with. I was going to embed them, but there is no way to prevent all the simulations starting at once and killing your CPU, so I&rsquo;ll leave it to your discretion :)</p>
+<!-- more-->
+
+<h2 id="intro">Intro</h2>
+
+<p>Recently I have been getting back into electronics and synthesisers. I do have some hardware semi-modular synths, and have been playing around with <a href="https://vcvrack.com/">VCV Rack</a> a lot. A module I like in particular is <a href="https://www.modulargrid.net/e/befaco-rampage">Befaco&rsquo;s Rampage</a>.</p>
+
+<p>I find myself using this module all the time in VCV rack, and decided it would be fun to have a go a building my own lite version of it. Rampage does tons of stuff which I am certainly not trying to achieve. What I would like is the basic function generator capability with the following features (to start with)</p>
+
+<ul>
+ <li>Triggerable function generator</li>
+ <li>Once triggered, it will always fall once the rise has completed, even if the trigger input is still high (eg it does not sustain in any way)</li>
+ <li>Variable rise and fall times (via potentiomenters for this design, not external control voltage)</li>
+ <li>Retriggerable during the fall stage</li>
+ <li>Powered with <a href="https://en.wikipedia.org/wiki/Eurorack">Eurorack</a> style +/&ndash; 12v rails</li>
+ <li>Unipolar output at 0&ndash;10v</li></ul>
+
+<p>Note I am no electronics expert, merely a hobbyist messing around a bit!</p>
+
+<h2 id="generating-ramps">Generating Ramps</h2>
+
+<p>The first problem then is how to generate a ramp. If you charge a <a href="https://en.wikipedia.org/wiki/Capacitor">capacitor</a> with a voltage source and some resistor, you will get an exponential voltage curve</p>
+
+<div class="figure"><img src="../../../../../img/ramp/cap1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+16.13108636308289+50+5+50%0Av+96+336+96+64+0+0+40+5+0+0+0.5%0AS+256+144+256+64+0+1+false+0+2%0Aw+96+64+240+64+0%0Aw+272+64+400+64+0%0Aw+400+64+400+336+0%0Ac+256+144+256+256+0+0.00019999999999999998+7.380950037829741e-25%0Ar+256+256+256+336+0+100%0Aw+96+336+256+336+0%0Aw+256+336+400+336+0%0Ao+5+128+0+4099+0.0000762939453125+0.00009765625+0+2+5+3%0A38+5+0+0.000009999999999999999+0.00101+Capacitance%0Ah+2+6+5%0A">simulate</a></p>
+
+<p>I don&rsquo;t want an exponential curve, though, I want a linear ramp. Charging a capacitor using a constant <a href="https://en.wikipedia.org/wiki/Current_source">current source</a> will achieve exactly that, and the time can be controlled by the resistance.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/cap2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+16.13108636308289+50+5+50%0AS+256+144+256+64+0+0+false+0+2%0Aw+96+64+240+64+0%0Aw+272+64+400+64+0%0Ac+256+144+256+256+0+0.00019999999999999998+-5.267390098264483%0Ar+256+256+256+336+0+100%0Aw+96+336+256+336+0%0Aw+256+336+400+336+0%0Ai+96+336+96+64+0+0.01%0Ai+400+64+400+336+0+0.01%0Ao+3+128+0+4099+10+0.025+0+2+3+3%0A38+3+0+0.000009999999999999999+0.00101+Capacitance%0A">simulate</a></p>
+
+<p>We can create a constant current source in a number of ways, for example with a transistor based current source circuit or an op-amp current source.</p>
+
+<p>Another way to produce a linear ramp is to use an <a href="https://en.wikipedia.org/wiki/Op_amp_integrator">op-amp as an integrator</a>.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/int1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+10.20027730826997+57+5+50%0Ag+96+224+96+272+0%0Aw+336+112+336+160+0%0Aw+192+80+192+112+0%0Aw+192+112+192+144+0%0Aw+192+176+192+224+0%0Aa+192+160+336+160+8+15+-15+1000000+-4.999671225067146+0+100000%0Ac+192+112+336+112+0+0.000002+-20.000171177189653%0AO+336+160+400+160+0%0Av+96+224+96+80+0+2+10+5+0+0+0.5%0Ap+128+224+128+80+0+0%0Aw+96+224+128+224+0%0Aw+128+224+192+224+0%0Aw+96+80+128+80+0%0Ar+128+80+192+80+0+1000%0Ao+9+32+0+4098+5+0.00009765625+0+1+input%0Ao+7+32+0+4098+22+0.00009765625+1+1+integral%0A">simulate</a></p>
+
+<p>In this design, the op-amp produces an output voltage proportional to the integral of the input voltage, with the feedback loop charging and discharging the capacitor. The simulation above uses a +/&ndash; 5v square wave as an input, causing the capacitor to charge and discharge through the op-amp (which can both sink and source current) as the voltage swings above and below ground. The op-amp tries to reach its maximum and minimum output values - in this simulation the op-amp is configured with +/&ndash; 15v</p>
+
+<h2 id="bi-directional-ramp">Bi-Directional Ramp</h2>
+
+<p>In order to control the rise and fall time of the wave independently, we&rsquo;re going to need to somehow have the capacitor charge through one resistor, and discharge through another. The <a href="https://en.wikipedia.org/wiki/Diode">diode</a> comes to the rescue here. Since the diode allows current to only flow in one direction, it lets us setup a one-way system depending on the direction of the flow.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/diode1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+10.20027730826997+57+5+50%0Ag+96+224+96+272+0%0Aw+512+112+512+160+0%0Aw+368+80+368+112+0%0Aw+368+112+368+144+0%0Aw+368+176+368+224+0%0Aa+368+160+512+160+8+15+-15+1000000+0.000036893799898152287+0+100000%0Ac+368+112+512+112+0+0.0000058+3.6894168836151264%0AO+512+160+576+160+0%0Av+96+224+96+80+0+2+20+5+0+3.141592653589793+0.5%0Aw+96+224+128+224+0%0Aw+304+224+368+224+0%0Ar+160+80+224+80+0+220%0Ad+96+80+160+80+2+default%0A174+224+80+304+80+1+1000+0.5594+Resistance%0Aw+320+80+368+80+0%0Aw+272+64+272+48+0%0Aw+272+48+320+48+0%0Aw+320+80+320+48+0%0Aw+368+80+368+16+0%0Ad+368+16+288+16+2+default%0Ar+288+16+208+16+0+220%0A174+208+16+112+16+1+1000+0.22280000000000003+Resistance%0Aw+96+80+96+16+0%0Aw+96+16+112+16+0%0Aw+160+32+160+48+0%0Aw+128+224+304+224+0%0Aw+160+48+112+48+0%0Aw+112+48+112+16+0%0Ao+7+32+0+4098+22+0.00009765625+0+1+integral%0A">simulate</a></p>
+
+<p>Here I have used a small resistor in series with a <a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometer</a> for each path. The small resistor exists to set a minimum resistance, whilst the potentiometer allows us the control the rise and fall times. Of course, different values of capacitor and resistors will give us different minimum and maximum slope times.</p>
+
+<p>The next problem is two-fold. We don&rsquo;t want the full +/&ndash; 12v range as an output - the final goal is to have 0&ndash;10v, slightly less than half of the range. Since the op-amp starts at &ndash;12v, we will aim to stop it charging once the capacitor hits 0 volts (half the voltage) at which point it should begin the discharge phase. Later we will shape this output voltage into what we want, but first we need a way of knowing when the capacitor has arrived at 0 volts, and some form of managing which state is currently active (charge or discharge).</p>
+
+<p>Let&rsquo;s first look at the state. We don&rsquo;t have any kind of clock signal, so we need something async. The <a href="https://en.wikipedia.org/wiki/Flip-flop_(electronics)">Set Reset latch</a> is about as simple as it gets, providing us with one bit of memory that can be toggled.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/sr.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+1.500424758475255+50+5+50%0A151+256+160+368+160+0+2+5+5%0A151+256+288+368+288+0+2+0+5%0Aw+368+160+368+192+0%0Aw+368+192+256+256+0%0Aw+368+288+368+256+0%0Aw+368+256+256+192+0%0Aw+256+192+256+176+0%0Aw+256+256+256+272+0%0AL+256+304+176+304+0+1+true+5+0%0AL+256+144+176+144+0+1+true+5+0%0AM+368+160+448+160+0+2.5%0AM+368+288+448+288+0+2.5%0Ax+159+120+191+123+4+24+set%0Ax+438+138+456+141+4+24+Q%0Ax+147+281+200+284+4+24+reset%0Ax+438+266+456+269+6+24+Q%0A">simulate</a></p>
+
+<p>This arrangement of two NOR or NAND gates with feedback stores a single bit of memory. When one of the lines go high, it will flip the state if applicable. The SR latch is essentially a flip-flop without the clock signal. It does have some issues though, notably it might not respond well to an invalid input state (eg, both inputs high).</p>
+
+<p>A requirement was that once a trigger arrives, the rise time should always complete, and then during the fall time a signal may re-trigger the process. Another requirement was that the fall cycle should always happen, even if the trigger signal is still high.</p>
+
+<p>The SR latch already deals with the first - subsequent pulses to the latch will have no effect until it has changed to its other state.</p>
+
+<p>The second we can deal with by ensuring that when a trigger signal arrives, we only take a tiny pulse of it and block the rest. This circuit is called an edge detector, and there&rsquo;s various ways to achieve it.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/edge1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+6.450009306485578+50+5+50%0Ac+240+160+400+160+0+0.00001+2.2454659742303148e-110%0Ar+400+160+400+288+0+35%0AO+400+160+512+160+0%0Ag+400+288+400+320+0%0AL+240+160+192+160+0+0+false+5+0%0Ao+2+16+0+4098+0.0000762939453125+0.00009765625+0+1+out%0Ah+3+1+0%0A">simulate</a></p>
+
+<p>Capacitors block DC voltage once they are charged. This simple circuit (also known as a <a href="https://en.wikipedia.org/wiki/High-pass_filter">high-pass filter</a>) will pass a small amount of current until the capacitor is charged, at which point it stops conducting. The result of this is that the logic gate will see a pulse that&rsquo;s long enough to trigger it, and nothing else until the input signal cycles from low to high again.</p>
+
+<p>The latch is comprised of logic gates that are not designed to source and sink current with negative voltages. Instead, we&rsquo;ll feed its outputs into our friend the op-amp. When used like this, the op-amp acts as a <a href="https://www.electronics-tutorials.ws/opamp/op-amp-comparator.html">comparator</a> (we&rsquo;ll see this shortly). Depending on which side is high its output will be driven to +/&ndash; 12v.</p>
+
+<p>Putting all this together will give us a circuit which we can manually trigger the SR latch and cause the circuit to charage and discharge the capacitor.</p>
+
+<h1 id="auto-reset">Auto Reset</h1>
+
+<p>All we need now is a way to send a signal to the latch when the capacitor reaches 0 volts. The op-amp provides us the solution with the comparator configuration we used earlier. In this case we simply provide a reference voltage (0v, ground) and feed the output of the integrator to the other input. Now, when the voltage reaches zero, the comparator will flip to high. We can feed this signal into the SR latch, causing the reset phase to begin.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/reset.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+10.20027730826997+45+5+50%0Aa+0+80+96+80+8+12+-12+1000000+0+5+100000%0Aa+368+96+480+96+8+12+-12+1000000+11.503782069763501+0+100000%0A153+-96+32+-16+32+0+2+0+5%0A153+-96+112+-16+112+0+2+5+5%0Aw+-16+32+-96+96+0%0Aw+-96+48+-16+112+0%0Aw+-96+16+-128+16+0%0Ad+96+80+96+32+2+default%0Ad+96+128+96+80+2+default%0Ar+96+32+160+32+0+1000%0Ar+96+128+160+128+0+1000%0Ag+368+112+368+128+0%0Aw+288+112+368+80+0%0Aw+288+48+368+80+0%0Aw+368+80+368+16+0%0Aw+480+96+480+16+0%0Aw+-128+-128+-128+16+0%0A209+368+16+480+16+0+0.00001+23.504932435970478+1%0AL+-176+128+-304+128+0+0+true+5+0%0Ac+-176+128+-96+128+0+0.00001+7.247222657048323e-11%0Ar+-96+128+-96+192+0+1000%0Ag+-96+192+-96+208+0%0Aw+-16+32+-16+64+0%0Aw+-16+64+0+64+0%0Aw+-16+112+-16+96+0%0Aw+-16+96+0+96+0%0A174+160+32+256+32+1+10000+0.35150000000000003+Resistance%0Aw+208+0+256+0+0%0Aw+256+0+256+32+0%0Aw+256+32+288+48+0%0A174+160+128+240+128+1+10000+0.10400000000000001+Resistance%0Aw+208+112+208+96+0%0Aw+256+128+288+112+0%0Aa+464+-128+352+-128+9+15+-15+1000000+0+-12.001150366206977+100000%0Ag+464+-112+464+-80+0%0Aw+480+16+480+-144+0%0Aw+464+-144+480+-144+0%0Aw+-128+-128+352+-128+0%0Aw+208+96+256+96+0%0Aw+256+96+256+128+0%0Aw+208+0+208+16+0%0Ax+-113+-3+-15+0+4+24+SR%5CsLatch%0Ax+-34+146+92+149+4+24+Comparator%0Ax+373+55+475+58+4+24+Integrator%0Ax+342+-179+468+-176+4+24+Comparator%0Ax+-389+169+-153+172+4+24+Input%5Cs%5Ca%5CsEdge%5CsDetector%0AO+480+96+544+96+0%0Ao+46+64+0+4098+20+0.1+0+1%0A">simulate</a></p>
+
+<h1 id="output-stage">Output stage</h1>
+
+<p>All that remains is to shape the output into 0&ndash;10v. Currently we have &ndash;12&ndash;0v, so first we&rsquo;ll simply add 12v, bring the output into the positive range. To achieve this, the op-amp is back on the scene, this time in its <a href="https://www.electronics-tutorials.ws/opamp/opamp_4.html">non-inverting summing configuration</a></p>
+
+<div class="figure"><img src="../../../../../img/ramp/sum.png" alt="" />
+ <p class="caption"></p></div>
+
+<p><a href="http://falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+10.20027730826997+45+5+50%0Aa+0+80+96+80+8+12+-12+1000000+0+5+100000%0Aa+368+96+480+96+8+12+-12+1000000+10.8647330657681+0+100000%0A153+-96+32+-16+32+0+2+0+5%0A153+-96+112+-16+112+0+2+5+5%0Aw+-16+32+-96+96+0%0Aw+-96+48+-16+112+0%0Aw+-96+16+-128+16+0%0Ad+96+80+96+32+2+default%0Ad+96+128+96+80+2+default%0Ar+96+32+160+32+0+1000%0Ar+96+128+160+128+0+1000%0Ag+368+112+368+128+0%0Aw+288+112+368+80+0%0Aw+288+48+368+80+0%0Aw+368+80+368+16+0%0Aw+480+96+480+16+0%0Aw+-128+-128+-128+16+0%0A209+368+16+480+16+0+0.00001+22.865819527074677+1%0AL+-176+128+-304+128+0+0+true+5+0%0Ac+-176+128+-96+128+0+0.00001+3.1363287078765094e-8%0Ar+-96+128+-96+192+0+1000%0Ag+-96+192+-96+208+0%0Aw+-16+32+-16+64+0%0Aw+-16+64+0+64+0%0Aw+-16+112+-16+96+0%0Aw+-16+96+0+96+0%0A174+160+32+256+32+1+10000+0.35150000000000003+Resistance%0Aw+208+0+256+0+0%0Aw+256+0+256+32+0%0Aw+256+32+288+48+0%0A174+160+128+240+128+1+10000+0.10400000000000001+Resistance%0Aw+208+112+208+96+0%0Aw+256+128+288+112+0%0Aa+464+-128+352+-128+9+15+-15+1000000+0+-12.001086461306578+100000%0Ag+464+-112+464+-80+0%0Aw+480+16+480+-144+0%0Aw+464+-144+480+-144+0%0Aw+-128+-128+352+-128+0%0Aw+208+96+256+96+0%0Aw+256+96+256+128+0%0Aw+208+0+208+16+0%0Ax+-113+-3+-15+0+4+24+SR%5CsLatch%0Ax+-34+146+92+149+4+24+Comparator%0Ax+373+55+475+58+4+24+Integrator%0Ax+342+-179+468+-176+4+24+Comparator%0Ax+-389+169+-153+172+4+24+Input%5Cs%5Ca%5CsEdge%5CsDetector%0AO+384+304+224+304+0%0Aw+384+192+384+240+0%0Ag+608+240+608+272+0%0Aw+480+208+480+240+0%0Ar+480+240+384+240+0+1000%0Ar+480+240+608+240+0+1000%0Aa+480+192+384+192+9+12+-12+1000000+-0.0005432197888937373+-0.0005432306532895152+100000%0Ag+384+384+384+416+0%0Ar+384+304+384+384+0+1000%0Ar+384+240+384+304+0+220%0Ar+528+176+480+176+0+1000%0Ar+480+96+480+176+0+1000%0AR+528+176+576+176+0+0+40+12+0+0+0.5%0Ao+46+64+0+4098+10+0.1+0+1%0A">simulate</a></p>
+
+<p>Now we are left with a signal from 0&ndash;12v, we can divide this voltage proportionally using a simple <a href="https://www.allaboutcircuits.com/tools/voltage-divider-calculator/">voltage divider</a>. Since the power supplies and op-amps used might not be perfect, we could use a precision potentiometer here so the user can tune the signal to exactly 10v.</p>
+
+<h2 id="real-world">Real World</h2>
+
+<p>Simulations are all well and good, but they don&rsquo;t reflect the real world with non-perfect components. If you play with the simulations above, you will notice sometimes the flip-flop gets stuck in an oscillating state. This is because the simulation is TOO perfect!</p>
+
+<p>I have built the circuit as above using an LF444 op-amps and a D-Type flip-flop in its &ldquo;active&rdquo; mode instead of the NOR gates.</p>
+
+<p>In the picture below you can see the output waveform at its pre-final stage where it is still inverted. The trigger input is being fed with a pulse generator. You can see that subsequent pulses during the fall stage cause re-triggering as we wanted.</p>
+
+<div class="figure"><img src="../../../../../img/ramp/real1.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<div class="figure"><img src="../../../../../img/ramp/real2.jpg" alt="" />
+ <p class="caption"></p></div>
+
+<p>I will be adding more features to this before putting onto a more permanent board. Possible features include</p>
+
+<ul>
+ <li>Two independent function generators</li>
+ <li>Ability to output +/&ndash; 5v bipolar control voltage via a switch</li>
+ <li>Control voltage inputs for the rise and fall times</li>
+ <li>Different minimum/maximum time periods via a switch</li>
+ <li>A loop switch that will cause the ramp to automatically re-trigger, so it can be used as an LFO or oscillator</li>
+ <li>Other comparison based modulation outputs, like Rampage does.</li>
+ <li>Protection circuitry to defend against the unpredictable outside world.</li>
+ <li>etc</li></ul>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2021\04\04\reversing-bakunawa/">&larr; <em>Reversing - Bakunawa</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\07\21\reversing-kreker-v2-exe/"><em>Reversing - Kreker_V2.exe</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2020\07\25\slope-function-generator/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

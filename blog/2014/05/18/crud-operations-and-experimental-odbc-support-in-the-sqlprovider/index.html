@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>CRUD Operations and Experimental ODBC support in the SQLProvider</title>
+    <meta name="description" content="The SQL provider now supports basic transactional CRUD functionality and an ODBC provider. A new nuget package is up for you to grab here. As always, you can download and build from source here.  The nuget package is still pre-release. You can find it in ...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, sqlprovider, type providers">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2014\05\18\crud-operations-and-experimental-odbc-support-in-the-sqlprovider/">
+    <link rel="next" href="/blog\2014\05\01\basic-s-50th-anniversary-and-more-crazy-f-type-providers/">
+    <link rel="prev" href="/blog\2014\06\11\some-of-my-favourite-tech-books/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\06\11\some-of-my-favourite-tech-books/">&larr; <em>Some of my favourite tech books!</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\05\01\basic-s-50th-anniversary-and-more-crazy-f-type-providers/"><em>BASIC’s 50th Anniversary … and more crazy F# type providers!</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>CRUD Operations and Experimental ODBC support in the SQLProvider</h1>
+    <p class='date-and-tags'>
+<time datetime="2014-05-18" pubdate="true">2014-05-18</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\sqlprovider.html">sqlprovider</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<p>The SQL provider now supports basic transactional CRUD functionality and an ODBC provider. A new nuget package is up for you to grab <a href="https://www.nuget.org/packages/SQLProvider/0.0.9-alpha">here</a>. As always, you can download and build from source <a href="https://github.com/fsprojects/SQLProvider">here</a>.</p>
+
+<p>The nuget package is still pre-release. You can find it in Visual Studio by toggling the search filter to include pre-release packages. I'm sure Xamarin has a similar feature. Once this work has been tested well enough, I will likely upgrade the SQL Provider to a proper release.</p>
+<!-- more-->
+
+<h2>Experimental ODBC Support</h2>
+
+<p>We now have support for general ODBC connectivity in the SQL provider. This provides us with awesome power to connect to almost anything, including Excel spreadsheets. However, because each driver can vary substantially, not all drivers may work, and others may have reduced functionality. ODBC is provided in the .NET core libraries, although you will of course need the appropriate ODBC driver installed on your machine for it to function.</p>
+
+<p>ODBC has Where, Select and Join support. If the source in question provides primary key information, you will also get Individuals. Although explicit joins are supported, foreign key constraint information and navigation are not yet available. The new CRUD operations are also supported, where appropriate. We will see how this works from ODBC later in the post.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">[&lt;</span><span class="n">Literal</span><span class="o">&gt;]</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">excelCs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">@"Driver={Microsoft Excel Driver (*.xls)};DriverId=790;Dbq=I:\test.xls;DefaultDir=I:\;"</span><span class="w"> </span>
+<span class="k">type</span><span class="w"> </span><span class="nc">xl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="n">excelCs</span><span class="o">,</span><span class="w"> </span><span class="nn">Common</span><span class="p">.</span><span class="nn">DatabaseProviderTypes</span><span class="p">.</span><span class="n">ODBC</span><span class="o">&gt;</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>You can use the new features with the following providers :</p>
+
+<ul>
+ <li>SQL Server</li>
+ <li>SQLite</li>
+ <li>PostgreSQL</li>
+ <li>MySQL</li>
+ <li>Oracle</li>
+ <li>ODBC (limited)</li></ul>
+
+<p>The following examples will use SQLite, but the mechanics are identical for all the providers.</p>
+
+<h2>CRUD Operations</h2>
+
+<p>IMPORTANT IMFORMATION ON RESTRICTIONS!</p>
+
+<p><em>The CRUD operations will only work for tables that have a well-defined, non composite primary key. Identity keys are fully supported.</em></p>
+
+<p>The data context is the core object that enables CRUD. It is important to understand that each data context you create from the type provider will track all entities that are modified from it. In a sense, the data context &ldquo;owns&rdquo; all of the entities returned by queries or that you have created. You can create more than one data context that have different connection strings at runtime. You can pass a different connection string in the GetDataContext method. This is an important concept as it allows you to connect to multiple instances of the same database, and even replicate data between them fairly easily.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ConnectionString</span><span class="o">,</span><span class="w"> </span><span class="nn">Common</span><span class="p">.</span><span class="nn">DatabaseProviderTypes</span><span class="p">.</span><span class="n">SQLITE</span><span class="o">,</span><span class="w"> </span><span class="n">ResolutionPath</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sql</span><span class="o">.</span><span class="n">GetDataContext</span><span class="bp">()</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">ctx2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sql</span><span class="o">.</span><span class="n">GetDataContext</span><span class="o">(</span><span class="s">"some other connection string"</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>whenever you select entire entities from a data context, be that by a query expression or an Individual, the data context involved will track the entity. You can make changes to the fields by setting the relevant properties. You do not need to do anything else, as the data context handles everything for you.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">hardy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">.</span><span class="n">``[main].[Customers]``</span><span class="o">.</span><span class="n">Individuals</span><span class="o">.</span><span class="n">``As ContactName``</span><span class="o">.</span><span class="n">``AROUT, Thomas Hardy``</span><span class="w"> </span>
+<span class="n">hardy</span><span class="o">.</span><span class="n">ContactName</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">"Pezi the Pink Squirrel"</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">SubmitUpdates</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Note the call to SubmitUpdates() on the data context. This will take all pending changes to all entities tracked by the data context, and execute them in a transaction. An interesting property of the above code is that after Thomas Hardy has had his name changed, the first line will no longer compile! Go F#!</p>
+
+<p>Similarly, you can delete an entity by calling the Delete() method on it. This action will put the entity into a pending delete state.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="n">hardy</span><span class="o">.</span><span class="n">Delete</span><span class="bp">()</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">SubmitUpdates</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>After the deletion is committed, the data context will remove the primary key from the entity instance.</p>
+
+<p>Creation is slightly different. You will find various Create methods on the IQueryable Set types that represent the tables. Up to 3 different overloads of this method will be available. The first takes no parameters and will return a new entity which are you expected to populate with at least the required fields. A second version will accept the required fields as parameters &ndash; this is only available if there are any columns marked as NOT NULL. The final version will create an entity from a (string * obj) sequence &ndash; it is potentially unsafe but very handy for copying entities or creating them from some stream of data, if you know the attribute / column names are correct.</p>
+
+<p>A note on primary keys &ndash; presently the SQL provider does not detect identity columns, although it does deal with them on the insert appropriately. You will never see a primary key field as a parameter to the Create method. If your primary key is an identity column, you can simply not include it. Upon insert, the provider will automatically update the instance of the entity with the ID it has been assigned. If on the other hand your key is not an identity column, you will be expected to assign it an appropriate value before attempting to submit the changes to the database.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">// create an employee </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">pez</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">.</span><span class="n">``[main].[Employees]``</span><span class="o">.</span><span class="n">Create</span><span class="o">(</span><span class="s">"Pezi"</span><span class="o">,</span><span class="s">"Squirrel"</span><span class="o">)</span><span class="w"> </span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">SubmitUpdates</span><span class="bp">()</span>
+
+<span class="n">printfn</span><span class="w"> </span><span class="s">"Pezi&#39;s new employee id is %i"</span><span class="w"> </span><span class="n">pez</span><span class="o">.</span><span class="n">EmployeeID</span>
+
+<span class="c1">//update something </span>
+<span class="n">pez</span><span class="o">.</span><span class="n">Address</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">"the forest"</span><span class="w"> </span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">SubmitUpdates</span><span class="bp">()</span>
+
+<span class="c1">// delete </span>
+<span class="n">pez</span><span class="o">.</span><span class="n">Delete</span><span class="bp">()</span><span class="w"> </span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">SubmitUpdates</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now let&rsquo;s see how we can effortlessly combine different SQLProviders together in order to perform "extract, transform, load" type processes.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="n">northwindCs</span><span class="o">,</span><span class="w"> </span><span class="n">UseOptionTypes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="o">&gt;</span><span class="w"> </span>
+<span class="k">type</span><span class="w"> </span><span class="nc">xl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="n">excelCs</span><span class="o">,</span><span class="w"> </span><span class="nn">Common</span><span class="p">.</span><span class="nn">DatabaseProviderTypes</span><span class="p">.</span><span class="n">ODBC</span><span class="o">&gt;</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">northwind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sql</span><span class="o">.</span><span class="n">GetDataContext</span><span class="bp">()</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">spreadsheet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xl</span><span class="o">.</span><span class="n">GetDataContext</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">// load our tasty new employees from our lovely spreadsheet</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">newEmployees</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">  </span><span class="n">spreadsheet</span><span class="o">.</span><span class="n">``[].[Sheet1$]``</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">map</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">emp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">northwind</span><span class="o">.</span><span class="n">``[dbo].[Employees]``</span><span class="o">.</span><span class="n">Create</span><span class="bp">()</span><span class="w"> </span>
+<span class="w">    </span><span class="n">emp</span><span class="o">.</span><span class="n">FirstName</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">FirstName</span><span class="w"> </span>
+<span class="w">    </span><span class="n">emp</span><span class="o">.</span><span class="n">LastName</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">LastName</span><span class="w"> </span>
+<span class="w">    </span><span class="n">emp</span><span class="o">)</span><span class="w"> </span>
+<span class="w">  </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toList</span>
+
+<span class="c1">// save those puppies away </span>
+<span class="n">northwind</span><span class="o">.</span><span class="n">SubmitUpdates</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In this sample we use the ODBC type provider to gain instant typed access to an Excel spreadsheet that contains some data about new employees. the SQL Server type provider is also used to connect to a Northwind database instance.</p>
+
+<p>We then very simply pull all the rows from the spreadsheet, map them to an Employee database record, and save them away. It doesn&rsquo;t get much easier than this!</p>
+
+<p>Or does it? Actually, in this case we know up front that the spreadsheet contains identical field names to that of the target database. In this case we can use the overload of Create that accepts a sequence of data &ndash; this method is unsafe, but if you know that the names match up it means you don&rsquo;t have to manually map any field names :)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">newEmployees</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="n">spreadsheet</span><span class="o">.</span><span class="n">``[].[Sheet1$]``</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">map</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">northwind</span><span class="o">.</span><span class="n">``[dbo].[Employees]``</span><span class="o">.</span><span class="n">Create</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="n">ColumnValues</span><span class="o">))</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toList</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I think we can agree it really does not get much easier than that! You can also use this technique to easily copy data between different data contexts, as long as you watch out for primary and foreign keys where applicable.</p>
+
+<h2>Data Binding</h2>
+
+<p>The SQLProvider, with a fair amount of trickery, supports two-way data binding over its entities. This works together very well with the CRUD operations.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">open</span><span class="w"> </span><span class="nn">System.Windows.Forms</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">System.ComponentModel</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BindingList</span><span class="o">(</span><span class="nn">Seq</span><span class="p">.</span><span class="n">toArray</span><span class="w"> </span><span class="n">ctx</span><span class="o">.</span><span class="n">``[main].[Customers]``</span><span class="o">)</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">form</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Form</span><span class="o">(</span><span class="n">Text</span><span class="o">=</span><span class="s">"Edit Customers"</span><span class="o">)</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">dg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DataGridView</span><span class="o">(</span><span class="n">Dock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">DockStyle</span><span class="p">.</span><span class="n">Fill</span><span class="o">,</span><span class="n">DataSource</span><span class="o">=</span><span class="n">data</span><span class="o">)</span><span class="w"> </span>
+<span class="n">form</span><span class="o">.</span><span class="n">Controls</span><span class="o">.</span><span class="n">Add</span><span class="w"> </span><span class="n">dg</span><span class="w"> </span>
+<span class="n">form</span><span class="o">.</span><span class="n">Show</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/image_12.png"><img style="display: inline; border: 0px;" title="image" src="../../../../../img/old/image_thumb_12.png" alt="image" width="1106" height="417" border="0" /></a></p>
+
+<p>This is all the code you need to create a fully editable data grid. A call to SubmitUpdates() afterwards will push all the changes to the database.</p>
+
+<h2>Other Bits</h2>
+
+<p>The data context now has a few new methods on it that you can use.</p>
+
+<ol>
+ <li>ClearPendingChanges() : Ronseal. Remove any tracked entities that have changed. Use this with caution, as subsequent changes to the entities will be tracked, but the previous changes will have been lost.</li>
+ <li>GetPendingChanges() : This function will return a list of the entities the data context has tracked. This is useful in a variety of situations, and it also means you do not have to bind to created or updated entities in order to not &ldquo;lose&rdquo; them in your program.</li></ol>
+
+<div>The SQL Provider does not currently have any support for transactionally creating heirarchies of data - that is, where you are able to create foreign-key related entities within the same transaction. This feature may be added at a later date.</div>
+
+<div></div>
+
+<div>Shout outs to <a href="https://twitter.com/SimonHDickson">@simonhdickson</a> for this work on the ODBC provider, and <a href="https://twitter.com/colinbul">@colinbul</a> for the Oracle CRUD implementation, thanks guys!</div>
+
+<div></div>
+
+<div>Now I have done this, I can finally get on with my <strong><em>really</em></strong> important type providers, such as the <a href="http://pinksquirrellabs.com/post/2014/05/01/BASIC%E2%80%99s-50th-Anniversary-%E2%80%A6-and-more-crazy-F-type-providers!.aspx">interactive provider</a> of which I was stuck with my current extension to it as I had no way to create data in my sqlite database! :)</div>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\06\11\some-of-my-favourite-tech-books/">&larr; <em>Some of my favourite tech books!</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2014\05\01\basic-s-50th-anniversary-and-more-crazy-f-type-providers/"><em>BASIC’s 50th Anniversary … and more crazy F# type providers!</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2014\05\18\crud-operations-and-experimental-odbc-support-in-the-sqlprovider/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Racket Macros : Scurry</title>
+    <meta name="description" content="This post will be about Racket macros. As a delivery mechanism, I will be using bits of my latest project, which is a virtual machine designed for emulating multiplayer networked board games via ZeroMQ. drey-vm executes compiled bytecode files - much like...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="racket, scurry, drey, compilers, programming languages, macros">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2017\08\04\racket-macros-scurry/">
+    <link rel="next" href="/blog\2017\05\30\asi64/">
+    <link rel="prev" href="/blog\2017\08\10\lexical-scoping-and-redefining-function-application/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\08\10\lexical-scoping-and-redefining-function-application/">&larr; <em>Lexical scoping and redefining function application</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\05\30\asi64/"><em>Asi64</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Racket Macros : Scurry</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-08-04" pubdate="true">2017-08-04</time> :: <span class="tags"><a href="/tags\racket.html">racket</a>, <a href="/tags\scurry.html">scurry</a>, <a href="/tags\drey.html">drey</a>, <a href="/tags\compilers.html">compilers</a>, <a href="/tags\programming-languages.html">programming languages</a>, <a href="/tags\macros.html">macros</a></span></p>
+  </header>
+
+<p>This post will be about <a href="http://docs.racket-lang.org/guide/macros.html">Racket macros</a>. As a delivery mechanism, I will be using bits of my latest project, which is a virtual machine designed for emulating multiplayer networked board games via <a href="http://zeromq.org/">ZeroMQ</a>. drey-vm executes compiled bytecode files - much like the CLR or JVM - using an instruction set of my design.</p>
+
+<p>The design of the computer is out of the scope of this post (maybe another post if people are interested in it - let me know in the comments!?) suffice to stay it is written in D and is mostly a stack based computer, supporting functional and imperative programming. It has a string/object dictionary as its primary type,like lua and js.</p>
+
+<p>Much like <a href="http://pinksquirrellabs.com/blog/2017/05/30/asi64/">asi64</a>, I wrote an assembler for the virtual machine in Racket. On top of that assembler I can now build a language (scurry). To start with, I am just creating a Racket language that is still a lisp - Racket has the fantasic power of being able to build macros on macros, gradually introducing higher level syntatic forms. In this way, I don&rsquo;t really need write an actual compiler. Racket gives me the front end of the compiler for free (being lisp), and the macros-over-assembler method is a very fun and flexibile way to build up a language.</p>
+<!-- more-->
+
+<h1 id="macros">Macros</h1>
+
+<p>This post is about macros. I am still new to them and have learnt a lot, but am many many leagues from being an expert. Macros can be hard to get your head around and I spent many hours flailing around not knowing how to do stuff I wanted, so hopefully some of things I discovered might help someone else out.</p>
+
+<p>It is recommended you have already read Greg Hendershott&rsquo;s excellent <a href="http://www.greghendershott.com/fear-of-macros">fear of macros</a> post, which I read many times!.</p>
+
+<p>Let&rsquo;s look at the basics. The VM has a special object with an id of &ndash;1 that represents the game&rsquo;s global state. In scurry, I would like to write this to retrieve it</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">get-state</span><span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This should be rewritten to the op-codes that load the game object of id &ndash;1 and leave it on the stack. (this will be used in expressions or bound to some identifier later.) Eventually, when this program actually executes and assembles, it is expecting a big list of symbols that represent the program. Thus:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define-syntax))" style="color: inherit">define-syntax</a></span><span class="w"> </span><span class="p">(</span><span class="n">get-state</span><span class="w"> </span><span class="n">stx</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Parsing_Syntax.html#(form._((lib._syntax/parse..rkt)._syntax-parse))" style="color: inherit">syntax-parse</a></span><span class="w"> </span><span class="n">stx</span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="p">)</span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldval</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="ss">getobj</span><span class="p">))]))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>stx is the syntax object that repesents the Racket expression that has been passed in, including the &ldquo;get-state&rdquo; itself. We are then using syntax-parse to pattern match on this syntax object - we expect one value between parens which I have wildcarded out as I know it is &ldquo;get-state&rdquo; and don&rsquo;t care about it. This means if you try and use this macro with an argument, you&rsquo;ll get a compile error.</p>
+
+<p>Finally we return a syntax object using the shorthand form #&rsquo;( ). Since what I actually want to return is a list of symbols, we are quoting the response list (otherwise it would try and evaluate (ldval &ndash;1) and (getobj) as functions, which don&rsquo;t exist!).</p>
+
+<h1 id="eval-arg">eval-arg</h1>
+
+<p>Now let&rsquo;s tackle the first major problem. In practially all other macros from here on out, they are going to accept some inputs. The inputs could be constant strings, numbers, bools, an identifier, or another scurry expression. To illustrate, let&rsquo;s say we wanted to write this</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">42</span><span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p> x here is the name of a variable or binding. In drey-vm terms, it has to translate the usage of an identifier like this to storing or retrieving a named variable currently in scope on the call stack. The question is, how can we tell the difference between them and generate the correct code? Let&rsquo;s look at macro that will be used heavily from this point onwards.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define-syntax))" style="color: inherit">define-syntax</a></span><span class="w"> </span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">stx</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Parsing_Syntax.html#(form._((lib._syntax/parse..rkt)._syntax-parse))" style="color: inherit">syntax-parse</a></span><span class="w"> </span><span class="n">stx</span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">ident:id</span><span class="p">)</span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._with-syntax))" style="color: inherit">with-syntax</a></span><span class="w"> </span><span class="p">([</span><span class="n">name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/symbols.html#(def._((quote._~23~25kernel)._symbol-~3estring))" style="color: inherit">symbol-&gt;string</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stxops.html#(def._((quote._~23~25kernel)._syntax-e))" style="color: inherit">syntax-e</a></span><span class="w"> </span><span class="o">#'</span><span class="n">ident</span><span class="p">))])</span>
+<span class="w">     </span><span class="c1">; if this is an identifier then it will be a string table lookup</span>
+<span class="w">     </span><span class="c1">; to a variable       </span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldvar</span><span class="w"> </span><span class="ss">name</span><span class="p">)))]</span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">expr:str</span><span class="p">)</span><span class="w">     </span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldvals</span><span class="w"> </span><span class="ss">expr</span><span class="p">))]</span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">expr:integer</span><span class="p">)</span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldval</span><span class="w"> </span><span class="ss">expr</span><span class="p">))]</span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">expr:boolean</span><span class="p">)</span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldvalb</span><span class="w"> </span><span class="ss">expr</span><span class="p">))]</span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">expr</span><span class="p">)</span>
+<span class="w">     </span><span class="c1">;otherwise let it pass through</span>
+<span class="w">     </span><span class="o">#'</span><span class="n">expr</span><span class="w"> </span><span class="p">]))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Several new and interesting things are happening here. Firstly, we are making use of <a href="https://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html?q=syntax%20class">Racket&rsquo;s syntax classes</a>. These are the annoataions you see in the pattern match, :id :str :integer and :boolean. These are standard syntax classes supplied by the Racket language to help match on common things.</p>
+
+<p>The first case will only match if the passed argument is an identifier. Then, we introduce a new piece of syntax <em>name</em>, that is produced by unwrapping the syntax object <em>ident</em> and turning it into a string. We can then use it directly in the returned syntax block, &rsquo;((ldvar name)). If <em>ident</em> was the identifier <em>x</em>, it would produce the code &rsquo;((ldvar &ldquo;x&rdquo;)) which is what the assembler expects. Pretty cool huh!</p>
+
+<p>The subsequent 3 matches simply produce the correct op code to load the given int, string or bool constant.</p>
+
+<p>The last match catches all other expressions - in this case we do not want to directy output bytecode - we want to continue evaluating whatever it is. All we have to do here is simply return the bit of syntax as it is and let the Racket compiler continue its expansion of it where neccesary.</p>
+
+<p>The with-syntax part takes some getting your head around. It tends to be used so often that if you need just a single bit of extra syntax like we had in this case, there is a shortcut you can use:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">ident:id</span><span class="p">)</span>
+<span class="w">     </span><span class="kd">#:with</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/symbols.html#(def._((quote._~23~25kernel)._symbol-~3estring))" style="color: inherit">symbol-&gt;string</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stxops.html#(def._((quote._~23~25kernel)._syntax-e))" style="color: inherit">syntax-e</a></span><span class="w"> </span><span class="o">#'</span><span class="n">x</span><span class="p">))</span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldvar</span><span class="w"> </span><span class="ss">name</span><span class="p">)))</span><span class="err">]</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In fact, since we will need to do this kind of thing all the time (turning an identifier into a name) we can even write out very own syntax class to help out!</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin-for-syntax))" style="color: inherit">begin-for-syntax</a></span>
+<span class="w">  </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-specifying.html#(form._((lib._syntax/parse..rkt)._define-syntax-class))" style="color: inherit">define-syntax-class</a></span><span class="w"> </span><span class="n">binding</span>
+<span class="w">    </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-specifying.html#(form._((lib._syntax/parse..rkt)._pattern))" style="color: inherit">pattern</a></span><span class="w"> </span><span class="n">x:id</span><span class="w"> </span><span class="kd">#:with</span><span class="w"> </span><span class="n">name</span><span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/symbols.html#(def._((quote._~23~25kernel)._symbol-~3estring))" style="color: inherit">symbol-&gt;string</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stxops.html#(def._((quote._~23~25kernel)._syntax-e))" style="color: inherit">syntax-e</a></span><span class="w"> </span><span class="o">#'</span><span class="n">x</span><span class="p">)))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Notice how this uses both the :id syntax class and the #:with shorthand to introduce a new piece of syntax. Now in the original code we can write this to get at it</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">ident:binding</span><span class="p">)</span>
+<span class="w">     </span><span class="o">#''</span><span class="p">((</span><span class="ss">ldvar</span><span class="w"> </span><span class="ss">ident.name</span><span class="p">)))</span><span class="err">]</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Very nice, yes?</p>
+
+<h1 id="level-up">Level up</h1>
+
+<p>Now let&rsquo;s see how we can use this previous macro in the context of other macros. Let&rsquo;s re-visit def. We wanted to write</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">42</span><span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The macro pretty much writes itself</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define-syntax))" style="color: inherit">define-syntax</a></span><span class="w"> </span><span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">stx</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Parsing_Syntax.html#(form._((lib._syntax/parse..rkt)._syntax-parse))" style="color: inherit">syntax-parse</a></span><span class="w"> </span><span class="n">stx</span><span class="w">             </span>
+<span class="w">    </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">id:binding</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span>
+<span class="w">    </span><span class="o">#'`</span><span class="p">(</span><span class="w"> </span><span class="c1">;expr should calculate some value on the stack, or load a constant</span>
+<span class="w">       </span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span>
+<span class="w">       </span><span class="p">(</span><span class="ss">stvar</span><span class="w"> </span><span class="ss">id.name</span><span class="p">)))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>So, we tell the macro to expect two bits of syntax, the first must match our handy <em>binding</em> syntax class from before, and some <em>expr</em>. Now, we don&rsquo;t know what <em>expr</em> is - it could be anything. Thankfully, our equally-handy <em>eval-arg</em> macro will sort it out for us. Notice here we are using a slightly different syntax to return the syntax object, usually we use #&rsquo;&rsquo;( ) but here we are using a backtick instead. This is because we are returning a quoted list, but there&rsquo;s one part of the list we <em>don&rsquo;t</em> want quoted, because we want racket to expand it - that is of course the <em>eval-arg</em> macro, which you can see is prefixed with , - a shorthand for <em>unquote</em>. If this doesn&rsquo;t make sense, study and play with it until it does, since it is very important and part of the secret sacue that makes writing these so nice.</p>
+
+<p>As an illustrative example, if we had not used the unquote, it would have simply returned a list of symbols ((eval-arg expr) (stvar &ldquo;x&rdquo;)). This is not what we want, eval-arg is not an opcode - what we wanted is for it to expand out to ((ldvals &ldquo;hello world&rdquo;)(stvar &ldquo;x&rdquo;)) or similar.</p>
+
+<p>Let&rsquo;s actually see this in action. First let&rsquo;s write a cool macro that will produce the assembly code for the VM to add two numbers together. It needs to load the numbers onto the stack and call the add instruction.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">add</span><span class="w">     </span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="n">right</span><span class="p">)</span>
+<span class="w">    </span><span class="o">#'`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">left</span><span class="p">)</span>
+<span class="w">        </span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">right</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="ss">add</span><span class="p">))])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Easy! Here we are using the shorthand <em>define-syntax-parser</em> so we don&rsquo;t have to keep writing the redundant <em>define-syntax</em>, <em>syntax-parse</em> stuff. The nested macros make short work of this task and our wonderful add macro will work with any constants <em>or nested expressions</em> just as you would expect it to.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">42</span><span class="p">)</span>
+<span class="c1">; this works!  </span>
+<span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="p">(</span><span class="n">add</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">58</span><span class="p">))</span>
+<span class="c1">; so does this!!</span>
+<span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="p">(</span><span class="n">add</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="p">(</span><span class="n">add</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="n">x</span><span class="p">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>What about if we want our add macro to take more than two numbers, in the typical lisp style? For example, I&rsquo;d like to write (def z (add y z x)). Enter the ellipsis!</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">add</span><span class="w">     </span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="n">right</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="o">#'`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">left</span><span class="p">)</span>
+<span class="w">        </span><span class="p">((</span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">right</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="ss">add</span><span class="p">))</span><span class="w"> </span><span class="ss"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The use of the ellipsis here means the argument <em>right</em> can represent any amount of arguments. Then, in the syntax that is returned, we wrap the expression we want to repeat for each instance of <em>right</em> in some more parens and place the &hellip; after. The result of this is the following; If you call (add 1 2), after its nested macro expansion, you would get</p>
+
+<p>(ldval 1) (ldval 2) (add)</p>
+
+<p>And if you call (add 1 2 3 4) you will get</p>
+
+<p>(ldval 1) (ldval 2) (add) (ldval 3) (add) (ldval 4) (add)</p>
+
+<p>Very awesome, yes? (n.b. actually, there would be a few more parens in there due to the extra ones we had to put in to get the ellipsis pattern to work, I left them out here for readability - the assembler removes any excess)</p>
+
+<h1 id="further-adventures-in-macro-land">Further adventures in macro land</h1>
+
+<p>Let&rsquo;s try something else. The language is pretty terrible with no conditionals and logical functions in it. We will try and implement <em>and</em>. The <em>and</em> macro should take any amount of expressions, evaluate them, and if any return <em>false</em> then we short-circuit out and load the constant value 0 on stack. If all return true, we load the constant value 1 on the stack.</p>
+
+<p>This needs some new bits to help it along - the assembler and bytecode can only deal in jumps to explict locations in memory, so we will need a way to label instructions so they can be used as jump targets. The assembler itself already supports this, and the details are out of scope of this post - let&rsquo;s look at the macro</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">expr</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/syntax-util.html#(form._((lib._racket/syntax..rkt)._with-syntax*))" style="color: inherit">with-syntax*</a></span>
+<span class="w">     </span><span class="p">([</span><span class="n">when-false</span><span class="w"> </span><span class="p">(</span><span class="n">new-label</span><span class="p">)]</span>
+<span class="w">      </span><span class="p">[</span><span class="n">end</span><span class="w"> </span><span class="p">(</span><span class="n">new-label</span><span class="p">)]</span>
+<span class="w">      </span><span class="p">[(</span><span class="n">cases</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">       </span><span class="o">#'`</span><span class="p">((</span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span>
+<span class="w">            </span><span class="p">(</span><span class="ss">ldvalb</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">(</span><span class="ss">beq</span><span class="w"> </span><span class="ss">when-false</span><span class="p">))</span><span class="ss"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)])</span>
+<span class="w">     </span><span class="o">#'`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="n">cases</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="ss">ldvalb</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="ss">branch</span><span class="w"> </span><span class="ss">end</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="ss">when-false</span><span class="w"> </span><span class="ss">ldvalb</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="ss">end</span><span class="p">)))])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Hmm, what&rsquo;s going on here! A bunch of new stuff. Firstly, the <em>with-syntax*</em> form alows you to introduce several bits of syntax, where later ones are able to reference the earlier ones.</p>
+
+<p>You can see two labels are introduced <em>when-false</em> and <em>end</em> (the details are not important, its basically just a unique string). The we have some magic in <em>cases &hellip;</em>. You can see on the left hand side of the expression we have an ellipsis - this says that we are creating several bits of syntax here that we can refer to later, based on the ellipsis in the parent syntax, in this case our sequence of <em>expr</em> expressions.</p>
+
+<p>So, the implementation of a <em>case</em> is to evaluate the expression, load 0 on the to stack and then call the branch-equal (beq) opcode with the jump target of <em>when-false</em>. This is basically going to check each expression result against 0 (false) and if it is, then jump to the <em>when-false</em> label, short-circuiting the evaluation of the rest of the exressions.</p>
+
+<p>You can see then in the actual syntax that is returned, the first thing that happens is that the <em>cases &hellip;</em> syntax is spliced in using the unuqote mechanism. We know that if we reach the code beyond the cases, they must have all returned true - so we load 1 onto the stack and uncondtionally branch to the <em>end</em> label. Next, you can see the <em>when-false</em> label which loads 0 onto the stack and continues. Finally. the <em>end</em> label which signifies where whatever the next code to be assembled is.</p>
+
+<p>(note - the <em>cases &hellip;</em> did not have to be introduced in the <em>with-syntax</em>, it could have just been in the body like before - I was showing alternate ways to include ellipsis based syntax)</p>
+
+<h1 id="macros-in-macros-in-macros-in-macros-">Macros in macros in macros in macros &hellip;</h1>
+
+<p>Let&rsquo;s take this to the next level by introducing a truly higher level macro, that is defined almost entirely using other macros. drey-vm has the concept of what I have called <em>flowroutines</em> TM. As their name indicates, they are similar to co-routines, and seamlessly handle getting a response from a particular client. To use them, you create a <em>flow</em> object and add a bunch of &ldquo;choices&rdquo; into it - these are basically a string and an index. Upon calling the opcode <em>suspend</em>, the VM will turn the flow object into a json request, send it to the client over ZMQ and suspend execution until it gets a result. When the client responds, the VM can assert the response is a valid one and then load the client&rsquo;s choice index on to the stack and continue executing. Here is an example on how it looks in a game I am writing.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w"> </span><span class="p">(</span><span class="n">def-λ</span><span class="w"> </span><span class="p">(</span><span class="n">enter-temple</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="p">)</span>
+<span class="w">   </span><span class="c1">;player can donate up to three coins to the temple</span>
+<span class="w">   </span><span class="p">(</span><span class="n">extract</span><span class="w"> </span><span class="p">([(</span><span class="n">clientid</span><span class="w"> </span><span class="n">coins</span><span class="p">)</span><span class="w"> </span><span class="n">player</span><span class="p">])</span>
+<span class="w">     </span><span class="p">(</span><span class="n">def-λ</span><span class="w"> </span><span class="p">(</span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="n">n</span><span class="p">)</span>
+<span class="w">       </span><span class="p">(</span><span class="n">prop-=</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="s2">"coins"</span><span class="w"> </span><span class="n">n</span><span class="p">)</span>
+<span class="w">       </span><span class="p">(</span><span class="n">prop+=</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="s2">"points"</span><span class="w"> </span><span class="n">n</span><span class="p">)</span>
+<span class="w">       </span><span class="p">(</span><span class="n">prop+=</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="w"> </span><span class="p">(</span><span class="n">concat</span><span class="w"> </span><span class="n">clientid</span><span class="w"> </span><span class="s2">"-coins"</span><span class="p">)</span><span class="w"> </span><span class="n">n</span><span class="p">))</span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="p">(</span><span class="n">gt</span><span class="w"> </span><span class="n">coins</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">       </span><span class="p">(</span><span class="n">flow</span><span class="w"> </span><span class="n">clientid</span><span class="w"> </span><span class="s2">"donate to the temple"</span>
+<span class="w">         </span><span class="p">([</span><span class="no">#t</span><span class="w">           </span><span class="s2">"1 coin"</span><span class="w">  </span><span class="p">(</span><span class="n">~</span><span class="w"> </span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="mi">1</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[(</span><span class="n">gt</span><span class="w"> </span><span class="n">coins</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="s2">"2 coins"</span><span class="w"> </span><span class="p">(</span><span class="n">~</span><span class="w"> </span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="mi">2</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[(</span><span class="n">gt</span><span class="w"> </span><span class="n">coins</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="s2">"3 coins"</span><span class="w"> </span><span class="p">(</span><span class="n">~</span><span class="w"> </span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="mi">3</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="no">#t</span><span class="w">           </span><span class="s2">"do <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> donate"</span><span class="w"> </span><span class="o">'</span><span class="p">()])))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>There&rsquo;s several other scurry things you have not seen yet, including lambda functions with closures, <em>extract</em> which is a form of pattern matching, and function application ( ~ ). <em>flow</em> is what we are interested in here, though. You can see it accepts a clientid and some title, then it is followed by a list of expressions. Each expression starts with a predicate that determines if this choice shoud be included, then a name for the choice, and finally, an expression that will be evaluated if the user chooses that particular choice.</p>
+
+<p>They way I wrote this (and all the other higher level macros) is to simply write the syntax how I would like to use it (as above), then re-write what it will need to look like expanded, and finally attempt to write a macro to convert from one to the other. So, in this case, I would like the (flow &hellip;) expression above to be re-written to the following, rather boring and full of boiler-plate code, that has nothing do with the actual itent of what is happening:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">def-flow</span><span class="w"> </span><span class="n">some-generated-name</span><span class="w"> </span><span class="s2">"enter temple"</span><span class="p">)</span>
+<span class="c1">; add cases</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="no">#t</span>
+<span class="w">  </span><span class="p">(</span><span class="n">add-flow-action</span><span class="w"> </span><span class="n">some-generated-name</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="s2">"1 coin"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="p">(</span><span class="n">gt</span><span class="w"> </span><span class="n">coins</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="n">add-flow-action</span><span class="w"> </span><span class="n">some-generated-name</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="s2">"2 coins"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="p">(</span><span class="n">gt</span><span class="w"> </span><span class="n">coins</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="n">add-flow-action</span><span class="w"> </span><span class="n">some-generated-name</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="s2">"3 coins"</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/when_unless.html#(form._((lib._racket/private/letstx-scheme..rkt)._when))" style="color: inherit">when</a></span><span class="w"> </span><span class="no">#t</span>
+<span class="w">  </span><span class="p">(</span><span class="n">add-flow-action</span><span class="w"> </span><span class="n">some-generated-name</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="s2">"do <a href="http://docs.racket-lang.org/reference/booleans.html#(def._((quote._~23~25kernel)._not))" style="color: inherit">not</a> donate"</span><span class="p">))</span>
+<span class="c1">; suspend to client</span>
+<span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">another-generated-name</span><span class="w"> </span><span class="p">(</span><span class="n">flow</span><span class="w"> </span><span class="n">some-generated-name</span><span class="w"> </span><span class="n">clientid</span><span class="p">))</span>
+<span class="c1">; dispatch based on response</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._cond))" style="color: inherit">cond</a></span>
+<span class="w">    </span><span class="p">[(</span><span class="n">eq</span><span class="w"> </span><span class="n">another-generated-name</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">~</span><span class="w"> </span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="mi">1</span><span class="p">)]</span>
+<span class="w">    </span><span class="p">[(</span><span class="n">eq</span><span class="w"> </span><span class="n">another-generated-name</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">~</span><span class="w"> </span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="mi">2</span><span class="p">)]</span><span class="w">  </span>
+<span class="w">    </span><span class="p">[(</span><span class="n">eq</span><span class="w"> </span><span class="n">another-generated-name</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">~</span><span class="w"> </span><span class="n">coins-&gt;temple</span><span class="w"> </span><span class="mi">3</span><span class="p">)]</span>
+<span class="w">    </span><span class="p">[(</span><span class="n">eq</span><span class="w"> </span><span class="n">another-generated-name</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="p">()])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I think we can agree, the proposed syntax is way nicer than having to manually write that lot all the time! However, it sems like a tall order - somehow we have to generate those index numbers, and although we are repeating code for each input case, we need several pieces of generated code in different places - how is it going to work? Amazingly, it is not that diffcult - other than a trick to generate the index numbers.</p>
+
+<p>Let&rsquo;s start with the flow clauses. They consist of three expressions each, and there may be several of them. Racket allows us to define a <em>splicing syntax class</em> that is exactly the same as the syntax classes we&rsquo;ve already seen except it works with ellipsis patterns. Here it is:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin-for-syntax))" style="color: inherit">begin-for-syntax</a></span>
+<span class="w">  </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-specifying.html#(form._((lib._syntax/parse..rkt)._define-splicing-syntax-class))" style="color: inherit">define-splicing-syntax-class</a></span><span class="w"> </span><span class="n">flow-clauses</span>
+<span class="w">    </span><span class="p">[</span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-specifying.html#(form._((lib._syntax/parse..rkt)._pattern))" style="color: inherit">pattern</a></span><span class="w"> </span><span class="p">{</span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-patterns.html#(form._((lib._syntax/parse..rkt)._~7eseq))" style="color: inherit">~seq</a></span><span class="w"> </span><span class="p">[</span><span class="n">eq-expr</span><span class="w"> </span><span class="n">case-title-expr</span><span class="w"> </span><span class="n">true-expr</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">}</span>
+<span class="w">             </span><span class="kd">#:with</span><span class="w"> </span><span class="p">[</span><span class="n">n</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/strings.html#(def._((lib._racket/format..rkt)._~7ea))" style="color: inherit">~a</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._range))" style="color: inherit">range</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._length))" style="color: inherit">length</a></span><span class="w"> </span><span class="p">(</span><span class="n">attribute</span><span class="w"> </span><span class="n">eq-expr</span><span class="p">))))]))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here you can see we expect a <em>flow-clause</em> to contain three expressions in brackets, and indicate there may be many of them with the ellipsis at the end. The #:with is some magic I struggled to get to work - however it is very similar to the <em>cases</em> from earlier - it indicates there will be one <em>n</em> for each pattern, and we produce a list of numbers from 0 to the amount of patterns that exist by using the <em>range</em> function and testing the <em>eq-expr</em> attribute&rsquo;s length from the syntax.</p>
+
+<p>Phew, that was a bit of a hard one. Thankfully, with that bit written and functioning, the rest is actually fairly striaght forward. Notice how it closely resembles the manually written out version above.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">flow</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="n">title-expr</span><span class="w"> </span><span class="p">(</span><span class="n">expr:flow-clauses</span><span class="p">))</span>
+<span class="w">   </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._with-syntax))" style="color: inherit">with-syntax</a></span>
+<span class="w">     </span><span class="p">([</span><span class="n">flow-name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/symbols.html#(def._((quote._~23~25kernel)._string-~3esymbol))" style="color: inherit">string-&gt;symbol</a></span><span class="w"> </span><span class="p">(</span><span class="n">new-var</span><span class="p">))]</span>
+<span class="w">      </span><span class="p">[</span><span class="n">resp-name</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/symbols.html#(def._((quote._~23~25kernel)._string-~3esymbol))" style="color: inherit">string-&gt;symbol</a></span><span class="w"> </span><span class="p">(</span><span class="n">new-var</span><span class="p">))])</span>
+<span class="w">   </span><span class="o">#'`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="n">def-flow</span><span class="w"> </span><span class="n">flow-name</span><span class="w"> </span><span class="n">title-expr</span><span class="p">)</span>
+<span class="w">       </span><span class="p">((</span><span class="o">,</span><span class="p">(</span><span class="n">s-when</span><span class="w"> </span><span class="n">expr.eq-expr</span>
+<span class="w">          </span><span class="p">(</span><span class="n">add-flow-action</span><span class="w"> </span><span class="n">flow-name</span><span class="w"> </span><span class="n">expr.n</span><span class="w"> </span><span class="n">expr.case-title-expr</span><span class="p">))</span><span class="ss"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span><span class="w">  </span>
+<span class="w">       </span><span class="o">,</span><span class="p">(</span><span class="n">def</span><span class="w"> </span><span class="n">resp-name</span><span class="w"> </span><span class="p">(</span><span class="n">flow</span><span class="w"> </span><span class="n">flow-name</span><span class="w"> </span><span class="n">client</span><span class="p">))</span>
+<span class="w">       </span><span class="o">,</span><span class="p">(</span><span class="n">s-cond</span>
+<span class="w">          </span><span class="p">[(</span><span class="n">eq</span><span class="w"> </span><span class="n">resp-name</span><span class="w"> </span><span class="n">expr.n</span><span class="p">)</span><span class="w"> </span><span class="n">expr.true-expr</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">       </span><span class="p">))]</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">req</span><span class="w"> </span><span class="n">client</span><span class="p">)</span>
+<span class="w">   </span><span class="o">#'`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">req</span><span class="p">)</span>
+<span class="w">       </span><span class="o">,</span><span class="p">(</span><span class="n">eval-arg</span><span class="w"> </span><span class="n">client</span><span class="p">)</span>
+<span class="w">       </span><span class="p">(</span><span class="ss">suspend</span><span class="p">))])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Notice here how we use the ellipsis <em>twice</em> in this to generate code for the whens and the cond - racket is perfectly happy with this and pretty much does exactly what you expect! Fairly amazing stuff! The case at the bottom is an overloaded <em>flow</em> that does the actual work of loading the flow object, client, and calling <em>suspend</em> with it.</p>
+
+<h1 id="end">End</h1>
+
+<p>I hope this post has given you some idea on the power of these racket macros! I still have a long way to go, no doubt - I am constantly surprised with the new stuff I learn. If you want to see more of these macros for scurry (there&rsquo;s over 1k lines of them) you can have a look in my <a href="https://github.com/pezipink/scurry/blob/master/asm.rkt">github here</a>. If you are interested in seeing more of these or would like to know more about the virtual machine itself, please let me know in the comments!</p>
+
+<p>Happy macroing !</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\08\10\lexical-scoping-and-redefining-function-application/">&larr; <em>Lexical scoping and redefining function application</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\05\30\asi64/"><em>Asi64</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2017\08\04\racket-macros-scurry/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

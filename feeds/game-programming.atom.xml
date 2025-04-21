@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+ <title type="text">Pink Squirrel Labs: Posts tagged 'game programming'</title>
+ <link rel="self" href="http://www.pinksquirrellabs.com/feeds\game-programming.atom.xml" />
+ <link href="http://www.pinksquirrellabs.com/tags\game-programming.html" />
+ <id>urn:http-www-pinksquirrellabs-com:-tags-game-programming-html</id>
+ <updated>2012-07-13T11:10:00Z</updated>
+ <entry>
+  <title type="text">PezHack–Abstracting flow control with monads</title>
+  <link rel="alternate" href="http://www.pinksquirrellabs.com/blog\2012\07\13\pezhack-abstracting-flow-control-with-monads/?utm_source=game-programming&amp;utm_medium=Atom" />
+  <id>urn:http-www-pinksquirrellabs-com:-blog-2012-07-13-pezhack-abstracting-flow-control-with-monads</id>
+  <published>2012-07-13T11:10:00Z</published>
+  <updated>2012-07-13T11:10:00Z</updated>
+  <author>
+   <name>pezi</name></author>
+  <content type="html">
+&lt;p&gt;It's been forever since I last posted, I worked quite a bit on PezHack and then stopped for a while. I'm back to it now. In this post I will describe a technique I used to greatly reduce the amount of code and abstract away some repetitive imperative code.&lt;/p&gt;
+
+&lt;h3&gt;The Problem&lt;/h3&gt;
+
+&lt;p&gt;PezHack is a turn based game. The screen does not re-render itself all the time like a real-time game, but only when something changes and at the end of a the player's turn. The agent-based approach I used to separate the various sub systems of the game allow me to provide isolation around the graphics processing. The graphics agent is totally responsible for knowing what it needs to draw and will draw it on demand when it receives the relevant message. It does not really know anything else about the game state at all except the visual data of the various tiles that are visible, some player data that allow it to draw the various data about the player, and any menus / other UI that it needs to draw. Other systems can send it messages to inform it of some new visual state it should care about.&lt;/p&gt;
+
+&lt;p&gt;Most actions that Pezi can perform require some form of additional input and conditional flow logic. For example, when you press the 'e' key to Eat, first a menu is displayed that shows the stuff in your inventory that is edible, if possible. If not it will display a message and not end the player's turn. Assuming the menu is displayed, the player then presses the key that relates to the item they wish to eat from the menu. If this key is invalid a relevant message is displayed, else the item in question is eaten. What then happens is dependent on the item, it might provide sustenance, or if it's a mushroom it could perform one of various kinds of effects, and then probably end the player's turn&lt;/p&gt;
+
+&lt;p&gt;This is a common pattern that appears everywhere, and at each stage the graphics need to be re-drawn to show the various messages, menus and so on. At each stage it might continue or it might not depending the player's input, and the returns differs at each stage (end the player turn, or not, for example). In an imperative language we would almost certainly model this control flow with a bunch of nested if/then/else statements which quickly gets ugly. Because I am using the agent based approach for the graphics, I would also need to post a request to the graphics agent each and every time I needed the changes to show on the screen, so suddenly the actions become a list of imperative statements peppered with common code to keep the screen updated.&lt;/p&gt;
+&lt;!-- more--&gt;
+
+&lt;h3&gt;&lt;/h3&gt;
+
+&lt;h3&gt;The Solution&lt;/h3&gt;
+
+&lt;p&gt;This can be drastically improved with the use of a fairly simple monad. The Maybe monad allows you to remove flow control elements such as nested if / then / else statements, so my monad is based around the Maybe monad with some extra stuff built in to help handle graphics and input. It have called it the Action monad and it works as follows.&lt;/p&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;You supply it two functions and a tuple. &lt;em&gt;Before,&lt;strong&gt;&lt;/strong&gt;InputPred&lt;/em&gt;and &lt;em&gt;Fail&lt;/em&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;em&gt;Before&lt;/em&gt; is of type &lt;em&gt;(unit-&amp;gt;'e)&lt;/em&gt;and it is immediately executed with its result bound to a value&lt;/li&gt;
+ &lt;li&gt;A cycle is then entered that displays any messages in the queue and draws the screen. If there are more than three messages, it only shows three and prompts the player to press  to show more.&lt;/li&gt;
+ &lt;li&gt;Next, &lt;em&gt;InputPred&lt;/em&gt;of type &lt;em&gt;('e-&amp;gt;'f option)&lt;/em&gt; is applied the the result of &lt;em&gt;Before&lt;/em&gt;&lt;/li&gt;
+ &lt;li&gt;If this results in &lt;em&gt;Some 'f&lt;/em&gt; then the monad binds successfully and will continue with the next expressions, passing along the &lt;em&gt;'f&lt;/em&gt; result.&lt;/li&gt;
+ &lt;li&gt;Otherwise, it looks at the tuple &lt;em&gt;Fail&lt;/em&gt; of type &lt;em&gt;(string option * 'g).&lt;/em&gt; If a string is supplied it is passed to the graphics engine and the message cycle is entered until all messages are processed, and it finally returns &lt;em&gt;'g&lt;/em&gt; (in the future i might just make this a function, but at the moment all fail cases only need to show some message to the user rather than perform some other action)&lt;/li&gt;&lt;/ul&gt;
+
+&lt;p&gt;As you can see it is quite generic, and it turns out this monad is quite useful in a variety of areas of the game, not just for actions. I ended up replacing a large part of the core game loop and significantly simplifying it. Here is the code for it first :&lt;/p&gt;
+
+&lt;div class="brush: fsharp"&gt;
+ &lt;div class="highlight"&gt;
+  &lt;table class="highlighttable"&gt;
+   &lt;tbody&gt;
+    &lt;tr&gt;
+     &lt;td class="linenos"&gt;
+      &lt;div class="linenodiv"&gt;
+       &lt;pre&gt;&lt;span class="normal"&gt; 1&lt;/span&gt;
+&lt;span class="normal"&gt; 2&lt;/span&gt;
+&lt;span class="normal"&gt; 3&lt;/span&gt;
+&lt;span class="normal"&gt; 4&lt;/span&gt;
+&lt;span class="normal"&gt; 5&lt;/span&gt;
+&lt;span class="normal"&gt; 6&lt;/span&gt;
+&lt;span class="normal"&gt; 7&lt;/span&gt;
+&lt;span class="normal"&gt; 8&lt;/span&gt;
+&lt;span class="normal"&gt; 9&lt;/span&gt;
+&lt;span class="normal"&gt;10&lt;/span&gt;
+&lt;span class="normal"&gt;11&lt;/span&gt;
+&lt;span class="normal"&gt;12&lt;/span&gt;
+&lt;span class="normal"&gt;13&lt;/span&gt;
+&lt;span class="normal"&gt;14&lt;/span&gt;
+&lt;span class="normal"&gt;15&lt;/span&gt;
+&lt;span class="normal"&gt;16&lt;/span&gt;
+&lt;span class="normal"&gt;17&lt;/span&gt;
+&lt;span class="normal"&gt;18&lt;/span&gt;
+&lt;span class="normal"&gt;19&lt;/span&gt;
+&lt;span class="normal"&gt;20&lt;/span&gt;
+&lt;span class="normal"&gt;21&lt;/span&gt;
+&lt;span class="normal"&gt;22&lt;/span&gt;
+&lt;span class="normal"&gt;23&lt;/span&gt;
+&lt;span class="normal"&gt;24&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+     &lt;td class="code"&gt;
+      &lt;div&gt;
+       &lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nc"&gt;ActionBuilder&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;graphics&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nn"&gt;Graphics&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;GraphicsProcessor&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="k"&gt;member&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;Delay&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="bp"&gt;()&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="k"&gt;member&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;Bind&lt;/span&gt;&lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;before&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;inputPred&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fail&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;result&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;before&lt;/span&gt;&lt;span class="bp"&gt;()&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="c1"&gt;// cycle through any pending messages that might have been created in before() (or before before!)&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;rec&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;pending&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;more&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;state&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;then&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;graphics&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ProcessStatusMessages&lt;/span&gt;&lt;span class="bp"&gt;()&lt;/span&gt;
+&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;graphics&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Render&lt;/span&gt;&lt;span class="bp"&gt;()&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;more&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;then&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;
+&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;c&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;TCODConsole&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;waitForKeypress&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;KeyCode&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;TCODKeyCode&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Space&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;then&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;pending&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;
+&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;pending&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;false&lt;/span&gt;
+&lt;span class="w"&gt;                &lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="n"&gt;pending&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="k"&gt;match&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;inputPred&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;with&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Some&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;Option&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;isSome&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fst&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fail&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;then&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;graphics&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;QueueStatusMessage&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;fst&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fail&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;Value&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;Common&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;NormalMessageColour&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;pending&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;
+&lt;span class="w"&gt;            &lt;/span&gt;&lt;span class="n"&gt;snd&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fail&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="k"&gt;member&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;Return&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;Now let's see how this is used. First I will show the simplest action, which is quit. When the quit key is pressed, a message appears asking if they really want to quit, and if they then press 'y' then a QuitGame response is issued.&lt;/p&gt;
+
+&lt;div class="brush: fsharp"&gt;
+ &lt;div class="highlight"&gt;
+  &lt;table class="highlighttable"&gt;
+   &lt;tbody&gt;
+    &lt;tr&gt;
+     &lt;td class="linenos"&gt;
+      &lt;div class="linenodiv"&gt;
+       &lt;pre&gt;&lt;span class="normal"&gt;1&lt;/span&gt;
+&lt;span class="normal"&gt;2&lt;/span&gt;
+&lt;span class="normal"&gt;3&lt;/span&gt;
+&lt;span class="normal"&gt;4&lt;/span&gt;
+&lt;span class="normal"&gt;5&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+     &lt;td class="code"&gt;
+      &lt;div&gt;
+       &lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;QuitAction&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;action&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nn"&gt;ActionBuilder&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ActionBuilder&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;action&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="k"&gt;let!&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;_&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="k"&gt;fun&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="bp"&gt;()&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;QueueStatusMessage&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;"Are you sue you wish to quit? y/n"&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;Common&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;NormalMessageColour&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt;
+&lt;span class="w"&gt;                  &lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;fun&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;_&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;c&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;libtcod&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;TCODConsole&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;waitForKeypress&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;                            &lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Character&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="sc"&gt;&amp;#39;y&amp;#39;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;then&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Some&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="o"&gt;),(&lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="n"&gt;End&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="k"&gt;return&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;QuitGame&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;The &lt;em&gt;Before&lt;/em&gt; function displays some text asking if the user really wants to quit the game. The next function then waits for a key press, and if it;s a 'y' character then Some is returned (with &lt;em&gt;true,&lt;/em&gt;just because it needs to return something, even though we don't care about it). If they press anything else, then &lt;em&gt;None&lt;/em&gt; is returned, which means the last parameter &lt;em&gt;(None,End)&lt;/em&gt; is acted upon, which means it prints no text and returns the &lt;em&gt;End&lt;/em&gt;message. This stops the action message at that point and &lt;em&gt;End&lt;/em&gt; does not end the player's turn so they are free to do something else before the monsters move. Assuming they press 'y', the rest of the function executes and returns the &lt;em&gt;QuitGame&lt;/em&gt; message which eventually results in the game ending.&lt;/p&gt;
+
+&lt;p&gt;Now I will return to the Eat action explained above as its significantly more complex:&lt;/p&gt;
+
+&lt;p&gt;let EatAction (action:ActionBuilder.ActionBuilder) p = action {
+ &lt;br /&gt; let! items = ((fun () -&amp;gt; p.d.Inventory.FilterType (function ItemData.Comestible(&lt;em&gt;) | ItemData.Mushroom(&lt;/em&gt;) -&amp;gt; true | _ -&amp;gt; false)),  (fun comestible -&amp;gt; if comestible.Count &amp;gt; 0 then Some(comestible) else None),(Some &amp;ldquo;You have nothing to eat&amp;rdquo;, End))
+ &lt;br /&gt; let! id = ((fun () -&amp;gt; p.g.DisplayMenu &amp;ldquo;Eat what?&amp;rdquo; (ItemData.Inventory.ToMenu items) ""),  (fun () -&amp;gt; let c = TC.waitForKeypress(true)  items |&amp;gt; Map.tryFindKey( fun k v -&amp;gt; v.Letter = c.Character)), (Some &amp;ldquo;The things squirrels will try and eat..&amp;rdquo;, End))  match items.[id].Type with  | ItemData.Mushroom(data) -&amp;gt;
+ &lt;br /&gt; p.w.AddOrUpdateEntity  failwith ""; return End } ```&lt;/p&gt;
+
+&lt;p&gt;The monad is invoked, with the &lt;em&gt;Before&lt;/em&gt; function which filters the players inventory to stuff that is edible. The results of this are then passed into the input predicate function (the wonders of type inference make this just work with no type annotations) and checks if the filtered items contain any data, if they don't it returns &lt;em&gt;None&lt;/em&gt; and then finally the message is displayed indicating the player has nothing to eat, and execution halts there returning &lt;em&gt;End&lt;/em&gt;(allowing the player to do something else this turn). Assuming there were items, they are now bound to &lt;em&gt;items&lt;/em&gt;. Another action monad is then invoked that displays a menu containing the filtered items in the &lt;em&gt;Before&lt;/em&gt; function. The input pred then takes player input, if it doesn't match a letter assigned to the item in the menu it prints a message and returns &lt;em&gt;End.&lt;/em&gt; otherwise, &lt;em&gt;id&lt;/em&gt; is bound to the id that the player selected. Finally, the item has some action invoked on it &amp;ndash; in this case only mushrooms are implemented, and it removes the mushroom from the players inventory (sending commands to the World agent telling it to update the player data), invokes the mushroom's specific action, issues another message to tell the World agent that this type of mushroom has now been identified, and finally returns a message that says the player's turn ends for 1 turn.&lt;/p&gt;
+
+&lt;p&gt;Pretty cool! The code above is only interested in the higher level stuff that is going on and doesn't need to care about display and flow control. Data from the first function can be passed to the second function, and early exit of the function is easily possible. The monad significantly reduced the actions code from almost 1000 lines to less than 350, and that includes Eat, Pickup, Drop, Move, Attack, Throw, Descend Level, Quit, Open, Close, Inventory, Wait, plus functions to merge items that have been dropped or thrown with existing stackable items on the floor where they land, selection menus and &amp;ldquo;modal&amp;rdquo; choice menus, plus various other helper functions.&lt;/p&gt;
+
+&lt;p&gt;Some actions such as Throw are really quite complex, you have to pick an item to throw, choose a direction to throw it, then show it being &amp;ldquo;animated&amp;rdquo; as it moves along the screen, and then finally (maybe) hit something, and either drop to the floor or attack an enemy which may result in other things happening &amp;ndash; now I can just look at the code and see what it's doing without having to dig about in a lot of essentially redundant nested code. Actions can also transfer execution to and from other actions.&lt;/p&gt;
+
+&lt;p&gt;Functional programming for the win &lt;img class="wlEmoticon wlEmoticon-smile" style="border-style: none;" src="../../../../../img/old/wlEmoticon-smile_1.png" alt="Smile" /&gt;&lt;/p&gt;</content></entry>
+ <entry>
+  <title type="text">PezHack–A Functional Roguelike</title>
+  <link rel="alternate" href="http://www.pinksquirrellabs.com/blog\2012\04\25\pezhack-a-functional-roguelike/?utm_source=game-programming&amp;utm_medium=Atom" />
+  <id>urn:http-www-pinksquirrellabs-com:-blog-2012-04-25-pezhack-a-functional-roguelike</id>
+  <published>2012-04-24T20:37:00Z</published>
+  <updated>2012-04-24T20:37:00Z</updated>
+  <author>
+   <name>pezi</name></author>
+  <content type="html">
+&lt;p&gt;In my quest to learn the functional paradigm, one thing I have struggled with is game development. Assuming I mostly stick to the functional style of having little to no mutable state, how do you go about writing games? Games are pretty much ALL mutable state. Obviously, in a multi-paradigm language like F# you can have mutable state - and if used judiciously this can be very effective (not to mention offer some significant performance improvements). The blend of imperative and functional styles can indeed work well, I wrote a few small games with XNA and F# using this approach. However, I am still more interested for educational value to stick with a more pure functional approach. Along they way I have wrote a few small games such as a functional console based Tetris in about 300 lines, and a two player console based PONG clone (using the libtcod library as I will introduce in a bit) that uses the Windows Kinect as the input (was cool!) In these programs I would tend to have the game state formed with an F# record that is copied/modified on each game cycle, passing the new state back into the loop. This works well and both of these games used no mutable state at all. This approach soon falls down with something more ambitious though, you can't realistically propagate the entire game state through one loop.&lt;/p&gt;
+
+&lt;h2&gt;The Roguelike&lt;/h2&gt;
+
+&lt;p&gt;I decided to create something a lot more complex whilst attempting to stick with the functional guns. If you don't know what a roguelike is you can read all about them &lt;a href="http://en.wikipedia.org/wiki/Roguelike" target="_blank"&gt;here&lt;/a&gt; and a great set of development resources with links to many on-going roguelike efforts &lt;a href="http://roguebasin.roguelikedevelopment.org/index.php/Main_Page" target="_blank"&gt;here&lt;/a&gt;. I used to play these games a lot. Stemmed from D&amp;amp;D back in the days where the only computers were the terminal sort in colleges in universities (before I was alive!), a roguelike traditionally uses just ASCII characters as its graphics, leaving the rest to the player's imagination. If you haven't tried this before I highly recommend you try one, Nethack is probably the biggest most complicated one out there, but you can also play the original Rouge (where the &lt;em&gt;roguelike&lt;/em&gt; genre name comes from) online &lt;a href="http://www.hexatron.com/rogue/" target="_blank"&gt;here&lt;/a&gt;. A few things that make a roguelike;&lt;/p&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;Random procedurally generated dungeons - every time you play there is a new dungeon&lt;/li&gt;
+ &lt;li&gt;Randomness in item drops - until things have been identified, you don't know what they are. The "clear potion" might be a healing potion in one game and a potion that causes severe hallucinations in the next&lt;/li&gt;
+ &lt;li&gt;Peramadeath and hard difficulty. These games are &lt;em&gt;&lt;strong&gt;hard.&lt;/strong&gt;&lt;/em&gt; Expect to die lots, and when you die you have to start again. Often the objective isn't to finish the game, but just see how long you can survive&lt;/li&gt;
+ &lt;li&gt;Roguelikes are usually turn-based affairs - although there is some variation with this&lt;/li&gt;
+ &lt;li&gt;Complexity - these games are amazingly complex and deep. The developer(s) don't have to worry about impressive graphics engines, so they can focus a lot more on interesting game mechanics. You will be amazed at some of the stuff you can do in a game like Nethack.&lt;/li&gt;&lt;/ul&gt;
+
+&lt;p&gt;Here's a picture from Nethack to illustrate how a typical roguelike looks :&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="http://www.pinksquirrellabs.com/img/old/Nethack-kernigh-22oct2005-25_thumb2.png"&gt;&lt;img style="background-image: none; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; padding-top: 0px; border: 0px;" title="Nethack-kernigh-22oct2005-25_thumb2" src="../../../../../img/old/Nethack-kernigh-22oct2005-25_thumb2_thumb.png" alt="Nethack-kernigh-22oct2005-25_thumb2" width="609" height="447" border="0" /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;!-- more--&gt;
+
+&lt;h2&gt;&amp;iquest; What Am I Trying To Achieve ?&lt;/h2&gt;
+
+&lt;p&gt;First and foremost this is another learning exercise. Programming games in a functional style is hard. There is Functional Reactive Programming which bases a lot of things on time, I have yet to try this. My approach will be to isolate the various subsystems and allows them to communicate only using Erlang style message passing. The F# mailbox processor is an awesome tool in the box to achieve this, and it also gives a way for each sub system to cycle and keep its own state whilst preventing anything else even seeing it unless expressed through messages.&lt;/p&gt;
+
+&lt;p&gt;As far as I can see there are virtually no RL's completed or in development using functional languages (except &lt;em&gt;LambdaHack,&lt;/em&gt;a RL engine written in Haskell), which is surprising because there are literally hundreds and hundreds out there. Some of the things I am hoping to achieve with my approach :&lt;/p&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;I have written a lot of game code of all kinds, from text based things, to 2D and 3D, on Amigas, Phones and PCs. I worked on a MMO Ultima Online server for 5 years. 90% of bugs in all games come from complex shared mutable state and huge object hierarchies. I am aiming to almost entirely remove this class of bug.&lt;/li&gt;
+ &lt;li&gt;Performance is not a concern, I am not worrying about memory footprints or speed. The game is turn based anyway. However, the systems are designed in a way where I could switch to using some faster imperative data structures in areas without compromising the safety provided by the message passing style.&lt;/li&gt;
+ &lt;li&gt;The ability to use discriminated unions, pattern matching, active patterns, higher order functions and other functional features to (hopefully) greatly ease the work required to add new features, items, or change existing mechanics.&lt;/li&gt;
+ &lt;li&gt;Produce a pretty complex RL with relatively little code. A game like Nethack is 145,000 lines of C (!!). Whilst this has been in development for about 25 years from lots of people, the staggering amount of code (given what the game is) can soon become all sorts of problems when you try to change or add anything.&lt;/li&gt;&lt;/ul&gt;
+
+&lt;p&gt;To attempt this I will be using the very awesome &lt;a href="http://doryen.eptalys.net/libtcod/features/" target="_blank"&gt;libtcod&lt;/a&gt;&lt;em&gt;&lt;/em&gt; which is a free library that provides a SDL based console capable of true colour. It has some nifty RL features built in such as Field of View calculators, Map generators, path finding algorithms and so on - I probably won't be using these bits as I would prefer to write my own, but may well take advantage of some to get the thing off the ground. I use this console for all my little games, simulations and demos these days - very cool!&lt;/p&gt;
+
+&lt;h2&gt;Initial Agent based systems&lt;/h2&gt;
+
+&lt;p&gt;Before anything interesting can happen I am going to need a way of rendering basic graphics. For this I will use a dedicated Agent that has isolated state from the rest of the system (as explained earlier.) In order to display graphics on the console I will need to know the following bits of information that represent how something is displayed:&lt;/p&gt;
+
+&lt;div class="brush: fsharp"&gt;
+ &lt;div class="highlight"&gt;
+  &lt;table class="highlighttable"&gt;
+   &lt;tbody&gt;
+    &lt;tr&gt;
+     &lt;td class="linenos"&gt;
+      &lt;div class="linenodiv"&gt;
+       &lt;pre&gt;&lt;span class="normal"&gt;1&lt;/span&gt;
+&lt;span class="normal"&gt;2&lt;/span&gt;
+&lt;span class="normal"&gt;3&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+     &lt;td class="code"&gt;
+      &lt;div&gt;
+       &lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Point&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;int&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Y&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;int&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nc"&gt;VisualData&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="n"&gt;Text&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;ForeColour&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;TCODColor&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;BackColour&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;TCODColor&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Option&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nc"&gt;EntityDisplayData&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Position&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;Point&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Visual&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;VisualData&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;ZOrder&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;int&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;Point is self explanatory, is used everywhere and is not specific to graphics. The VisualData record determines what should be displayed; Text is the string which should be displayed &amp;ndash; this mostly always going to be just a single character but may occasionally be a string. The two colours are self explanatory, except the back colour is an Option type &amp;ndash; this is so you don&amp;rsquo;t have to specify a back colour and it will be rendered with whatever the current backcolour at that cell is. I don&amp;rsquo;t think I will need this functionality for the forecolour as well but it will be easy to add later if required. Finally the EntityDisplayData record is what the graphics processor will care about &amp;ndash; this defines everything it needs to know about how to render something, with it having no idea what that something is. These three records are defined in the Common module where they can be accessed by the various other subsystems. The graphics processor itself is formed of a MailboxProcessor that takes a GraphicsMessage type, and internally cycles a state.&lt;/p&gt;
+
+&lt;div class="brush: fshapr"&gt;
+ &lt;div class="highlight"&gt;
+  &lt;table class="highlighttable"&gt;
+   &lt;tbody&gt;
+    &lt;tr&gt;
+     &lt;td class="linenos"&gt;
+      &lt;div class="linenodiv"&gt;
+       &lt;pre&gt;&lt;span class="normal"&gt; 1&lt;/span&gt;
+&lt;span class="normal"&gt; 2&lt;/span&gt;
+&lt;span class="normal"&gt; 3&lt;/span&gt;
+&lt;span class="normal"&gt; 4&lt;/span&gt;
+&lt;span class="normal"&gt; 5&lt;/span&gt;
+&lt;span class="normal"&gt; 6&lt;/span&gt;
+&lt;span class="normal"&gt; 7&lt;/span&gt;
+&lt;span class="normal"&gt; 8&lt;/span&gt;
+&lt;span class="normal"&gt; 9&lt;/span&gt;
+&lt;span class="normal"&gt;10&lt;/span&gt;
+&lt;span class="normal"&gt;11&lt;/span&gt;
+&lt;span class="normal"&gt;12&lt;/span&gt;
+&lt;span class="normal"&gt;13&lt;/span&gt;
+&lt;span class="normal"&gt;14&lt;/span&gt;
+&lt;span class="normal"&gt;15&lt;/span&gt;
+&lt;span class="normal"&gt;16&lt;/span&gt;
+&lt;span class="normal"&gt;17&lt;/span&gt;
+&lt;span class="normal"&gt;18&lt;/span&gt;
+&lt;span class="normal"&gt;19&lt;/span&gt;
+&lt;span class="normal"&gt;20&lt;/span&gt;
+&lt;span class="normal"&gt;21&lt;/span&gt;
+&lt;span class="normal"&gt;22&lt;/span&gt;
+&lt;span class="normal"&gt;23&lt;/span&gt;
+&lt;span class="normal"&gt;24&lt;/span&gt;
+&lt;span class="normal"&gt;25&lt;/span&gt;
+&lt;span class="normal"&gt;26&lt;/span&gt;
+&lt;span class="normal"&gt;27&lt;/span&gt;
+&lt;span class="normal"&gt;28&lt;/span&gt;
+&lt;span class="normal"&gt;29&lt;/span&gt;
+&lt;span class="normal"&gt;30&lt;/span&gt;
+&lt;span class="normal"&gt;31&lt;/span&gt;
+&lt;span class="normal"&gt;32&lt;/span&gt;
+&lt;span class="normal"&gt;33&lt;/span&gt;
+&lt;span class="normal"&gt;34&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+     &lt;td class="code"&gt;
+      &lt;div&gt;
+       &lt;pre&gt;&lt;span&gt;&lt;/span&gt;private GraphicsMessages =
+    | Render                of UnitReply
+    | ClearWorld            of UnitReply
+    | UpdateWorld           of EntityDisplayData list * UnitReply      
+    ....
+   
+type private GraphicsState =
+    { worldBuffer          : TC
+      primaryBuffer        : TC                  
+      entityDisplayData    : Map&amp;lt;Guid,EntityDisplayData&amp;gt;
+      ... }
+
+type GraphicsProcessor(width,height,fontFile) =
+   
+    do if System.IO.File.Exists(fontFile) = false then failwith &amp;lt;| sprintf "Could not find font file at location %s" fontFile
+    do TCODConsole.setCustomFont(fontFile,int TCODFontFlags.Grayscale ||| int TCODFontFlags.LayoutAsciiInRow)
+    do TCODConsole.initRoot(width,height,"Pezi - Pink Squirrel from the Abyss", false, TCODRendererType.SDL)
+
+    let agent = Agent&amp;lt;GraphicsMessages&amp;gt;.Start( fun inbox -&amp;gt;
+        let rec loop state = 
+            async { let! msg = inbox.Receive()
+                        match msg with
+                        | Render(reply) -&amp;gt;  
+			  reply.Reply()
+			  return! loop state
+                    ...             }
+        loop 
+             { worldBuffer           = new TC(width,height);
+               primaryBuffer         = new TC(width,height);
+               entityDisplayData     = Map.empty})
+    
+    member x.Render()                          =  agent.PostAndReply Render
+    member x.UpdateWorld displayData           =  agent.PostAndReply(fun reply -&amp;gt; UpdateWorld(displayData,reply))
+    member x.ClearWorld()                      =  agent.PostAndReply ClearWorld
+&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;(syntax highlighter messed up some of the indentation there..)&lt;/p&gt;
+
+&lt;p&gt;The messages and state are both private, consumers can post a message via members on the type that provide Post-And-Reply only functionality. That is, all the calls are effectively synchronous in as much as all calls wait for a reply from the agent before handing execution back to the calling thread. UnitReply is simply an alias for AsyncReplyChannel, Agent is MailboxProcessor and TC is the TCODConsole, all defined in the common module. This is the general approach that will be used for all the subsystems allowing me to maintain a high degree of isolation and separating concerns as much as possible. The only place state can ever be modified and selected elements of immutable state can be accessed is within or through these agent loops.&lt;/p&gt;
+
+&lt;p&gt;Obviously, I have not shown any of the actual implementation here and the graphics agent is substantially more fleshed out, currently having 10 messages and a state about double the size of the one shown here. Here is a pic of what it currently looks like (still very young!)&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="http://www.pinksquirrellabs.com/img/old/image_thumb3.png"&gt;&lt;img style="background-image: none; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; padding-top: 0px; border: 0px;" title="image_thumb3" src="../../../../../img/old/image_thumb3_thumb.png" alt="image_thumb3" width="785" height="421" border="0" /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;The total thing is about 1500 lines of F# at the moment, and it is somewhat operational with the main systems being in. These are comprised of :&lt;/p&gt;
+
+&lt;ul&gt;
+ &lt;li&gt;&lt;strong&gt;Graphics agent&lt;/strong&gt; &amp;ndash; handles maintaining all the state to do with drawing stuff on the screen, including the player stats and bits n the left, the messages at the bottom, any menus, the title screen, and so on.&lt;/li&gt;
+ &lt;li&gt;&lt;strong&gt;World agent&lt;/strong&gt; &amp;ndash; handles the actual world state itself, including accessing, adding, removing and updating map tiles, monsters, items, the player itself, field-of-view calculations, the current turn and so forth&lt;/li&gt;
+ &lt;li&gt;&lt;strong&gt;Player action agent&lt;/strong&gt; &amp;ndash; handles the input from the player and does stuff. This was one of the trickiest parts because many actions are split across input cycles, and some actions might fail but default to another action depending on some outcome. As an example of the former, if a player wants to throw something the game will ask what they want to throw and then which direction in which to throw it &amp;ndash; the agent must remember where it is in the cycle and be able to exit the cycle at any time (the player might press an invalid key or want to cancel). Depending on these choices the player&amp;rsquo;s turn might end, possibly for more than one turn, or not. Or the game might need to pass a few cycles without progressing the game state whilst it &amp;ldquo;animates&amp;rdquo; a flying projectile. In addition to this many of these sub-actions such as choosing something from the inventory or accepting a direction are shared by many different actions. (fun fun!). As an example of the latter, if a player tried to move into a door or a monster the state might change to ask if they want to open the door (switching into the open action) or automatically attack the monster. I plan to write a post about this one at a later date as it is quite an interesting problem to address. I wanted to address all of this in a general re-usable manner and not fully hard-code each action which would have been next to impossible without totally destroying my nice agent based approach.&lt;/li&gt;
+ &lt;li&gt;&lt;strong&gt;Monster action agent&lt;/strong&gt; &amp;ndash; similar to the player action agent except this obviously doesn&amp;rsquo;t require input, but might still need to perform &amp;ldquo;animation&amp;rdquo; and so on. The monster AI is executed here which will be fairly general so monsters can share common bits of AI and / or provide their own special bits.&lt;/li&gt;
+ &lt;li&gt;&lt;strong&gt;Event processor agent&lt;/strong&gt; &amp;ndash; this agent holds a list of events that are going to happen on a pre-determined turn, and on each turn anything up for action executes a function that it has been passed. This is used for all sorts of thing such as health re-generation, poison, spell effects, ominous messages, hunger, etc.&lt;/li&gt;&lt;/ul&gt;
+
+&lt;p&gt;In addition to this lot the basic concepts of combat are in along with the beginnings of an item and inventory system &amp;ndash; you can currently pick stuff up and use some of it, throw it around (and kill stuff in the process). Then there is the dungeon generator which is currently a fairly crude affair that I will focus on a lot more later.&lt;/p&gt;
+
+&lt;p&gt;I have already scrapped two approaches, this is my third go and its not coming on too badly so far, the agent system is very manageable and difficult to accidentally let it get out of control. The whole thing is likely still miles from being decent but it&amp;rsquo;s been a good learning experience so far.&lt;/p&gt;
+
+&lt;p&gt;Hopefully I will continue these posts, detailing some of the systems and sharing progress, but then I always post part 1 of articles and never get round to writing another part before I get distracted by something else. Comments welcome&amp;hellip;&lt;/p&gt;</content></entry></feed>

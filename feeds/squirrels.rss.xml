@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0">
+ <channel>
+  <title>Pink Squirrel Labs: Posts tagged 'squirrels'</title>
+  <description>Pink Squirrel Labs: Posts tagged 'squirrels'</description>
+  <link>http://www.pinksquirrellabs.com/tags\squirrels.html</link>
+  <lastBuildDate>Fri, 31 Jan 2014 12:26:00 UT</lastBuildDate>
+  <pubDate>Fri, 31 Jan 2014 12:26:00 UT</pubDate>
+  <ttl>1800</ttl>
+  <item>
+   <title>The amazing Squirrelify type provider</title>
+   <link>http://www.pinksquirrellabs.com/blog\2014\02\01\the-amazing-squirrelify-type-provider/?utm_source=squirrels&amp;utm_medium=RSS</link>
+   <guid isPermaLink="false">urn:http-www-pinksquirrellabs-com:-blog-2014-02-01-the-amazing-squirrelify-type-provider</guid>
+   <pubDate>Fri, 31 Jan 2014 12:26:00 UT</pubDate>
+   <author>pezi</author>
+   <description>
+&lt;p&gt;Introducing my latest top-o-the-line type provider that everyone wants and needs. The Squirrelify provider! This very useful type provider will create an INFINITE type system and show you random pictures of ASCII art in intellisense.&lt;/p&gt;
+
+&lt;p&gt;It turns out that intellisense was not really designed for this and it struggles with various formatting and layout, but the provider tries the best it can. It also doesn't have many images as I couldn't find a webservice for them and had to do it manually.&lt;/p&gt;
+
+&lt;p&gt;"Wow Ross!" I hear you cry. "How can we get started with this??"&lt;/p&gt;
+
+&lt;p&gt;It's easy! simply go and build the source from &lt;a href="https://github.com/pezipink/SquirrelifyProvider"&gt;here&lt;/a&gt;, then reference the library it produces in a script file as shown in the picture below. Once you have done that, you will need to alias a type and call create() on it. The resulting type will have an infinite series of properties named``Squirrelify!``which will display said ASCII art.&lt;/p&gt;
+
+&lt;p&gt;Note that this is the LITE version of the type provider. They PRO pay-for version includes a static parameter "keyword" which is used to search google images, convert said images to ASCII and display them.&lt;/p&gt;
+
+&lt;p&gt;edit - this is not just squirrels. You can expect other delights such as unicorns, snowmen, and various other things you will not be able to identify&lt;/p&gt;
+
+&lt;p&gt;&lt;img src="../../../../../img/old/Squirrelify!.png" alt="" /&gt;&lt;/p&gt;
+&lt;!-- more--&gt;</description></item></channel></rss>

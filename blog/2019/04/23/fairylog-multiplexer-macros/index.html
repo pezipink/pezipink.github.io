@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Fairylog : Multiplexer Macros</title>
+    <meta name="description" content="Multiplexers and demultiplexers are common tools in digital logic design. In Verilog, they are fairly simple to create whilst the amount of signals are small. In this post we'll look at how Fairylog's macros can make short work of generating mux/demux of ...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fairylog, fpga, digital logic, racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2019\04\23\fairylog-multiplexer-macros/">
+    <link rel="next" href="/blog\2019\04\17\fairylog/">
+    <link rel="prev" href="/blog\2019\05\08\reversing-xor0-crackme-1/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2019\05\08\reversing-xor0-crackme-1/">&larr; <em>Reversing - xor0_crackme_1</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\04\17\fairylog/"><em>Fairylog</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Fairylog : Multiplexer Macros</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-04-23" pubdate="true">2019-04-23</time> :: <span class="tags"><a href="/tags\fairylog.html">fairylog</a>, <a href="/tags\fpga.html">fpga</a>, <a href="/tags\digital-logic.html">digital logic</a>, <a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>Multiplexers and demultiplexers are common tools in digital logic design. In Verilog, they are fairly simple to create whilst the amount of signals are small. In this post we&rsquo;ll look at how Fairylog&rsquo;s macros can make short work of generating mux/demux of any complexity, greatly reducing the amount of work and scope for hard-to-find bugs</p>
+
+<div class="figure"><img src="../../../../../img/fairylog/mux.png" alt="" />
+ <p class="caption"></p></div>
+<!-- more-->
+
+<h3 id="mux">MUX</h3>
+
+<p>A mutliplexer in its most basic form takes in a bunch of inputs, and based on a selection input, outputs one of them.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">fairylog</span>
+<span class="c1">;2:1 mux</span>
+<span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">mux</span>
+<span class="w">  </span><span class="p">([</span><span class="n">sel</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="p">]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">in_a</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="p">]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">in_b</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="p">]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:output</span><span class="w"> </span><span class="kd">#:wire</span><span class="p">])</span>
+<span class="w">  </span><span class="p">(</span><span class="n">assign</span><span class="w"> </span><span class="n">out</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">sel</span>
+<span class="w">      </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="n">in_a</span><span class="p">]</span>
+<span class="w">      </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">in_b</span><span class="p">])))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is about as simple as it gets. A 1 bit selection line that toggles the output between <code>in_a</code> and <code>in_b</code>. It produces this code and synths correctly to a MUX.</p>
+
+<div class="brush: verilog">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">module</span><span class="w"> </span><span class="n">mux</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w">  </span><span class="n">sel</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w">  </span><span class="n">in_a</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w">  </span><span class="n">in_b</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">output</span><span class="w"> </span><span class="kt">wire</span><span class="w">  </span><span class="n">out</span><span class="w"> </span><span class="p">);</span>
+<span class="k">assign</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">sel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">in_a</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">in_b</span><span class="p">);</span>
+<span class="k">endmodule</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In real world scenarios, we are typically moving lots more data around. Often it is nice to compact the data in arrays (vectors).</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">fairylog</span>
+<span class="c1">;2:1 mux</span>
+<span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">mux</span>
+<span class="w">  </span><span class="p">([</span><span class="n">sel</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">in</span><span class="w">  </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:output</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="w">  </span><span class="p">(</span><span class="n">assign</span><span class="w"> </span><span class="n">out</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">sel</span>
+<span class="w">      </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="mi">0</span><span class="p">)]</span>
+<span class="w">      </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="mi">1</span><span class="p">)])))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here we pass the bits in using the same port, and then select them out again in the <code>case</code> using the range selection syntax. You might think you can replace <code>case</code> with <code>(assign out (in sel))</code> but alas, this will not syth correctly to a MUX. For the tools to correctly infer a MUX you must supply a terminal case such as the <code>else</code> here, which Fairylog compiles out to a ternary expression.</p>
+
+<div class="brush: verilog">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">module</span><span class="w"> </span><span class="n">mux</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="n">sel</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">output</span><span class="w"> </span><span class="kt">wire</span><span class="w">  </span><span class="n">out</span><span class="w"> </span><span class="p">);</span>
+<span class="k">assign</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">sel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">in</span><span class="p">[</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">in</span><span class="p">[</span><span class="mh">1</span><span class="p">]);</span>
+<span class="k">endmodule</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is ok for small switches, but in reality we often need much larger multiplexers. Not only will the sizes of the data be greater, but we often want to swtich multiple signals at the same time based on the same selector. Verilog also has no way of passing two-dimensional data, so if you want to switch between multiple sets of 8 bits of data, you have to either pass each set in explicitly, or &ldquo;flatten&rdquo; it all out into one vector and then switch it out appropriately using ranges. Writing all that code is very time consuming, error prone and hard to maintain. <em>note: Verilog does have some rudimentary generation capabilities of its own</em></p>
+
+<h3 id="mux-macros">MUX macros</h3>
+
+<p>Let&rsquo;s see if we can automate the process somewhat. The ony important pieces are the names and sizes of the signals, and then how to map the output based on the selector. For example, what if we could write this to generate a mux:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">mux-gen</span><span class="w"> </span>
+<span class="w">  </span><span class="n">my-mux</span>
+<span class="w">  </span><span class="p">[</span><span class="n">sel</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit selector</span>
+<span class="w">  </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w">  </span><span class="c1">;2 bit input</span>
+<span class="w">  </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit output</span>
+<span class="w">  </span><span class="c1">;output mapping</span>
+<span class="w">  </span><span class="p">([</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="mi">0</span><span class="p">)]</span>
+<span class="w">   </span><span class="c1">; more cases here as you need them ...</span>
+<span class="w">   </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="mi">1</span><span class="p">)]))</span>
+<span class="w">   </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Let&rsquo;s have a first go at it. <code>macro</code> is an alias for <a href="https://docs.racket-lang.org/syntax/Defining_Simple_Macros.html?q=define-syntax-parser#%28form._%28%28lib._syntax%2Fparse%2Fdefine..rkt%29._define-syntax-parser%29%29">define-syntax-parser</a> and provides all of Racket&rsquo;s <a href="https://docs.racket-lang.org/syntax/stxparse-patterns.html">amazing macro system</a>.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">macro</span><span class="w"> </span><span class="n">mux-gen</span>
+<span class="w">  </span><span class="kd">#:datum-literals</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="p">)</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">name:id</span>
+<span class="w">      </span><span class="p">[</span><span class="n">selector:id</span><span class="w"> </span><span class="n">sel-size</span><span class="p">]</span>
+<span class="w">      </span><span class="p">[</span><span class="n">in:id</span><span class="w"> </span><span class="n">in-size</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">      </span><span class="p">[</span><span class="n">out:id</span><span class="w"> </span><span class="n">out-size</span><span class="p">]</span>
+<span class="w">      </span><span class="p">([</span><span class="n">case-n:integer</span><span class="w"> </span><span class="n">res:expr</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-res:expr</span><span class="p">]))</span>
+<span class="w">  </span><span class="o">#'</span><span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">name</span>
+<span class="w">      </span><span class="p">([</span><span class="n">selector</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">sel-size</span><span class="p">]]</span>
+<span class="w">       </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">in-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:output</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">out-size</span><span class="p">]])</span>
+<span class="w">      </span><span class="p">(</span><span class="n">assign</span>
+<span class="w">       </span><span class="n">out</span>
+<span class="w">       </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">selector</span>
+<span class="w">        </span><span class="p">[</span><span class="n">case-n</span><span class="w"> </span><span class="n">res</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">        </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-res</span><span class="p">])))])</span>
+
+<span class="p">(</span><span class="n">mux-gen</span><span class="w"> </span>
+<span class="w">  </span><span class="n">my-mux</span>
+<span class="w">  </span><span class="p">[</span><span class="n">sel</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit selector</span>
+<span class="w">  </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w">  </span><span class="c1">;2 bit input</span>
+<span class="w">  </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit output</span>
+<span class="w">  </span><span class="c1">;output mapping</span>
+<span class="w">  </span><span class="p">([</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="n">%0</span><span class="p">)]</span>
+<span class="w">   </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="n">%1</span><span class="p">)]))</span>
+<span class="w"> </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This works and produces the same MUX as before. You can give it any amount of mappings in the case expression, as long as it ends with an <code>else</code> to ensure it gets synth&rsquo;d to a MUX correctly. (in this case it doesn&rsquo;t make sense to, since the input selector is only 1 bit)</p>
+
+<p>Since we allow multiple <code>in</code> expressions you can also write this, like the first example.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">mux-gen</span><span class="w"> </span>
+<span class="w">  </span><span class="n">my-mux</span>
+<span class="w">  </span><span class="p">[</span><span class="n">sel</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit selector</span>
+<span class="w">  </span><span class="c1">; multiple inputs</span>
+<span class="w">  </span><span class="p">[</span><span class="n">in_a</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w">  </span><span class="c1">;2 bit input</span>
+<span class="w">  </span><span class="p">[</span><span class="n">in_b</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w">  </span><span class="c1">;2 bit input</span>
+<span class="w">  </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit output</span>
+<span class="w">  </span><span class="p">([</span><span class="mi">0</span><span class="w"> </span><span class="n">in_a</span><span class="p">]</span><span class="w"> </span>
+<span class="w">   </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">in_b</span><span class="p">]))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is not very exciting at this stage. What we want is to be able to supply multiple input -&gt; output mappings for different signals based on the same selector.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">mux-gen</span><span class="w"> </span>
+<span class="w">  </span><span class="n">my-mux</span>
+<span class="w">  </span><span class="p">[</span><span class="n">sel</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="c1">;1 bit selector</span>
+
+<span class="w">  </span><span class="c1">;first input -&gt; output mapping</span>
+<span class="w">  </span><span class="p">([</span><span class="n">a_signals</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w">  </span><span class="c1">;2 bit input</span>
+<span class="w">   </span><span class="p">[</span><span class="n">a_out</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w">      </span><span class="c1">;1 bit output</span>
+<span class="w">   </span><span class="c1">;output mapping</span>
+<span class="w">   </span><span class="p">([</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">a_signals</span><span class="w"> </span><span class="mi">0</span><span class="p">)]</span>
+<span class="w">    </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="n">a_signals</span><span class="w"> </span><span class="mi">1</span><span class="p">)]))</span>
+<span class="w">    </span>
+<span class="w">  </span><span class="c1">;another mapping</span>
+<span class="w">  </span><span class="p">([</span><span class="n">b_data</span><span class="w"> </span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="c1">;two sets of flattened 8 bit data</span>
+<span class="w">   </span><span class="p">[</span><span class="n">b_out</span><span class="w"> </span><span class="mi">8</span><span class="p">]</span><span class="w">   </span><span class="c1">;8-bit output</span>
+<span class="w">   </span><span class="p">([</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">b_data</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="mi">0</span><span class="p">)]</span>
+<span class="w">    </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="n">b_data</span><span class="w"> </span><span class="mi">15</span><span class="w"> </span><span class="mi">8</span><span class="p">)]))</span>
+<span class="w">    </span>
+<span class="w">  </span><span class="c1">; ... as many mappings as we like</span>
+<span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Really all we added here were some extra parens around the block of data after the <code>sel</code> so we can identifty it is a group, then added a new block of mappings. The change to the macro is quite simple:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">macro</span><span class="w"> </span><span class="n">mux-gen</span>
+<span class="w">  </span><span class="kd">#:datum-literals</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="p">)</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">name:id</span>
+<span class="w">      </span><span class="p">[</span><span class="n">selector:id</span><span class="w"> </span><span class="n">sel-size</span><span class="p">]</span>
+<span class="w">      </span><span class="p">([</span><span class="n">in:id</span><span class="w"> </span><span class="n">in-size</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">[</span><span class="n">out:id</span><span class="w"> </span><span class="n">out-size</span><span class="p">]</span>
+<span class="w">       </span><span class="p">([</span><span class="n">case-n:integer</span><span class="w"> </span><span class="n">res:expr</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">        </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-res:expr</span><span class="p">]))</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">  </span><span class="o">#'</span><span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">name</span>
+<span class="w">      </span><span class="p">([</span><span class="n">selector</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">sel-size</span><span class="p">]]</span>
+<span class="w">       </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">in-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:output</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">out-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">      </span><span class="p">(</span><span class="n">assign</span>
+<span class="w">       </span><span class="n">out</span>
+<span class="w">       </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">selector</span>
+<span class="w">        </span><span class="p">[</span><span class="n">case-n</span><span class="w"> </span><span class="n">res</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">        </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-res</span><span class="p">]))</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We have put in the extra parens and slapped in some additional <code>...</code> to indicate the block can be repeated. Then, a few more <code>...</code> in the syntax output where we&rsquo;d like the generated code to be repeated, and we are done. Take special note of the <code>... ...</code> that now appears for the <code>in</code> ports. This is because we now have two nested layers of input ports and we wish to unwrap both of them into the port list. It produces this Verilog code:</p>
+
+<div class="brush: verilog">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">module</span><span class="w"> </span><span class="n">my</span><span class="o">-</span><span class="n">mux</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="p">[</span><span class="mh">0</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">sel</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="p">[</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">a_signals</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">input</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="p">[</span><span class="mh">15</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">b_data</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">output</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="p">[</span><span class="mh">0</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">a_out</span><span class="w"> </span><span class="p">,</span>
+<span class="w">  </span><span class="k">output</span><span class="w"> </span><span class="kt">wire</span><span class="w"> </span><span class="p">[</span><span class="mh">7</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">b_out</span><span class="w"> </span><span class="p">);</span>
+<span class="k">assign</span><span class="w"> </span><span class="n">a_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">sel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">a_signals</span><span class="p">[</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">a_signals</span><span class="p">[</span><span class="mh">1</span><span class="p">]);</span>
+<span class="k">assign</span><span class="w"> </span><span class="n">b_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">sel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">b_data</span><span class="p">[</span><span class="mh">7</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">b_data</span><span class="p">[</span><span class="mh">15</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mh">8</span><span class="p">]);</span>
+<span class="k">endmodule</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This little macro is now capable of generating huge custom MUX&rsquo;s to your specifications. Rejoice!</p>
+
+<h3 id="demux">DEMUX</h3>
+
+<p>The demultiplexer is essentially the reverse - it takes in one input, and dispatches it to one of multiple outputs based on a selector. Like the multiplexer, we&rsquo;d typically need to do this for several signals at the same time. This is silghtly more tricky to write, and there are a few ways to do it. Here is what we are aiming at:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">demux</span>
+<span class="w">  </span><span class="p">([</span><span class="n">sel</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+<span class="w">   </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:reg</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+<span class="w">  </span><span class="p">(</span><span class="n">always</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">sel</span>
+<span class="w">      </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="p">]</span>
+<span class="w">      </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="p">])))</span>
+<span class="w">      </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>As you would imagine, we&rsquo;d like to support mutliple distinct output signals as well as combined signals like in the above example. An important point here is that we must make sure all outputs are defaulted to something (zero) otherwise it won&rsquo;t synth properly.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">macro</span><span class="w"> </span><span class="n">demux-gen</span>
+<span class="w">  </span><span class="kd">#:datum-literals</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="p">)</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span>
+<span class="w">    </span><span class="n">name:id</span>
+<span class="w">    </span><span class="p">[</span><span class="n">selector:id</span><span class="w"> </span><span class="n">sel-size:expr</span><span class="p">]</span>
+<span class="w">    </span><span class="p">([</span><span class="n">in:id</span><span class="w"> </span><span class="n">in-size:expr</span><span class="p">]</span>
+<span class="w">     </span><span class="p">[</span><span class="n">out:id</span><span class="w"> </span><span class="n">out-size:expr</span><span class="p">]</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-patterns.html#(form._((lib._syntax/parse..rkt)._......+))" style="color: inherit">...+</a></span><span class="p">)</span>
+<span class="w">    </span><span class="p">([</span><span class="n">case-n:integer</span><span class="w"> </span><span class="n">targ:expr</span><span class="w"> </span><span class="n">source:expr</span><span class="p">]</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-patterns.html#(form._((lib._syntax/parse..rkt)._......+))" style="color: inherit">...+</a></span>
+<span class="w">     </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-targ:expr</span><span class="w"> </span><span class="n">else-source:expr</span><span class="p">]))</span>
+<span class="w">   </span><span class="o">#'</span><span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">name</span>
+<span class="w">       </span><span class="p">([</span><span class="n">selector</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">sel-size</span><span class="p">]]</span>
+<span class="w">        </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">in-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">        </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:output</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">out-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">      </span><span class="p">(</span><span class="n">always</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+<span class="w">          </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a></span><span class="w"> </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">          </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">selector</span>
+<span class="w">            </span><span class="p">[</span><span class="n">case-n</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a></span><span class="w"> </span><span class="n">targ</span><span class="w"> </span><span class="n">source</span><span class="p">)]</span>
+<span class="w">            </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sets.html#(def._((lib._racket/set..rkt)._set))" style="color: inherit">set</a></span><span class="w"> </span><span class="n">else-targ</span><span class="w"> </span><span class="n">else-source</span><span class="p">)])))</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is similar to the MUX implementation. Here we have used <code>...+</code> meaning &ldquo;at least one of the preceding&rdquo; rather than <code>...</code> that means &ldquo;zero or more of the preceding&rdquo;. The MUX macro would also benefit from this change. Other than the actual syntax generated, the only change here is that we have multiple <code>out</code> signals for one <code>in</code> signal.</p>
+
+<h3 id="custom-code">Custom code</h3>
+
+<p>Whilst the generated <code>case</code> expressions are sufficient for most implementations, sometimes you might want something more custom. For example, let&rsquo;s say we wanted to determine the output of the MUX by looking at a range of the input bits, or we wanted to perform some other custom comparison.</p>
+
+<p>It would be nice then if we could choose to override the normal <code>case</code> or <code>always</code> generation and supply, <em>for that mapping</em>, our own expression to use instead. Something like this:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">mux-gen</span><span class="w"> </span>
+<span class="w">  </span><span class="n">my_mux</span>
+<span class="w">  </span><span class="p">[</span><span class="n">sel</span><span class="w"> </span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="c1">;8 bit selector</span>
+
+<span class="w">  </span><span class="c1">;first input -&gt; output mapping</span>
+<span class="w">  </span><span class="p">([</span><span class="n">a_signals</span><span class="w"> </span><span class="mi">8</span><span class="p">]</span><span class="w">  </span><span class="c1">;8 bit input</span>
+<span class="w">   </span><span class="p">[</span><span class="n">a_out</span><span class="w"> </span><span class="mi">4</span><span class="p">]</span><span class="w">      </span><span class="c1">;4 bit output</span>
+<span class="w">   </span><span class="kd">#:custom</span>
+<span class="w">   </span><span class="c1">;check if any of the upper 4 bits are set</span>
+<span class="w">   </span><span class="p">(</span><span class="n">assign</span><span class="w"> </span><span class="n">a_out</span><span class="w">           </span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="p">(</span><span class="err">|</span><span class="w"> </span><span class="p">(</span><span class="n">sel</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span><span class="w">               </span>
+<span class="w">         </span><span class="p">(</span><span class="n">a_signals</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">         </span><span class="p">(</span><span class="n">a_signals</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">0</span><span class="p">))))</span>
+
+<span class="w">  </span><span class="c1">; ... as many mappings with auto or custom as we like</span>
+
+<span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We can achieve this fairly easily by introducing a helper macro that deals with the body of the expression, simply passing along whatever was passed in when <code>#:custom</code> is detected:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">macro</span>
+<span class="w"> </span><span class="n">mux-gen-inner</span>
+<span class="w"> </span><span class="kd">#:datum-literals</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="p">)</span>
+<span class="w"> </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="kd">#:custom</span><span class="w"> </span><span class="n">custom-expr</span><span class="p">)</span>
+<span class="w">  </span><span class="o">#'</span><span class="n">custom-expr</span><span class="p">]</span>
+<span class="w"> </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">selector</span>
+<span class="w">     </span><span class="p">([</span><span class="n">case-n:integer</span><span class="w"> </span><span class="n">res:expr</span><span class="p">]</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-patterns.html#(form._((lib._syntax/parse..rkt)._......+))" style="color: inherit">...+</a></span>
+<span class="w">      </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-res:expr</span><span class="p">]))</span>
+<span class="w">  </span><span class="o">#'</span><span class="p">(</span><span class="n">assign</span>
+<span class="w">     </span><span class="n">out</span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">selector</span>
+<span class="w">       </span><span class="p">[</span><span class="n">case-n</span><span class="w"> </span><span class="n">res</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">[</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._else))" style="color: inherit">else</a></span><span class="w"> </span><span class="n">else-res</span><span class="p">]))])</span>
+
+<span class="p">(</span><span class="n">macro</span>
+<span class="w"> </span><span class="n">mux-gen</span>
+<span class="w"> </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">name:id</span>
+<span class="w">     </span><span class="p">[</span><span class="n">selector:id</span><span class="w"> </span><span class="n">sel-size</span><span class="p">]</span>
+<span class="w">     </span><span class="p">([</span><span class="n">in:id</span><span class="w"> </span><span class="n">in-size</span><span class="p">]</span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-patterns.html#(form._((lib._syntax/parse..rkt)._......+))" style="color: inherit">...+</a></span>
+<span class="w">      </span><span class="p">[</span><span class="n">out:id</span><span class="w"> </span><span class="n">out-size</span><span class="p">]</span>
+<span class="w">      </span><span class="n">body-expr</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">  </span><span class="o">#'</span><span class="p">(</span><span class="n">vmod</span><span class="w"> </span><span class="n">name</span>
+<span class="w">      </span><span class="p">([</span><span class="n">selector</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">sel-size</span><span class="p">]]</span>
+<span class="w">       </span><span class="p">[</span><span class="n">in</span><span class="w"> </span><span class="kd">#:input</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">in-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">[</span><span class="n">out</span><span class="w"> </span><span class="kd">#:output</span><span class="w"> </span><span class="kd">#:wire</span><span class="w"> </span><span class="p">[</span><span class="n">out-size</span><span class="p">]]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span><span class="w"> </span>
+<span class="w">      </span><span class="p">(</span><span class="n">mux-gen-inner</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="n">selector</span><span class="w"> </span><span class="n">body-expr</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>And we are done. You could take this any way you like, even creating whole new languages over the top of Fairylog.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>This post intended to show some of the ways that Fairylog can help generate tons of boilerplate code for you - it is merely scratching the surface, however, as the Racket macro system is vast, and definitely something you should look into!</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2019\05\08\reversing-xor0-crackme-1/">&larr; <em>Reversing - xor0_crackme_1</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\04\17\fairylog/"><em>Fairylog</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2019\04\23\fairylog-multiplexer-macros/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Last-Fi</title>
+    <meta name="description" content="Introduction:  This article will introduce Last-Fi - an F# powered internet radio player that uses a Raspberry Pi and Last.Fm services. The motivation behind this work was to both build something fun and useful for the Raspberry Pi that interfaces with va...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="digital logic, electronics, fsharp, raspberry pi">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2013\07\04\last-fi/">
+    <link rel="next" href="/blog\2013\03\02\f-meets-the-raspberry-pi/">
+    <link rel="prev" href="/blog\2013\07\29\choose-your-own-adventure-type-provider/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2013\07\29\choose-your-own-adventure-type-provider/">&larr; <em>Choose Your Own Adventure Type Provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2013\03\02\f-meets-the-raspberry-pi/"><em>F# meets the Raspberry Pi</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Last-Fi</h1>
+    <p class='date-and-tags'>
+<time datetime="2013-07-04" pubdate="true">2013-07-04</time> :: <span class="tags"><a href="/tags\digital-logic.html">digital logic</a>, <a href="/tags\electronics.html">electronics</a>, <a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\raspberry-pi.html">raspberry pi</a></span></p>
+  </header>
+
+<h1>Introduction</h1>
+
+<p>This article will introduce Last-Fi &ndash; an F# powered internet radio player that uses a <a href="http://www.raspberrypi.org/">Raspberry Pi</a> and <a href="http://www.last.fm/">Last.Fm</a> services. The motivation behind this work was to both build something fun and useful for the Raspberry Pi that interfaces with various pieces of hardware, but can also show off some features that F# is great at within a hardware context.</p>
+
+<p>The result is Last-Fi &ndash; a highly asynchronous and stable music player. It is based around Last.Fm, but because it uses <a href="http://mpd.wikia.com/wiki/Clients">MPD</a>to play music it only requires a few minor adjustments that will allow it to work with any music source, whilst retaining the ability to obtain artist information from Last.Fm. In terms of the hardware, you are able to control various aspects of Last.Fi with a controller from the 1980&rsquo;s Nintendo Entertainment System. Various information is displayed on a 2x16 back-lit LCD display. In addition to this, the program also hosts a <a href="http://www.servicestack.net/">ServiceStack</a> webservice, and uses <a href="https://github.com/ZachBray/FunScript">FunScript</a>, an F# to JavaScript compiler, in order to host a website that shows various information and allows direct control from any device on the same network.</p>
+
+<p>I presented a talk on this work at SkillsMatter in London (<a href="http://skillsmatter.com/podcast/scala/last-fi-an-f-powered-raspberry-pi-internet-radio">here's the video</a>), and you can find the slide deck <a href="http://www.slideshare.net/RossMcKinlay1/last-fi">here</a>. The code is all open source and you can find it on GitHub <a href="http://github.com/pezipink/Last.Fi/">here</a> (disclaimer: this code is highly subject to change and is largely a toy project of mine)</p>
+
+<p>Last-Fi illustrates an extremely powerful programming language doing some of what it does best, the entire stack from the HTTP Last.FM API, to the hardware programming and even the JavaScript is written in F# code. Not only that, it is almost all concurrent and completely immutable &ndash; I have yet to experience a single problem with any of the software. The entire project is less than 800 lines of F#. If you are new to F# be sure to check out <a href="http://www.fsharp.org">www.fsharp.org</a> and you can find instructions on how to get the Pi running with F# in a previous post I made <a href="http://www.pinksquirrellabs.com/post/2013/03/02/F-meets-the-Raspberry-Pi-.aspx">here</a>.</p>
+
+<p><img src="../../../../../img/old/last-fi_case_small.jpg" alt="" /></p>
+
+<p><img src="../../../../../img/old/last-fi_small.jpg" alt="" /></p>
+<!-- more-->
+
+<h1>Hardware Elements</h1>
+
+<p>Last-Fi features two main hardware elements;</p>
+
+<h2>LCD Screen</h2>
+
+<p>Any standard 2x16 LCD screen compatible with the Hitachi HD44780 LCD controller is compatible with Last.Fi. The screen is used in 4-bit mode with no other additional circuitry and thus requires at least 7-8 IO pins from the Pi. The screen I am using also has a backlight, but due to running out of pins and not wanting to make the circuitry more complex, the backlight is simply connected to always be on at full brightness. A nice addition to control the backlight would be some form of hardware pulse width modulation circuit. The contrast of the screen is simply always at full contrast, this is just because having a potentiometer for this purpose was difficult to fit in the case, and in this instance the screen I am using looks best at full contrast anyway.</p>
+
+<p>In terms of the software, you can read more about how the screens are controlled in a previous post. The code has evolved a fair bit since then but the basic principles are the same. A F# MailboxProcessor (henceforth known as an <em>Agent</em>) is employed within a standard .NET type to enable async execution and manage state whilst providing safe synchronization mechanics. The agent accepts two messages, ScrollText and TemporaryText. The former will cause the screen to display and scroll where necessary the two lines of text supplied in the message. The scrolling happens all asynchronously in an isolated environment that has no affect on the rest of the system. The latter message will cause the supplied text to appear on the LCD temporarily, and after a timeout period will revert back to scrolling whatever state was present before.</p>
+
+<p>This code illustrates how we can create a self-contained asynchronous and isolated system that is packaged in a re-useable object. It demonstrates how we can propagate state using an F# Agent, and how to use TryReceive() to provide both scrolling and temporary text timing, whilst providing the ability to quickly override messages. This is useful in various situations, such as holding &ldquo;up&rdquo; on the NES pad will allow the volume to repeatedly increase without waiting for the previous temporary text that shows the volume to time out.</p>
+
+<p><img src="../../../../../img/old/lcd_small.jpg" alt="" /></p>
+
+<h1>NES Pad</h1>
+
+<p>The Nintendo pad is essentially just an 8 bit parallel to serial shift register. Indeed, if you look inside one you will find a single chip which is exactly that. The pad is used to skip tracks, adjust the volume, start / play / pause the music. In order to use the NES pad, its internal shift register is hooked up to some of the Pi&rsquo;s pins, and then at some specified polling interval, the state of the buttons are shifted in where something can happen to them. Once again this is a very concurrent operation where a requirement is to poll at certain intervals, and therefore another Agent is used packaged up in a .NET type thus providing the reusable, isolated asynchronous object similar to the LCD.</p>
+
+<p>For the NES object to be of any use, it requires some state. It needs to know what the button state was previously in order to determine what has changed in the current iteration. Once again the Agent forms the basis of this by propagating a state through each loop cycle that contains both the &ldquo;current&rdquo; state of the buttons and a list of buttons that were pressed in the past.</p>
+
+<p>With this information, the object is able to raise .NET events such as ButtonDown and ButtonUp that a subscriber can listen to. Using F#&rsquo;s powerful active patterns the caller can also quite easily indicate it is interested in a more complicated pattern of buttons. In conjunction with this another F# feature is used &ndash; first class .NET events. This means you can create an event in code and the register it with some pattern match based on button history and state. In this way is is simple to create your own event that fires when Start and Select have both been pressed for 3 seconds, or to fire when the button history matches the Konami Code, for example.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">startSelectEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Event</span><span class="o">&lt;</span><span class="kt">unit</span><span class="o">&gt;</span><span class="bp">()</span>
+<span class="w">    </span><span class="n">startSelectEvent</span><span class="o">.</span><span class="n">Publish</span><span class="o">.</span><span class="n">Add</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printfn</span><span class="w"> </span><span class="s">"start select!!"</span><span class="o">)</span>
+
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">konamiCodeEvent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Event</span><span class="o">&lt;</span><span class="kt">unit</span><span class="o">&gt;</span><span class="bp">()</span>
+<span class="w">    </span><span class="n">konamiCodeEvent</span><span class="o">.</span><span class="n">Publish</span><span class="o">.</span><span class="n">Add</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">printfn</span><span class="w"> </span><span class="s">"Konami Code!!!"</span>
+<span class="w">                                         </span><span class="k">let</span><span class="w"> </span><span class="nv">aux</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">{</span>
+<span class="w">                                            </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="k">do</span>
+<span class="w">                                                </span><span class="c1">// this will cause the message to flash 5 times (exciting!!)</span>
+<span class="w">                                                </span><span class="n">lcd</span><span class="o">.</span><span class="n">TemporaryText</span><span class="o">(</span><span class="s">"Konami Code!"</span><span class="o">,</span><span class="s">""</span><span class="o">)</span><span class="w"> </span>
+<span class="w">                                                </span><span class="k">do</span><span class="o">!</span><span class="w"> </span><span class="nn">Async</span><span class="p">.</span><span class="n">Sleep</span><span class="o">(</span><span class="mi">750</span><span class="o">)</span><span class="w"> </span>
+<span class="w">                                                </span><span class="n">lcd</span><span class="o">.</span><span class="n">TemporaryText</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="s">""</span><span class="o">)</span>
+<span class="w">                                                </span><span class="k">do</span><span class="o">!</span><span class="w"> </span><span class="nn">Async</span><span class="p">.</span><span class="n">Sleep</span><span class="o">(</span><span class="mi">750</span><span class="o">)</span><span class="w"> </span>
+<span class="w">                                            </span><span class="k">return</span><span class="w"> </span><span class="bp">()</span><span class="w"> </span><span class="o">}</span>
+<span class="w">                                         </span><span class="nn">Async</span><span class="p">.</span><span class="n">Start</span><span class="w"> </span><span class="n">aux</span><span class="w"> </span><span class="o">)</span>
+
+<span class="w">    </span><span class="n">nes</span><span class="o">.</span><span class="n">AddCustomEvent</span><span class="o">((</span><span class="k">fun</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">                        </span><span class="k">match</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="k">with</span>
+<span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="nn">NES</span><span class="p">.</span><span class="n">ButtonDown</span><span class="w"> </span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">START</span><span class="w"> </span><span class="n">length1</span><span class="w"> </span>
+<span class="w">                          </span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span><span class="w"> </span><span class="nn">NES</span><span class="p">.</span><span class="n">ButtonDown</span><span class="w"> </span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">SELECT</span><span class="w"> </span><span class="n">length2</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="n">length2</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3000</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span><span class="w"> </span><span class="n">length1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3000</span><span class="o">.</span><span class="mi">0</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">true</span>
+<span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">false</span><span class="o">),</span><span class="w"> </span><span class="n">startSelectEvent</span><span class="o">)</span>
+
+<span class="w">    </span><span class="n">nes</span><span class="o">.</span><span class="n">AddCustomEvent</span><span class="o">((</span><span class="k">function</span>
+<span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="nn">NES</span><span class="p">.</span><span class="n">ButtonSequence</span>
+<span class="w">                           </span><span class="o">[</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">UP</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">UP</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">DOWN</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">DOWN</span><span class="o">;</span>
+<span class="w">                            </span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">LEFT</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">RIGHT</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">LEFT</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">RIGHT</span><span class="o">;</span>
+<span class="w">                            </span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">B</span><span class="o">;</span><span class="nn">NES</span><span class="p">.</span><span class="nn">Button</span><span class="p">.</span><span class="n">A</span><span class="o">]</span><span class="w"> </span><span class="bp">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">true</span>
+<span class="w">                        </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">false</span><span class="o">),</span><span class="n">konamiCodeEvent</span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h1>Other Software</h1>
+
+<h2>MPC / MPD</h2>
+
+<p>This is the Linux daemon used to actually play music. MPC is a command line interface to MPD. Critically, MPC supports a command called &ldquo;idle&rdquo; which will block the current thread until something in the the daemon happens, at which point the program returns some text to indicate a change has happened. The core Player object (discussed shortly) uses this in order to tell the LCD what to display, and when to load new tracks. However, ideally this operation wouldn&rsquo;t actually block and this is where F#&rsquo;s async workflows once again come in very useful &ndash; it&rsquo;s trivial to wrap the MPC idle command in a async workflow and then be able to use it elsewhere without blocking.</p>
+
+<h2>Last.Fm API</h2>
+
+<p>In order to use the Last.FM API, HTTP POST messages are manually crafted and encrypted. Thanks to F#&rsquo;s extremely succinct record types and higher-order functions, this is able to be achieved in a very small amount of code.</p>
+
+<h2>Player</h2>
+
+<p>This object is what connects to Last.Fm via the API, retrieves and queues track URLs to MPC, and provides the music interface to the rest of the program. Once again, this is a F# agent running an async loop propagating state. You might think this is overkill, but this object has to respond to commands both from the webservice, and from the NES pad, so the Agent nicely handles any sync problem.</p>
+
+<h2>Core</h2>
+
+<p>The core program itself uses ServiceStack to host a webservice that allows operations via an instance of the Player object. The program initializes the various objects, hooks up various events between the objects and then sits there doing nothing perpetually <img class="wlEmoticon wlEmoticon-smile" style="border-style: none;" src="../../../../../img/old/wlEmoticon-smile_2.png" alt="Smile" /></p>
+
+<h2>Website</h2>
+
+<p>As mentioned before, the website is created by using a F# to JavaScript compiler, FunScript. FunsScript is also a mini web server which means I can avoid using XSP or another ASP.NET equivalent. FunScript also makes use of F# type providers to bring in TypeScript definition files, which essentially annotate populate JavaScript libraries with type information. Using this you can basically bring any JavaScript library directly into the F# programming language. Pretty cool I say!</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2013\07\29\choose-your-own-adventure-type-provider/">&larr; <em>Choose Your Own Adventure Type Provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2013\03\02\f-meets-the-raspberry-pi/"><em>F# meets the Raspberry Pi</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2013\07\04\last-fi/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Getting at non-public property setters in a nice way :)</title>
+    <meta name="description" content="I’m sure every seasoned .NET developer has been in the situation at one stage or another, probably in testing code, where they need to access a non-public setter of a property (or maybe a private member), and it can’t be mocked.  We all know the (somewhat...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2012\04\25\getting-at-non-public-property-setters-in-a-nice-way/">
+    <link rel="next" href="/blog\2012\02\16\emulating-digital-logic-circuits-in-f/">
+    <link rel="prev" href="/blog\2012\04\25\pezhack-a-functional-roguelike/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2012\04\25\pezhack-a-functional-roguelike/">&larr; <em>PezHack–A Functional Roguelike</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2012\02\16\emulating-digital-logic-circuits-in-f/"><em>Emulating digital logic circuits in F#</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Getting at non-public property setters in a nice way :)</h1>
+    <p class='date-and-tags'>
+<time datetime="2012-04-25" pubdate="true">2012-04-25</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a></span></p>
+  </header>
+
+<p>I’m sure every seasoned .NET developer has been in the situation at one stage or another, probably in testing code, where they need to access a non-public setter of a property (or maybe a private member), and it can’t be mocked.&#160; We all know the (somewhat scary) reflection trick to get at the said setter method and invoke it.&#160;&#160; I just hit this problem today trying to mock some response messages from a Microsoft Dynamics XRM 2011 OrganizationService.&#160; Thankfully F# gives us cool things like Quotations and symbolic functions (custom operators) to make this process more succinct.&#160; Instead of writing a method to reflect on a type, get the relevant method, then finally invoke the method and pass in both the original object instance and the new value being set, we can do the following:</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="o">(&lt;~)</span><span class="w"> </span><span class="n">property</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span>
+<span class="w">	</span><span class="k">match</span><span class="w"> </span><span class="n">property</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">	</span><span class="o">|</span><span class="w"> </span><span class="n">PropertyGet</span><span class="o">(</span><span class="n">Some</span><span class="o">(</span><span class="n">Value</span><span class="o">(</span><span class="n">x</span><span class="o">)),</span><span class="n">ri</span><span class="o">,_)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">	    </span><span class="n">ri</span><span class="o">.</span><span class="n">GetSetMethod</span><span class="o">(</span><span class="k">true</span><span class="o">).</span><span class="n">Invoke</span><span class="o">(</span><span class="n">fst</span><span class="w"> </span><span class="n">x</span><span class="o">,[|</span><span class="n">value</span><span class="o">|])</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span>
+<span class="w">	</span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">failwith</span><span class="w"> </span><span class="s">"unsupported expression"</span>
+<span class="w">    </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+<!-- more-->
+
+<p>PropertyGet is an active pattern defined in the Quotations namespace that matches a piece of code that is accessing a property. The first value bound in the pattern (if it exists) is a tuple containing the object instance that the property was accessed on and its type.&#160; The second value bound (ri) is the PropertyInfo for the property in question from the System.Reflection namespace.&#160; Using this information we can simply obtain the Set method, and invoke it on the first item in the x tuple and pass in the new value as its argument.</p>
+
+<p>To use this is simple :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">&lt;@</span><span class="w"> </span><span class="n">entity</span><span class="o">.</span><span class="n">Attributes</span><span class="w"> </span><span class="o">@&gt;</span><span class="w"> </span><span class="o">&lt;~</span><span class="w"> </span><span class="n">newAttributes</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Simply quote the property in question, and invoke the operator with the new value (that looks very closely like the assignment operator &lt;- ) :)</p>
+
+<p>Another little use for operators&#160; I embraced is to deal with potential null values on properties when you are accessing them (assuming you don’t go all out and wrap everything in the Option type – you might not have the option to do this though (pun intended)) – write a custom operator like that lets you provide a default value if the property evaluates to null :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="o">(&gt;?)</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="k">function</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">input</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now you can use this like so, instead of having to repeat the code above all over the place, or explicitly call a function :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">match</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">Attributes</span><span class="w"> </span><span class="o">&gt;?</span><span class="w"> </span><span class="o">[||]</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Array</span><span class="p">.</span><span class="n">tryFind</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">am</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">am</span><span class="o">.</span><span class="n">SchemaName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">req</span><span class="o">.</span><span class="n">Attribute</span><span class="o">.</span><span class="n">SchemaName</span><span class="w"> </span><span class="o">)</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="o">...</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>All in all, loving the custom operators you can define in F# especially as you can scope them however you like, even in nested functions :)</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2012\04\25\pezhack-a-functional-roguelike/">&larr; <em>PezHack–A Functional Roguelike</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2012\02\16\emulating-digital-logic-circuits-in-f/"><em>Emulating digital logic circuits in F#</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2012\04\25\getting-at-non-public-property-setters-in-a-nice-way/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

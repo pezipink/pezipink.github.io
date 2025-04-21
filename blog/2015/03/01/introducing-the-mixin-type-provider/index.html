@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Introducing - The Mixin Type Provider</title>
+    <meta name="description" content="I am very excited to finally share the first version of my latest type provider, the Mixin Provider! This post is quite long but you should read it all, this only scratches the surface really....">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, type providers">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2015\03\01\introducing-the-mixin-type-provider/">
+    <link rel="next" href="/blog\2015\02\08\secret-santa-challenge-in-d/">
+    <link rel="prev" href="/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/">&larr; <em>Don Syme 2.0 : Cow Herding Edition Type Provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2015\02\08\secret-santa-challenge-in-d/"><em>Secret Santa challenge in D</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Introducing - The Mixin Type Provider</h1>
+    <p class='date-and-tags'>
+<time datetime="2015-03-01" pubdate="true">2015-03-01</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<p>I am very excited to finally share the first version of my latest type provider, the Mixin Provider! This post is quite long but you should read it all, this only scratches the surface really.</p>
+<!-- more-->
+
+<h1>Background</h1>
+
+<h2></h2>
+
+<h2>Code Generation in F#</h2>
+
+<p>Code generation in any language is a double edged sword. It is an extremely powerful technique used all over the place, often to great effect. It can also turn into a complete nightmare with millions of often unnecessary and bloated lines of code, hard to find bugs, and hard to manage templates.</p>
+
+<p>F# goes a long way to eliminating the need for a lot of boilerplate code with the use of its amazing Erasing Type Providers, of which you may know I am a big fan and have wrote <a href="https://github.com/fsprojects/SQLProvider/tree/master/src/SQLProvider">many useful</a> and <a href="https://skillsmatter.com/skillscasts/6126-where-no-type-has-gone-before#video">even more useless examples</a> of.</p>
+
+<p>However, that does not mean that F# has no need of code generation or boilerplate &ndash; erasing type providers ace and all, but I have still found myself on numerous occasions writing some dodgy F# script that pumps out a load of (incorrectly indented) code using some metadata to save me the legwork of writing and maintaining it manually, and I&rsquo;m sure a lot of you have too, or certainly could have a use for being able to generate F# code in a controlled manner if there was a relatively easy way to do it.</p>
+
+<p>The code generation story for F# is basically non existent. The only thing I am aware of other than just doing it yourself, are generative type providers &ndash; which are extremely limited, hard to write and not very appealing in general. In particular, generative type providers can only generate simple types and are not able to generate arbitrary code or any of the special F# types such as record types, discriminated unions, computation expressions, type providers, or even types that use .NET generics.</p>
+
+<h2>The Mixin</h2>
+
+<p>The concept of Mixin means different things in different languages. I am taking my inspiration from the very awesome D programming language which I have been learning recently. <a href="http://dlang.org/mixin.html">The D mixin</a> is extremely powerful, it can accept any compile-time program, and during compilation it is passed through a D interpreter and the results are inserted into that very location in the program. This is not a pre-compile step. Now, whilst I can&rsquo;t achieve that kind of power, this knowledge along with my many many crazy experiments with type providers led me to the realization that I could do a similar thing.</p>
+
+<h1>The Mixin Type Provider</h1>
+
+<h2>! Type Provider Police !</h2>
+
+<p>If such a thing exists, I am going to be #1 on their most wanted list for this one! (If I wasn&rsquo;t already!). Forget the <a href="https://github.com/fsprojects/FSharp.TypeProviders.StarterPack/blob/master/src/ProvidedTypes.fs">notorious provided types API</a> and type erasure. In fact, the Mixin TP in many ways is not a type provider at all! It is mostly some *ahem* creative use of the fact that a type provider is really a plugin or extension point for the F# compiler we can hook into to do fun stuff which were probably not supposed to.</p>
+
+<h2>Mixin Lite</h2>
+
+<p>Let&rsquo;s take a look at the simplest example of the Mixin provider in action, in what I like to call Lite mode. When used in this fashion, the Mixin TP acts very much like a generative type provider, with most of the same limitations that are inherited from using the Type Provider infrastructure.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">open</span><span class="w"> </span><span class="nn">MixinProvider</span><span class="w"> </span>
+<span class="k">type</span><span class="w"> </span><span class="nc">FirstTest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mixin_gen</span><span class="o">&lt;</span><span class="w"> </span><span class="s">"""let generate() = "let x = 42" """</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span>
+<span class="nn">FirstTest</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="c1">// 42</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>What&rsquo;s happening here? A type alias called <em>FirstTest</em>is created, referencing the type provider <em>mixin_gen</em>. The static parameter passed to <em>mixin_gen</em> is a F# <em>metaprogram</em>. This program can be any valid F# interactive program (and would not usually be specified inline in this manner). Mixin Metaprograms have only one rule &ndash; they must have an accessible function called <em>generate</em>which will be called at compile time and is expected to return <em>another</em> F# program that will be compiled into an assembly, written to disk, and then have its types injected back through the <em>FirstTest</em>alias.</p>
+
+<p>Phew, that was a bit of a mouthful. Let&rsquo;s see what&rsquo;s happening step by step:</p>
+
+<ol>
+ <li>During compilation the type provider creates an FSI session and loads in the code <em>let generate() = "let x = 42"</em></li>
+ <li>The FSI session evaluates <em>generate()</em>which in turn returns the string <em>"let x = 42"</em></li>
+ <li>The type provider wraps the resulting program in a module named <em>FirstTest</em></li>
+ <li>The type provider takes the completed program text, and compiles it with the F# compiler</li>
+ <li>The resulting assembly is written to a location on the disk named <em>FirstTest.dll</em></li>
+ <li>The type provider infrastructure is leveraged to provide you access to the generated code directly through the <em>FirstTest</em> type alias.</li></ol>
+
+<h2></h2>
+
+<h3></h3>
+
+<h2>Metaprogram files and parameters</h2>
+
+<p>Let&rsquo;s look at how we can take this concept further. Mostly you will not want to write inline programs, but instead specify .fsx files that contain them. You are also able to extend your generate function so that it accepts parameters, which can be passed in as static parameters to <em>mixin_gen.</em></p>
+
+<p>Here&rsquo;s an example metaprogram, ConnectionString.fsx</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">open</span><span class="w"> </span><span class="nn">System</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">generate</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s">"John"</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="nn">System</span><span class="p">.</span><span class="nn">DateTime</span><span class="p">.</span><span class="nn">Now</span><span class="p">.</span><span class="n">DayOfWeek</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">DayOfWeek</span><span class="p">.</span><span class="n">Monday</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">   </span><span class="s">"let [&lt;Literal&gt;] connectionString = </span><span class="se">\"</span><span class="s">JohnMon!</span><span class="se">\"</span><span class="s"> "</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s">"John"</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s">"Dave"</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">   </span><span class="s">"let [&lt;Literal&gt;] connectionString = </span><span class="se">\"</span><span class="s">normal :(</span><span class="se">\"</span><span class="s"> "</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">failwithf</span><span class="w"> </span><span class="s">"user %s is not allowed a connection string!"</span><span class="w"> </span><span class="n">user</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In this metaprogram we use both a parameter passed in and some environmental data to calculate what our connection string should be. Notice how the two good branches both generate a [] string called connectionString. If the user is not Dave or John, the Mixin provider will refuse to generate any code.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">ConnectionString_Test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mixin_gen</span><span class="o">&lt;</span><span class="s">"connectionstring.fsx"</span><span class="o">,</span><span class="w"> </span><span class="n">metaprogramParameters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"</span><span class="se">\"</span><span class="s">John</span><span class="se">\"</span><span class="s">"</span><span class="w"> </span><span class="o">&gt;</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">SqlDataProvider</span><span class="o">&lt;</span><span class="n">ConnectionString</span><span class="o">=</span><span class="nn">ConnectionString_Test</span><span class="p">.</span><span class="n">connectionString</span><span class="o">&gt;</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Awesome! In this example, a compile time program is used to work out which connection string is required, and because the output is a literal, it can be fed straight into a static parameter of <em>another</em> type provider, in this case the erasing SQL provider. This is an immediate and powerful fusion of the Mixin type provider with erasing type providers, and solves a real problem a lot of people experience when forced to use literals as static parameters. We also use a mixin static parameter here that is passed through to the generate function. You might be thinking, that somewhat mitigates the benefit gained by generating the connection string, and you&rsquo;d be right! I just wanted to show it&rsquo;s you are able to, and can open some very powerful possibilities.</p>
+
+<h2>Mixin Full</h2>
+
+<p>You might have noticed that in the previous examples I didn&rsquo;t actually generate any types, and you&rsquo;d be right. In fact the Mixin provider used an odd sort of form of <em><a href="http://en.wikipedia.org/wiki/Compile_time_function_execution">compile time function execution</a></em> . This lets you calculate stuff up front rather than at runtime. The obvious candidates here are lookup tables and heavy math crunching, though once you get a metaprogram mindset going you will realise a lot more potential for it.</p>
+
+<p>Types, on the other hand, are probably what most people will want from a code generator. I deliberately left types out of the above examples, because when the Mixin provider is used in the above manner, it is basically the same as a generative type provider &ndash; that is, though you can generate any code you like, you will not &ldquo;see&rdquo; F# specific types for what they are, rather they will be presented to you as normal .NET types (you can still use generics and stuff though!)</p>
+
+<h2>A change of mindset</h2>
+
+<p>To harness the full power of the Mixin Provider, a change of mindset is going to be required. Forget this is even a type provider at all &ndash; in fact is isn&rsquo;t really - it is a code generator hooked into the compile pipeline with some powerful features and libraries to go with it. If you reference the libraries it produces from another program, you will have none of the aforementioned limitations, and you will be able to generate everything from records to type providers.</p>
+
+<p>If that sounds like it&rsquo;s going to be a pain, it really isn&rsquo;t. Create a code generator project that contains all your metaprograms and the Mixin provider reference. You are able to tell the provider where to write its assemblies, and you make that your shared \lib\ directory. After the first time you generate the assemblies, reference them in your other projects are you are done &ndash; as long as your code generation project builds first, all the dependent libraries will see any updated assemblies. This, in my mind, is a very small trade off for the power gained :) (by the way, there are switches that can tell the Mixin provider to never generate, always generate, or generate when something changed)</p>
+
+<h2>Strings Suck!</h2>
+
+<p>Yeah yeah, I know. Almost all code generators (macro expansion style aside) suffer from this problem in one form or another. It&rsquo;s the tradeoff you have to make. I could argue that dealing with massive expression trees is also not much fun, even if it is &ldquo;safer&rdquo;. In fact, strings make some things really easy that would be very tough in expression trees. For F#, things are even worse, as being a whitespace sensitive language, it is at minimum a pain to get the indentation right, and in many cases can be really quite tricky. (By the way, if you are thinking &ldquo;Quotations!&rdquo; at this point, <a href="https://github.com/eiriktsarpalis/QuotationCompiler">Erik&rsquo;s excellent Quotation Compiler</a> can be used in conjunction with the Mixin TP, but quotations are very limited and can&rsquo;t deal with a whole bunch of stuff including type declarations.)</p>
+
+<h3></h3>
+
+<h3></h3>
+
+<h2>A compositional code generation DSL (<a href="https://github.com/pezipink/MixinProvider/blob/master/src/MixinProvider/SquirrelGen.fs">SquirrelGen</a>!)</h2>
+
+<p>I was thinking about how I could make code generation easier. The two main problems to deal with are to reduce the amount of strings to a minimum, and somehow tackle the indentation in a nice way that would be largely transparent to the user. Being a big fan of <a href="http://www.quanttec.com/fparsec/">FParsec</a>, I thought it should be possible to do basically the opposite, where we start with small string creation functions and gradually compose them together into bigger and bigger functions that are able to generate various F# constructs. This approach is very powerful in many ways, partial function application here means we can almost entirely remove the problem of worrying about indentation &ndash; the downside is the library source is quite complicated to understand at first if you have not done a lot of compositional heavy work (neither have I!). However, you don&rsquo;t really need to understand it fully to use it effectively!</p>
+
+<p><strong>(NOTE! This generation DSL is very young, the product of a few train journeys! it is subject to complete change at any point!)</strong></p>
+
+<p>Let&rsquo;s look at a new metaprogram that will introduce several new ideas.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">#</span><span class="n">r</span><span class="w"> </span><span class="s">@"FSharp.Data.SqlProvider.dll"</span><span class="w"> </span>
+<span class="o">#</span><span class="n">load</span><span class="w"> </span><span class="s">"SquirrelGen.fs"</span>
+
+<span class="o">[&lt;</span><span class="n">Literal</span><span class="o">&gt;]</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">peopleCs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">@"Driver={Microsoft Excel Driver (*.xls)};DriverId=790;Dbq=I:\people.xls;DefaultDir=I:\;"</span>
+
+<span class="k">open</span><span class="w"> </span><span class="nn">FSharp.Data.Sql</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">MixinProvider</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">System.Text</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="nn">Common</span><span class="p">.</span><span class="nn">DatabaseProviderTypes</span><span class="p">.</span><span class="n">ODBC</span><span class="o">,</span><span class="w"> </span><span class="n">peopleCs</span><span class="o">&gt;</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sql</span><span class="o">.</span><span class="n">GetDataContext</span><span class="bp">()</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">generate</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="c1">// create a person record type </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">personType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">   </span><span class="n">crecord</span><span class="w"> </span>
+<span class="w">     </span><span class="s">"Person"</span><span class="w"> </span>
+<span class="w">     </span><span class="o">[</span><span class="s">"firstName"</span><span class="o">,</span><span class="w"> </span><span class="s">"string"</span><span class="w"> </span>
+<span class="w">      </span><span class="s">"lastName"</span><span class="o">,</span><span class="w"> </span><span class="s">"string"</span><span class="w"> </span>
+<span class="w">      </span><span class="s">"age"</span><span class="o">,</span><span class="w"> </span><span class="s">"int"</span><span class="w"> </span><span class="o">]</span><span class="w"> </span>
+<span class="w">     </span><span class="bp">[]</span>
+
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">createPersonRecord</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">   </span><span class="k">let</span><span class="w"> </span><span class="nv">fullName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sprintf</span><span class="w"> </span><span class="s">"%s%s"</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span>
+<span class="w">   </span><span class="c1">// create record instantation </span>
+<span class="w">   </span><span class="k">let</span><span class="w"> </span><span class="nv">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">     </span><span class="n">instRecord</span><span class="w"> </span>
+<span class="w">       </span><span class="o">[</span><span class="s">"firstName"</span><span class="o">,</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span>
+<span class="w">        </span><span class="s">"lastName"</span><span class="o">,</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span>
+<span class="w">        </span><span class="s">"age"</span><span class="o">,</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">]</span><span class="w"> </span>
+<span class="w"> </span>
+<span class="w"> </span><span class="c1">// create let expression </span>
+<span class="w"> </span><span class="n">cleti</span><span class="w"> </span><span class="n">fullName</span><span class="w"> </span><span class="n">record</span>
+
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">peopleRecords</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="n">ctx</span><span class="o">.</span><span class="n">``[].[SHEET1$]``</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">map</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">person</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">   </span><span class="n">createPersonRecord</span><span class="w"> </span>
+<span class="w">     </span><span class="n">person</span><span class="o">.</span><span class="n">FIRSTNAME</span><span class="w"> </span>
+<span class="w">     </span><span class="n">person</span><span class="o">.</span><span class="n">LASTNAME</span><span class="w"> </span>
+<span class="w">     </span><span class="o">(</span><span class="kt">string</span><span class="w"> </span><span class="n">person</span><span class="o">.</span><span class="n">AGE</span><span class="o">))</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toList</span>
+
+<span class="w"> </span><span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="k">new</span><span class="w"> </span><span class="n">StringBuilder</span><span class="bp">()</span><span class="o">)</span><span class="w"> </span>
+<span class="w"> </span><span class="c1">// create a module with all our stuff in it </span>
+<span class="w"> </span><span class="o">||&gt;</span><span class="w"> </span><span class="n">cmodule</span><span class="w"> </span><span class="s">"People"</span><span class="w"> </span><span class="o">(</span><span class="n">personType</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">peopleRecords</span><span class="o">)</span><span class="w"> </span>
+<span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="n">sb</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">sb</span><span class="o">.</span><span class="n">ToString</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>In this example the metaprogram <em>itself</em>uses the SQL type provider. This time, it is used in ODBC mode connecting to a spreadsheet that has some information about people in it. A record type <em>Person</em>is created to hold the information and then an instance for each person is created, and finally it is all wrapped in a module named <em>People</em>. This produces the following code</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">[&lt;</span><span class="n">AutoOpen</span><span class="o">&gt;]</span><span class="k">module</span><span class="w"> </span><span class="nn">Excel_Test</span><span class="w"> </span>
+<span class="w"> </span><span class="k">module</span><span class="w"> </span><span class="nn">People</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nc">Person</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="o">;</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="o">;</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">int</span><span class="w"> </span><span class="o">}</span>
+
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">DaveJones</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Dave"</span><span class="o">;</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Jones"</span><span class="o">;</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">21</span><span class="o">;</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">JohnJuan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"John"</span><span class="o">;</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Juan"</span><span class="o">;</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="o">;</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">RossMcKinlay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Ross"</span><span class="o">;</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"McKinlay"</span><span class="o">;</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="o">;</span><span class="w"> </span><span class="o">}</span><span class="w"> </span>
+<span class="w"> </span><span class="k">let</span><span class="w"> </span><span class="nv">JuanJuanings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">firstName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Juan"</span><span class="o">;</span><span class="w"> </span><span class="n">lastName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Juanings"</span><span class="o">;</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">52</span><span class="o">;</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We can harness the huge power of the erasing type providers as in input to the generation DSL and very easily create code. This is a trivial example of course, a real example might create types from metadata and have implementations that also use runtime erasing type providers! The code generation DSL is very young in changing a lot, but notice how you do not have to care about indentation at all, it just sorts it out for you based on an initial number that was passed into <em>cmodule</em>(1 in this case, as I know the Mixin provider wants to wrap the results with another module). It contains (or will) functions to create most F# types and common constructs, and if it&rsquo;s missing something or you want to compose further pieces, you can simply build up your own functions on top of it.</p>
+
+<h3></h3>
+
+<h2>A head exploder</h2>
+
+<p>In the last example, I used the SQL type provider <em>inside</em> the metaprogram. What if I wanted work out the connection string of the spreadsheet at compile time, like in the earlier example? Fret not, I made it so that you can use the Mixin type provider recursively, <em>inside</em>the Mixin metaprograms!</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">#</span><span class="n">r</span><span class="w"> </span><span class="s">@"FSharp.Data.SqlProvider.dll"</span><span class="w"> </span>
+<span class="o">#</span><span class="n">load</span><span class="w"> </span><span class="s">"SquirrelGen.fs"</span><span class="w"> </span>
+<span class="o">#</span><span class="n">r</span><span class="s">@"MixinProvider.dll "</span>
+
+<span class="k">open</span><span class="w"> </span><span class="nn">FSharp.Data.Sql</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">MixinProvider</span><span class="w"> </span>
+<span class="k">open</span><span class="w"> </span><span class="nn">System.Text</span>
+
+<span class="o">[&lt;</span><span class="n">Literal</span><span class="o">&gt;]</span><span class="w"> </span>
+<span class="k">let</span><span class="w"> </span><span class="nv">cstringMetaProgram</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"""let generate() = </span>
+<span class="s">  if System.Environment.MachineName = "PEZI" then </span>
+<span class="s">    "[&lt;Literal&gt;]let peopleCs = \"localConnection\"" </span>
+<span class="s">  else </span>
+<span class="s">    "[&lt;Literal&gt;]let peopleCs = \"otherConnection\"" """</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">CString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mixin_gen</span><span class="o">&lt;</span><span class="w"> </span><span class="n">cstringMetaProgram</span><span class="w"> </span><span class="o">&gt;</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="nn">Common</span><span class="p">.</span><span class="nn">DatabaseProviderTypes</span><span class="p">.</span><span class="n">ODBC</span><span class="o">,</span><span class="w"> </span><span class="nn">CString</span><span class="p">.</span><span class="n">peopleCs</span><span class="o">&gt;</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>&hellip;.</p>
+
+<h2>Stuff to watch out for</h2>
+
+<p>As you might imagine, I had to jump through many flaming hoops to get the Mixin type provider to work, and as such it is not without a few issues and should be treated as an early alpha. In particular, look out for :</p>
+
+<ol>
+ <li>If you use the F# power tools extension or another extension that uses FSharp.Compiler.Services, the Mixin provider might be confused with which version to use &ndash; this should not be a problem if your other extensions are using a recent version of the compiler services</li>
+ <li>This has not been tested at all in IDEs other that Visual Studio and almost certainly not work in Mono without some tweaks, though they should be simple (let me know if you&rsquo;d like to do this!)</li>
+ <li>Type providers are notorious for locking assemblies and the Mixin provider is worse than normal. This is why it is recommended to have a separate project for &ldquo;Full&rdquo; mode. However, even in Lite mode you might run into some locking problems whilst you are messing with the generation. Simply restart visual studio to fix this &ndash; but be aware that as soon as you have code on the screen that uses mixin_gen, the assemblies it generates often be locked by the background compiler / intellisense. Not much I can do about this. You might like to make sure the source files in the editor are closed before you restart, as it is mostly the background compiler that causes the problem.</li>
+ <li>The provider will try to report errors from the FSI evaluation and compiler into intellisense. You can look at the .fs file it generated if it got that far, it will be in the same location as the output dll.</li>
+ <li>At the moment, the source metaprograms must be in in a location relative to the location of the mixin provider assembly, so mark your fsx metaprgoram files so they are copied to the output directory and you should be good.</li></ol>
+
+<h2></h2>
+
+<h2>To get going</h2>
+
+<p>If you want to try out the Mixin provider, <a href="https://github.com/pezipink/MixinProvider">you can get it at my github here</a>. I have not pushed a package for it yet. There is not really any documentation for it yet either so you will mostly be on your own experimenting with it. The code generation DSL does not have a ton of capabilities and it not very well tested. I&rsquo;d be happy to help with any problems though, and would like to know if you do anything cool with it! Let me on twitter @pezi_pink or you can email me at pezi_pink [at] pinksquirrellabs com</p>
+
+<h2>Final Words</h2>
+
+<p>The Mixin type provider brings a powerful code generation story to F#, and I hope you find it useful. Over the coming months it should see more features implemented and some proper documentation, packages and so forth added. I will also be talking at the <a href="https://skillsmatter.com/conferences/6724-f-exchange">F# exchange in April</a> on the Mixin Type provider if you can make it down :)</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/">&larr; <em>Don Syme 2.0 : Cow Herding Edition Type Provider</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2015\02\08\secret-santa-challenge-in-d/"><em>Secret Santa challenge in D</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2015\03\01\introducing-the-mixin-type-provider/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

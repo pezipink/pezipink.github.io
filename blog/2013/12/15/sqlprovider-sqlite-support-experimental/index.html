@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>SqlProvider : SQLite support (experimental)</title>
+    <meta name="description" content="The SqlProvidernow supports experimental SQLite access....">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, type providers, sqlprovider">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2013\12\15\sqlprovider-sqlite-support-experimental/">
+    <link rel="next" href="/blog\2013\12\09\the-erasing-sql-type-provider-codename-john/">
+    <link rel="prev" href="/blog\2013\12\24\sql-provider-new-stuff-including-postgresql-support-and-option-types/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2013\12\24\sql-provider-new-stuff-including-postgresql-support-and-option-types/">&larr; <em>SQL Provider - new stuff including PostgreSQL support and option types!</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2013\12\09\the-erasing-sql-type-provider-codename-john/"><em>The Erasing SQL type provider (codename John)</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>SqlProvider : SQLite support (experimental)</h1>
+    <p class='date-and-tags'>
+<time datetime="2013-12-15" pubdate="true">2013-12-15</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a>, <a href="/tags\sqlprovider.html">sqlprovider</a></span></p>
+  </header>
+
+<p>The <a href="https://github.com/pezipink/SqlProvider">SqlProvider</a>now supports experimental SQLite access.</p>
+<!-- more-->
+
+<p>You can achieve this by supplying the SQL provider some additional static parameters</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SqlDataProvider</span><span class="o">&lt;</span><span class="w"> </span><span class="s">@"Data Source=F:\sqlite\northwindEF.db;Version=3"</span><span class="o">,</span><span class="nn">Common</span><span class="p">.</span><span class="nn">DatabaseProviderTypes</span><span class="p">.</span><span class="n">SQLITE</span><span class="o">,</span><span class="s">@"F:\sqlite\3\"</span><span class="w"> </span><span class="o">&gt;</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>As you can see, you can now pass SQLITE as the DatabaseVendor static parameter, along with a valid SQLite specific connection string.</p>
+
+<p>The third parameter is ResolutionPath. This is required for a few reasons - the first is that I do not want the SqlProvider to have any dependencies on non BCL types. Secondly, SQLite comes in many different flavours of mixed-mode assemblies. You must have the correct one for your particular system. The path you supply here will be used to dynamically load the SQLite assembly. You could always reference SQLite and remove the dynamic loading if you want a to tie your SqlProvider down to a specific SQLite assembly.</p>
+
+<p>Depending on where the assembly is located, which version of the framework you are running and whether you are using F# interactive, you might run into some security issues. If you get red squigglies on the above line complaining that it cannot load the assembly, you will probably need to add the following app.config setting to your application, fsi.exe's configuration and devenv.exe's configuration.</p>
+
+<p><a href="http://msdn.microsoft.com/en-us/library/dd409252(VS.100).aspx">http://msdn.microsoft.com/en-us/library/dd409252(VS.100).aspx</a></p>
+
+<p>Typically you will find fsi.exe.config in C:\Program Files (x86)\Microsoft SDKs\F#\3.1\Framework\v4.0\, and devenv.exe.config will be \VsInstallationLocation\Comm7\IDE\</p>
+
+<p>Once you have everything working, you can now proceed to enumerate and query tables/views, perform joins, use select-many over relationships and make use of individuals (see <a href="http://pinksquirrellabs.com/post/2013/12/09/The-Erasing-SQL-type-provider.aspx">last post</a> for details). SQLite doesn't support stored procedures so don't expect to find much in there :)</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sql</span><span class="o">.</span><span class="n">GetDataContext</span><span class="bp">()</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">christina</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">.</span><span class="n">``[main].[Customers]``</span><span class="o">.</span><span class="n">Individuals</span><span class="o">.</span><span class="n">``As ContactName``</span><span class="o">.</span><span class="n">``BERGS, Christina Berglund``</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">christinasOrders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">christina</span><span class="o">.</span><span class="n">FK_Orders_0_0</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toArray</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">mattisOrderDetails</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">query</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">ctx</span><span class="o">.</span><span class="n">``[main].[Customers]``</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">c</span><span class="o">.</span><span class="n">FK_Orders_0_0</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">od</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">o</span><span class="o">.</span><span class="n">FK_OrderDetails_1_0</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">prod</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">od</span><span class="o">.</span><span class="n">FK_OrderDetails_0_0</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="c1">// a terribly named constraint</span>
+<span class="w">            </span><span class="n">where</span><span class="w"> </span><span class="o">(</span><span class="n">c</span><span class="o">.</span><span class="n">ContactName</span><span class="w"> </span><span class="o">=%</span><span class="w"> </span><span class="s">"Matti%"</span><span class="w"> </span><span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span><span class="w"> </span><span class="n">o</span><span class="o">.</span><span class="n">ShipCountry</span><span class="w"> </span><span class="o">|=|</span><span class="w"> </span><span class="o">[|</span><span class="s">"Finland"</span><span class="o">;</span><span class="s">"England"</span><span class="o">|])</span>
+<span class="w">            </span><span class="k">select</span><span class="w"> </span><span class="o">(</span><span class="n">c</span><span class="o">.</span><span class="n">ContactName</span><span class="o">,</span><span class="n">o</span><span class="o">.</span><span class="n">ShipAddress</span><span class="o">,</span><span class="n">o</span><span class="o">.</span><span class="n">ShipCountry</span><span class="o">,</span><span class="n">prod</span><span class="o">.</span><span class="n">ProductName</span><span class="o">,</span><span class="n">prod</span><span class="o">.</span><span class="n">UnitPrice</span><span class="o">)</span><span class="w"> </span><span class="o">}</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toArray</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p></p>
+
+<p>Have fun!</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2013\12\24\sql-provider-new-stuff-including-postgresql-support-and-option-types/">&larr; <em>SQL Provider - new stuff including PostgreSQL support and option types!</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2013\12\09\the-erasing-sql-type-provider-codename-john/"><em>The Erasing SQL type provider (codename John)</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2013\12\15\sqlprovider-sqlite-support-experimental/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

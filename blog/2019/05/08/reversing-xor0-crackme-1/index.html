@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Reversing - xor0_crackme_1</title>
+    <meta name="description" content="In a previous article I described the process of reverse-engineering a crackme. These are programs designed to be broken with various counter-mesaures and challenges. As a break from my hardware work, I thought I would have a go at another one....">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="cracking, reverse engineering">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2019\05\08\reversing-xor0-crackme-1/">
+    <link rel="next" href="/blog\2019\04\23\fairylog-multiplexer-macros/">
+    <link rel="prev" href="/blog\2019\07\21\reversing-kreker-v2-exe/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2019\07\21\reversing-kreker-v2-exe/">&larr; <em>Reversing - Kreker_V2.exe</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\04\23\fairylog-multiplexer-macros/"><em>Fairylog : Multiplexer Macros</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Reversing - xor0_crackme_1</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-05-08" pubdate="true">2019-05-08</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>In a <a href="http://pinksquirrellabs.com/blog/2018/01/01/reversing-lcm6-exe/">previous article</a> I described the process of reverse-engineering a <a href="https://crackmes.one/lasts">crackme</a>. These are programs designed to be broken with various counter-mesaures and challenges. As a break from my hardware work, I thought I would have a go at another one.</p>
+<!-- more-->
+
+<h2 id="crackme">Crackme</h2>
+
+<p>The crackme in question <a href="https://crackmes.one/crackme/5cca153f33c5d4419da55968">is this one</a>, the newest available on the site at the time. If you want to give it a go, you should stop reading since there are major spoilers ahead! I&rsquo;ll try to write keygen(s) where suitable, or at least gain enough knowledge to pass the checks and be able to write a keygen.</p>
+
+<p>Initial analysis shows a unobsfucated C# program, that calls into helper.dll in order to produce the result.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/1.png" alt="" />
+ <p class="caption"></p></div>
+
+<div class="figure"><img src="../../../../../img/reverse2/2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The dll is a native one. After finding the exported function, we can see it is calling into the windows api to get the current time. Then there is a switch on the day of the week, where each day calls a different function with the passed <code>name</code> and <code>serial</code> arguments.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/3.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>(in the picture, I have patched the program, hardcoding the day whilst I am working on it. The original code used the day of week from the SYSTEMTIME struct returned frm the GetLocalTime API call.)</p>
+
+<h1 id="sunday">Sunday</h1>
+
+<p>Let&rsquo;s look at Sunday&rsquo;s function</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/4.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>We can see here it passes the serial along to some other function, checks the result is 0x13, and if it is, it then checks each byte matches a hard-coded serial of <code>A10-57617274-686F76</code>. The other function is almost certainly some kind of strlen, then, since the serial is 0x13 characters long:</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/5.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Indeed it is a typical implementation of strlen, which I have labelled as such since it is likely going to turn up again yet.</p>
+
+<p>From this we can deduce it doesn&rsquo;t matter what the <code>name</code> parameter is, and the serial is hardcoded to <code>A10-57617274-686F76</code></p>
+
+<h1 id="monday">Monday</h1>
+
+<p>Monday&rsquo;s function first tries to load a file &ldquo;xor0.rox&rdquo; and checks that it is exactly 0x20 bytes long. If so it then reads the contents into a buffer in memory. This appears to be some kind of license style file.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/6.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Here it XORs the 4th character of the user name with the 5th character of the serial number, and depending on the result, might add 1 to it. Let&rsquo;s call this the magic number. It then checks if this number appears at the 5th byte of the loaded file (the address <code>1000E384</code> is the buffer + 4).</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/7.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This code checks that the first four bytes are equal to 0xDEADC0DE.</p>
+
+<p>Therefore our little-endian license file currently looks like this, based on a username of <code>name12345</code> and serial <code>serial</code>.</p>
+
+<p>DEC0ADDE04 (+ 0x1b more bytes)</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/8.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The last part is quite a lot more tricky. The code here basically sums the remaining 0x1b bytes, failing if any of them are zero. It then multiplies the result with the magic number, and XORs the result with the last 32 bits in the file. The result must produce <code>0xFACE0FB0</code>.</p>
+
+<p>I&rsquo;m sure there&rsquo;s a nice maths way to work out the possible solutions - I decided to work backwards until I can produce a working license file for my name and serial combination, based on the following observations:</p>
+
+<ul>
+ <li>No bytes can be zero</li>
+ <li>The sum, before multiplication, includes the last four bytes that will eventually be XORd</li>
+ <li>Because we are adding up 0x1b bytes then multiplying by (in this case) 4, the maximum number is not very large compared to the 32 bit number comprising of the last 4 bytes.</li></ul>
+
+<p>I picked the number 0xFACE1C24 to go into the file, which when XORd with 0xFACE0FB0 leaves us with 0x1394, a number that is evenly divisble by 4, resulting in 0x4e5.</p>
+
+<p>We already have a part of the sum in the file : 0xFA + 0xCE + 0x1C + 0x24 = 0x208</p>
+
+<p>This leaves us with 0x2dd to spread over the remaining 0x17 bytes, which works out as 0x16 * 0x1f bytes and the last byte of 0x33.</p>
+
+<p>The finished license file looks like this and passes the check.</p>
+
+<p>DEC0ADDE041F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F1F33241CCEFA</p>
+
+<h1 id="tuesday">Tuesday</h1>
+
+<div class="figure"><img src="../../../../../img/reverse2/9.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The first thing Tuesday does is copy the username into an area of memory that is 0x20 bytes long. If the username is not long enough it is repeated until all the memory is used up (<code>IDIV</code> is being used for the remainder here)</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/10.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This next bit of code is quite interesting, it uses the special <code>CPUID</code> instruction that writes various information into the registers about the current processor. The code then swaps, xors and generally mixes together a bunch of them to produce a magic number.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/11.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The following loop then cycles through the memory buffer from earlier, XORing each 4 bytes with the magic number, leaving an encrypted form of the repeated username.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/12.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The first lines here check that the first byte of the serial is <code>0x2D303154</code> which if you look at in ASCII with the correct endian-ness is <code>T10-</code>. The rest of the code is a couple of loops worth of number crunching to generate the final result. You can see it replicated here in this beautiful keygen:</p>
+
+<div class="brush: c">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="cp">#define cpuid__asm __emit 0fh __asm __emit 0a2h</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">(</span><span class="kr">__stdcall</span><span class="o">*</span><span class="n">func</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">);</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">tuesday</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="n">buff</span><span class="p">[</span><span class="mh">0x20</span><span class="p">];</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1">// cpuid magic</span>
+<span class="w">	</span><span class="kr">__asm</span><span class="w"> </span><span class="p">{</span>
+<span class="w">		</span><span class="n">push</span><span class="w"> </span><span class="n">eax</span>
+<span class="w">		</span><span class="n">push</span><span class="w"> </span><span class="n">ebx</span>
+<span class="w">		</span><span class="n">push</span><span class="w"> </span><span class="n">ecx</span>
+<span class="w">		</span><span class="n">push</span><span class="w"> </span><span class="n">edx</span>
+
+<span class="w">		</span><span class="n">MOV</span><span class="w"> </span><span class="n">EAX</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">		</span><span class="n">cpuid</span>
+<span class="w">		</span><span class="n">XOR</span><span class="w"> </span><span class="n">EBX</span><span class="p">,</span><span class="w"> </span><span class="n">EDX</span>
+<span class="w">		</span><span class="n">BSWAP</span><span class="w"> </span><span class="n">ECX</span>
+<span class="w">		</span><span class="n">XOR</span><span class="w"> </span><span class="n">EBX</span><span class="p">,</span><span class="w"> </span><span class="n">ECX</span>
+<span class="w">		</span><span class="n">PUSH</span><span class="w"> </span><span class="n">EBX</span>
+<span class="w">		</span><span class="n">MOV</span><span class="w"> </span><span class="n">EAX</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">		</span><span class="n">cpuid</span>
+<span class="w">		</span><span class="n">BSWAP</span><span class="w"> </span><span class="n">EAX</span>
+<span class="w">		</span><span class="n">XOR</span><span class="w"> </span><span class="n">EDX</span><span class="p">,</span><span class="w"> </span><span class="n">ECX</span>
+<span class="w">		</span><span class="n">XOR</span><span class="w"> </span><span class="n">EAX</span><span class="p">,</span><span class="w"> </span><span class="n">EDX</span>
+<span class="w">		</span><span class="n">POP</span><span class="w"> </span><span class="n">EBX</span>
+<span class="w">		</span><span class="n">XOR</span><span class="w"> </span><span class="n">EAX</span><span class="p">,</span><span class="w"> </span><span class="n">EBX</span>
+<span class="w">		</span><span class="n">XCHG</span><span class="w"> </span><span class="n">AL</span><span class="p">,</span><span class="w"> </span><span class="n">AH</span>
+
+<span class="w">		</span><span class="n">MOV</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">EAX</span>
+<span class="w">		</span><span class="n">pop</span><span class="w"> </span><span class="n">edx</span>
+<span class="w">		</span><span class="n">pop</span><span class="w"> </span><span class="n">ecx</span>
+<span class="w">		</span><span class="n">pop</span><span class="w"> </span><span class="n">ebx</span>
+<span class="w">		</span><span class="n">pop</span><span class="w"> </span><span class="n">eax</span>
+
+<span class="w">	</span><span class="p">};</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="w">	</span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x20</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">	</span><span class="p">{</span>
+<span class="w">		</span><span class="n">buff</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">len</span><span class="p">];</span>
+<span class="w">	</span><span class="p">}</span>
+<span class="w">	</span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x20</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">	</span><span class="p">{</span>
+<span class="w">		</span><span class="kt">int</span><span class="o">*</span><span class="w">  </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">buff</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">		</span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
+<span class="w">	</span><span class="p">}</span>
+
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">magic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0xb00b</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">	</span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x20</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">	</span><span class="p">{</span>
+<span class="w">		</span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xFFFFFF00</span><span class="p">;</span>
+<span class="w">		</span><span class="n">a</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">buff</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">		</span><span class="n">a</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">&lt;&lt;=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xFFFFFFFF</span><span class="p">;</span>
+<span class="w">	</span><span class="p">}</span>
+<span class="w">	</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bak</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">magic</span><span class="p">;</span>
+<span class="w">	</span><span class="n">bak</span><span class="w"> </span><span class="o">&gt;&gt;=</span><span class="w"> </span><span class="mh">0x10</span><span class="p">;</span>
+<span class="w">	</span><span class="n">magic</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">bak</span><span class="p">;</span>
+<span class="w">	</span><span class="n">magic</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xFFFF</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">int</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">	</span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x4</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">	</span><span class="p">{</span>
+<span class="w">		</span><span class="n">bak</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">magic</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xf</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mh">0x30</span><span class="p">;</span>
+<span class="w">		</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">magic</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mh">0x39</span><span class="p">)</span>
+<span class="w">		</span><span class="p">{</span>
+<span class="w">			</span><span class="n">magic</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mh">0x7</span><span class="p">;</span>
+<span class="w">		</span><span class="p">}</span>
+<span class="w">		</span><span class="n">total</span><span class="w"> </span><span class="o">&lt;&lt;=</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span>
+<span class="w">		</span><span class="n">total</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">magic</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bak</span><span class="p">;</span>
+<span class="w">		</span><span class="n">magic</span><span class="w"> </span><span class="o">&gt;&gt;=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="w">	</span><span class="p">}</span>
+<span class="w">	</span><span class="kt">char</span><span class="w"> </span><span class="n">serial</span><span class="p">[</span><span class="mi">5</span><span class="p">];</span>
+<span class="w">	</span><span class="n">serial</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+<span class="w">	</span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">ser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">serial</span><span class="p">;</span>
+<span class="w">	</span><span class="o">*</span><span class="n">ser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">total</span><span class="p">;</span>
+<span class="w">	</span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"serial for "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">" on Tuesday is T10-"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">serial</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<h1 id="wednesday">Wednesday</h1>
+
+<p>The first part of this calculates a number based on the whole serial.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/13.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Here&rsquo;s an approximation</p>
+
+<div class="brush: c">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">serial</span><span class="p">);</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">sertot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serial</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">    </span><span class="n">c</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mh">0x37</span><span class="p">;</span>
+<span class="w">    </span><span class="n">sertot</span><span class="w"> </span><span class="o">&lt;&lt;=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="w">    </span><span class="n">sertot</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I left out some of the conditional checks since they are seemingly irrelevant for me to generate a correct key.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/14.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This part calculates a number from the user name. There&rsquo;s a lot of instructions here that use the lower parts of the registers which are a bit of a pain to emulate in a high level language like C. An important thing to notice here is that it only uses the first 4 chracters of the username, and ignores the rest. Eventually, it ends up with a 16 bit number that it copies into the upper part of the register as well, resulting in a 32 bit number consisting of two identical 16 bit numbers.</p>
+
+<p>An ugly approximation:</p>
+
+<div class="brush: c">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="n">res</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">res</span><span class="p">;</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xFFFFFF00</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xFF</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="n">a</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+<span class="n">res</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xFFFFFF00</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xff</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">((</span><span class="n">res</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x0000ff00</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span>
+<span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xFFFFFF00</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xff</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="n">res</span><span class="w"> </span><span class="o">&amp;=</span><span class="w"> </span><span class="mh">0xFFFFFF00</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="p">;</span>
+<span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mh">0x0000</span><span class="p">;</span>
+
+<span class="n">res</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">temp</span><span class="p">;</span><span class="w"> </span><span class="c1">// our final value.</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The resulting numbers from the two stages must be equal. Since the first part uses each character of the serial in an add-shift fashion, the actual characters don&rsquo;t matter, only that they add up to the correct value. Therefore we can take the result of the username calculation and reverse it out into a serial that will add up to the correct number for us. Since we know the 16 bit number is replicated, we can take the first 4 characters and write out an 8 character serial:</p>
+
+<div class="brush: c">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">char</span><span class="w"> </span><span class="n">newSer</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="kt">char</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf</span><span class="p">;</span><span class="w">		</span>
+<span class="w">  </span><span class="n">c</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mh">0x37</span><span class="p">;</span>
+<span class="w">  </span><span class="n">res</span><span class="w"> </span><span class="o">&gt;&gt;=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="w">  </span><span class="n">newSer</span><span class="p">[</span><span class="mi">3</span><span class="o">-</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">  </span><span class="n">newSer</span><span class="p">[(</span><span class="mi">3</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w">			</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Feeding the original code a username of <code>pezip</code> generates a value of <code>0x441a441a</code>. Putting this through the above function yields a serial of <code>;;8A;;8A</code> that can be used to successfully pass the check.</p>
+
+<h1 id="thursday">Thursday</h1>
+
+<p>Thursday has a lot of different routines and stuff going on, starting with a check that the serial is 0x20 bytes long. After a bunch of poking and tracing around, I discovered a &ldquo;smoking gun&rdquo;</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/15.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The constants here are commonly associated with MD5/SHA1 hashing. And so it would transpire that Thursday&rsquo;s serial number is a direct MD5 hash of the username.</p>
+
+<h1 id="friday">Friday</h1>
+
+<p>Friday is the biggest one yet so I will not show so much of the code. A bunch of investigation revealed the following:</p>
+
+<ul>
+ <li>A hashing function produces a number from the name</li>
+ <li>The serial is expected to be in a particular format;</li>
+ <li>NNNNNNNN-AAAA-BBBB-CCCC-DDDD- with the hyphens, where;</li>
+ <li>N should match the output from the name hashing function (with some logistical changes)</li>
+ <li>A and B form two numbers for a particular check</li></ul>
+
+<p>In order to process the serial string input, the following function is used - that also appeared in Thursday&rsquo;s challenge.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/16.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>There&rsquo;s some trickery here using the carry flags and an odd way of detecting the end of the string. I eventually distilled it to the following code (it&rsquo;s not the same, but the essence of what it is doing if given the correct input):</p>
+
+<div class="brush: c">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kt">char</span><span class="w"> </span><span class="n">buff</span><span class="p">[</span><span class="mh">0x18</span><span class="p">];</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">dindex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="nb">true</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serial</span><span class="p">[</span><span class="n">index</span><span class="p">];</span><span class="w">	</span>
+<span class="w">    </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x40</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mh">0x30</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mh">0x37</span><span class="p">;</span><span class="w">		</span>
+<span class="w">    </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;&lt;=</span><span class="w"> </span><span class="mh">0x4</span><span class="p">;</span>
+<span class="w">		</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serial</span><span class="p">[</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">];</span>
+<span class="w">    </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mh">0x40</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mh">0x30</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mh">0x37</span><span class="p">;</span>
+<span class="w">		</span>
+<span class="w">    </span><span class="n">buff</span><span class="p">[</span><span class="n">dindex</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w">  </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xf</span><span class="p">);</span>
+<span class="w">    </span><span class="n">index</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">serial</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Even with this it still took me a good while to realise that all it was doing was parsing hexadecimal numbers from ascii. Sometimes you can&rsquo;t see the wood through the trees.</p>
+
+<p>The checks for A and B are as follows, and do not rely on the name in any way.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/17.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The numbers are checked to be within a certain range, then XORing them together must match the result of multiplying them together and masking to 0x7FFF.</p>
+
+<p>With a little thought and experimentation, 0x1000 for both values satisfies this check.</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/18.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The next two numbers undergo a similar prodedure, except this time (within the same bounds) the numbers must satisfy <code>(n  ^^^ n2) =  (( n * n2) &gt;&gt;&gt; 0xA)</code>. I am sure there&rsquo;s a nice mathematical way of deriving the possible solutions, however I simply brute forced a bunch of them and picked one.</p>
+
+<p>The last part of this code checks that the hyphens appear in the correct places. A valid serial for <code>user12345</code> is <code>0?3;02:1-1000-1000-07a3-0820</code></p>
+
+<h1 id="saturday">Saturday</h1>
+
+<p>Saturday looked quite daunting with lots of subroutine calls. After a lot of inspection (several hours!), it seemed to be doing an awful lot of work, with several hashing / crunching procedures and a lot of code. It was too difficult for me to work out exactly what each part was doing since I didn&rsquo;t recognise all the algorithms, so instead I decided to cheat. Based on the observation that after all the crunching had completed, the program simply checks the result against the serial you give it after running it through the ascii-&gt;hex function from earlier:</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/19.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>You can see here it checks the buffers against each other for 0x10 characters using <code>repe cmpsb</code></p>
+
+<p>I made a copy of the DLL and changed the function, so that instead of checking the crunched result against the serial, it <em>returns</em> the crunched result instead:</p>
+
+<div class="figure"><img src="../../../../../img/reverse2/20.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Now in my keygen program, I can call this function and have it generate the correct value for me, process it through a function that performs the inverse of the ascii-&gt;hex function, leaving us with the correct serial. For the username <code>user12345</code> the serial is <code>FB368210295047499E06AC2352C62885</code></p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>This was a fun crackme, and I am pleased I could provide a solution of some description for each puzzle. There were no anti-debugging techniques present in this one, instead focusing more on hashing things in various ways. One puzzle remains, however - if you look at the C# code you will see it MD5 hashes the name and tests it against two hard-coded hashes. I have not tried to work out what these could be yet, maybe there are some clues hanging around in the .exe and .dll somewhere &hellip;</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2019\07\21\reversing-kreker-v2-exe/">&larr; <em>Reversing - Kreker_V2.exe</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\04\23\fairylog-multiplexer-macros/"><em>Fairylog : Multiplexer Macros</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2019\05\08\reversing-xor0-crackme-1/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

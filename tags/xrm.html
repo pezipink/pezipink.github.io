@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Posts tagged 'xrm'</title>
+    <meta name="description" content="Posts tagged 'xrm'">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="xrm">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/tags\xrm.html">
+
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\xrm.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\xrm.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\xrm.atom.xml">Atom</a></li>
+            <li><a href="/feeds\xrm.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+          <h1>Posts tagged <em>xrm</em></h1>
+
+          <article>
+  <header>
+    <h2><a href='/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/'>Microsoft Dynamics CRM Type Provider preview</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2012-12-30" pubdate="true">2012-12-30</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a>, <a href="/tags\xrm.html">xrm</a></span></p>
+  </header>
+
+<p>Are you tired of generating strongly typed classes with millions of lines of C# using crmsvcutil.exe that often crashes? Fed up with having to re-generate the classes every time something in the schema changes? Feeling restricted by the LINQ provider's limitations? Ever wonder why you should need to know what attribute joins to what in your relationships to perform your joins? F# to the rescue!</p>
+
+<p>I am working on a F# type provider than aims to solve a lot of these pains, and more besides! This is just a sneak preview with what is to come, I have not released any of this yet. First, here is an example of a rather silly but fairly complex query using the new type provider and the F# query syntax :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">XRM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">Common</span><span class="p">.</span><span class="nn">XRM</span><span class="p">.</span><span class="nn">TypeProvider</span><span class="p">.</span><span class="n">XrmDataProvider</span><span class="o">&lt;</span><span class="s">"http://something/Organization.svc"</span><span class="o">&gt;</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">dc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">XRM</span><span class="p">.</span><span class="n">GetDataContext</span><span class="bp">()</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">TestRecord</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="o">{</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="o">;</span><span class="w"> </span>
+<span class="w">      </span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">int</span><span class="w"> </span><span class="o">}</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"John%"</span><span class="o">;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">42</span><span class="w"> </span><span class="o">}</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">q</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">query</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">dc</span><span class="o">.</span><span class="n">new_squirrel</span><span class="w"> </span><span class="k">do</span><span class="w">                            </span>
+<span class="w">            </span><span class="n">where</span><span class="w"> </span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="n">new_name</span><span class="w"> </span><span class="o">&lt;&gt;%</span><span class="w"> </span><span class="n">test</span><span class="o">.</span><span class="n">x</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">s</span><span class="o">.</span><span class="n">new_age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">test</span><span class="o">.</span><span class="n">y</span><span class="o">)</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">s</span><span class="o">.</span><span class="n">``N:1 &lt;- new_new_forest_new_squirrel``</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">f</span><span class="o">.</span><span class="n">``N:1 &lt;- owner_new_forest``</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span><span class="n">where</span><span class="w"> </span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="n">new_colour</span><span class="w"> </span><span class="o">|=|</span><span class="w"> </span><span class="o">[|</span><span class="s">"Pink"</span><span class="o">;</span><span class="s">"Red"</span><span class="o">|])</span>
+<span class="w">            </span><span class="n">where</span><span class="w"> </span><span class="o">(</span><span class="n">f</span><span class="o">.</span><span class="n">new_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Sherwood"</span><span class="o">)</span>
+<span class="w">            </span><span class="n">where</span><span class="w"> </span><span class="o">(</span><span class="n">o</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"PEZI THE OWNER!"</span><span class="o">)</span>
+<span class="w">            </span><span class="k">select</span><span class="w"> </span><span class="o">(</span><span class="n">s</span><span class="o">,</span><span class="w"> </span><span class="n">f</span><span class="o">.</span><span class="n">new_name</span><span class="o">,</span><span class="w"> </span><span class="n">f</span><span class="o">,</span><span class="w"> </span><span class="n">o</span><span class="o">)</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+  <footer>
+    <a href='/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

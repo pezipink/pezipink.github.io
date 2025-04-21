@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Asi64</title>
+    <meta name="description" content="In my last few posts, I detailed some of my experience learning 6502 assembler for the Commodore 64. I started off using DASM, which seems to be quite a nice assembler, severely lacking in documentation. Then I discovered the very awesome KickAssembler, w...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="6502, C64, racket, asi64">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2017\05\30\asi64/">
+    <link rel="next" href="/blog\2017\03\31\c64-programming-invader-fractal-2/">
+    <link rel="prev" href="/blog\2017\08\04\racket-macros-scurry/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\08\04\racket-macros-scurry/">&larr; <em>Racket Macros : Scurry</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\03\31\c64-programming-invader-fractal-2/"><em>C64 Programming - Invader Fractal #2</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Asi64</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-05-30" pubdate="true">2017-05-30</time> :: <span class="tags"><a href="/tags\6502.html">6502</a>, <a href="/tags\C64.html">C64</a>, <a href="/tags\racket.html">racket</a>, <a href="/tags\asi64.html">asi64</a></span></p>
+  </header>
+
+<p>In my last few posts, I detailed some of my experience learning <a href="http://6502.org/">6502</a> assembler for the Commodore 64. I started off using <a href="http://dasm-dillon.sourceforge.net/">DASM</a>, which seems to be quite a nice assembler, severely lacking in documentation. Then I discovered the very awesome <a href="http://www.theweb.dk/KickAssembler/Main.html#frontpage">KickAssembler</a>, which includes a full blown scripting language on top of java, lots of other very nice features, and great documentation. This made me realise what a powerful modern assembler could be like - and perhaps I could go one step further with it.</p>
+
+<p>Asi64 extends <a href="http://racket-lang.org/">Racket</a> to become a 6502 assembler. No need for scripting languages or half baked macro systems here - you have literally all of Racket and its amazing macro system on your side. It also has direct support for <a href="http://vice-emu.sourceforge.net/">Vice</a>, a popular Commodore 64 emulator, passing your labels and breakpoints along enabling a fluid programming and debugging cycle. Hats off to the fantasic KickAssembler, I have stolen many ideas from it :)</p>
+
+<div class="figure"><img src="../../../../../img/asi/asi0.png" alt="" />
+ <p class="caption"></p></div>
+<!-- more-->
+
+<p>If you want to have a go, <a href="https://github.com/pezipink/Asi64">you get can asi64 from my github here</a> or the racket package manager - see the github repo for a brief rundown of syntax and getting started. Currently, this is targetted at Windows - the assembler itself should work fine on any OS but it might need a small tweak in how it executes the emulator - PRs would be welcome!</p>
+
+<p>By way of introduction to some bits of the assembler (definetly not even touching on its potential) we will write a relatively simple demo effect, a very basic starfield. (note this is not attempting to teach 6502 or Racket!)</p>
+
+<h2 id="starfields">Starfields!</h2>
+
+<p>To make a simple starfield we will use the C64&rsquo;s character graphics. In this mode, the VIC-II graphics chip will point at an area in memory where a character set of our design is stored. A character is defined as an 8x8 grid of pixels. In memory, this is stored sequentially as 8 bytes, where the bits of each byte represent a pixel, going from the top row of the character downwards.</p>
+
+<p>The VIC chip goes on its merry way rendering graphics. On every 8th scanline (known as a &ldquo;bad line&rdquo;) it will read the next row of video memory in and work out which characters it needs to display. This is fairly simple, the video memory is somewhere of our choosing and represents the 40*25 characters laid out sequentially. Each byte in the memory represents a character index from the character set to render. This means you can have 256 characters in a set, for a 2k total of memory.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>First, let&rsquo;s get the boring stuff out of the way, which is telling the VIC chip where to look for the video and character memory. In this example, we will use $0c00 for the video memory, $2000 for the character memory, and stick our program at $1000.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">asi64</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">vic-control</span><span class="w"> </span><span class="n">$d018</span><span class="p">)</span>
+<span class="p">(</span><span class="n">C64</span><span class="p">{</span>
+<span class="w">	</span><span class="n">*=</span><span class="w"> </span><span class="n">$1000</span>
+<span class="w">	</span><span class="n">lda</span><span class="w"> </span><span class="n">@%00111000</span>
+<span class="w">	</span><span class="c1">; screen at $0c00, characters at $2000</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">vic-control</span><span class="w"> </span>
+<span class="w">	</span><span class="n">jmp</span><span class="w"> </span><span class="p">(</span><span class="n">here</span><span class="p">)</span><span class="w"> </span><span class="c1">;infinite loop</span>
+<span class="p">})</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>$d018 is the vic register which controls where it looks for things. Here we load the value 00111000 into it which <a href="http://codebase64.org/doku.php?id=base:vicii_memory_organizing">sets things up how we want</a>. The combination of lda, sta is so common that we can get asi64 to provide us a little abstraction over it by using the <code>define-op</code> macro.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">asi64</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">vic-control</span><span class="w"> </span><span class="n">$d018</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">black</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">background</span><span class="w"> </span><span class="n">$d021</span><span class="p">)</span>
+<span class="p">(</span><span class="n">define-op</span><span class="w"> </span><span class="p">(</span><span class="n">mov</span><span class="w"> </span><span class="n">src</span><span class="w"> </span><span class="n">dst</span><span class="p">){</span>
+<span class="w">	</span><span class="n">lda</span><span class="w"> </span><span class="n">src</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">dst</span>
+<span class="p">})</span>
+
+<span class="p">(</span><span class="n">C64</span><span class="p">{</span>
+<span class="w">	</span><span class="n">*=</span><span class="w"> </span><span class="n">$1000</span>
+<span class="w">	</span><span class="p">(</span><span class="n">mov</span><span class="w"> </span><span class="n">@%00111000</span><span class="w"> </span><span class="n">vic-control</span><span class="p">)</span>
+<span class="w">	</span><span class="p">(</span><span class="n">mov</span><span class="w"> </span><span class="n">@black</span><span class="w"> </span><span class="n">background</span><span class="p">)</span>
+<span class="w">	</span><span class="n">jmp</span><span class="w"> </span><span class="p">(</span><span class="n">here</span><span class="p">)</span><span class="w"> </span><span class="c1">;infinite loop</span>
+<span class="p">})</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>From now on I will mostly omit code that&rsquo;s already been shown since assembly quickly gets large.</p>
+
+<h2 id="character-design">Character Design</h2>
+
+<p>What we will do is have 5 characters in a row and rotate pixels through them on each screen refresh. Therefore, character 0 we will start off with a single pixel in the centre of it. The next 4 characters will simply be blank, waiting to recieve the pixel. Then, the video memory will be tiled with chracters 0 &ndash; 5 to give the illusion of a (terrible) star field.</p>
+
+<p>So let&rsquo;s go ahead and build our characters. We know the memory starts at $2000, therefore that address represents the top row of pixels for the first character.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">	</span><span class="n">lda</span><span class="w"> </span><span class="n">@0</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2000</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2001</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2002</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2003</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2005</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2006</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$2007</span>
+
+<span class="w">	</span><span class="c1">; a single pixel in the centre!</span>
+<span class="w">	</span><span class="n">lda</span><span class="w"> </span><span class="n">@%00001000</span>
+<span class="w">	</span><span class="n">sta</span><span class="w"> </span><span class="n">$20004</span><span class="w"> </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Well, this is boring. And we still need to do the next 4 characters. As ever in assembly you have to choose between writing loops or unrolling them - space vs speed - in this case we will stick to unrolled code. I think racket can help us out here though.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w"> 	</span><span class="n">lda</span><span class="w"> </span><span class="n">@0</span>
+<span class="w">	</span><span class="c1">;splat the first 5 characters </span>
+<span class="w">	</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">i</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="mi">5</span><span class="p">))])</span>
+<span class="w">	  </span><span class="p">{</span><span class="n">sta</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$2000</span><span class="w"> </span><span class="n">i</span><span class="p">)})</span>
+<span class="w">	</span><span class="c1">; load our humble pixel</span>
+<span class="w">	</span><span class="p">(</span><span class="n">mov</span><span class="w"> </span><span class="n">@%00001000</span><span class="w"> </span><span class="n">$2004</span><span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Much better. Ok, so we might have written over $2004 in the loop needlessly, but whatever, that could easily be rectified. Next up is to tile the screen with the 0&ndash;4 sequence. We could unroll some code to do this, or write a loop, but there is another option. We can simply write to the video memory directly as part of the assembly process.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">	</span><span class="n">*=</span><span class="w"> </span><span class="n">$0c00</span><span class="w"> </span><span class="c1">;asssemble at video memory location</span>
+<span class="w">	</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">i</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">200</span><span class="p">)])</span>
+<span class="w">		</span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Don&rsquo;t know about you but I am already bored of keep writing this for .. in-range stuff. Let&rsquo;s knock up a quick macro to do it for us.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define-syntax))" style="color: inherit">define-syntax</a></span><span class="w"> </span><span class="p">(</span><span class="n">fori</span><span class="w"> </span><span class="n">stx</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Parsing_Syntax.html#(form._((lib._syntax/parse..rkt)._syntax-parse))" style="color: inherit">syntax-parse</a></span><span class="w"> </span><span class="n">stx</span>
+<span class="w">    </span><span class="p">([</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="n">f</span><span class="p">]</span>
+<span class="w">     </span><span class="c1">; breaking hygeine here, very sorry</span>
+<span class="w">     </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._with-syntax))" style="color: inherit">with-syntax</a></span><span class="w"> </span><span class="p">([</span><span class="n">f2</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stxops.html#(def._((quote._~23~25kernel)._syntax-~3edatum))" style="color: inherit">syntax-&gt;datum</a></span><span class="w"> </span><span class="o">#'</span><span class="n">f</span><span class="p">)])</span>
+<span class="w">      </span><span class="o">#'</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">i</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">e</span><span class="p">)])</span>
+<span class="w">                 </span><span class="n">f2</span><span class="p">)))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Yes, this is a terrible macro! It breaks hygeine and won&rsquo;t even work in some cases. I am just putting it here to show that you can!</p>
+
+<p>Now we can write</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">	</span><span class="n">lda</span><span class="w"> </span><span class="n">@0</span>
+<span class="w">	</span><span class="c1">;splat the first 5 characters </span>
+<span class="w">	</span><span class="p">(</span><span class="n">fori</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="n">sta</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$2000</span><span class="w"> </span><span class="n">i</span><span class="p">)})</span>
+<span class="w">	</span><span class="c1">; load our humble pixel</span>
+<span class="w">	</span><span class="p">(</span><span class="n">mov</span><span class="w"> </span><span class="n">@%00001000</span><span class="w"> </span><span class="n">$2004</span><span class="p">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>and</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">	</span><span class="n">*=</span><span class="w"> </span><span class="n">$0c00</span><span class="w"> </span><span class="c1">;asssemble at video memory location</span>
+<span class="w">	</span><span class="p">(</span><span class="n">fori</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Rawr!</p>
+
+<div class="figure"><img src="../../../../../img/asi/asi1.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="move-it">Move it!</h2>
+
+<p>I&rsquo;ll admit this looks like a pretty terrible star field. Even when moving it will look bad, but one problem at a time. Let&rsquo;s get it moving! The basic operation will be to rotate $2004 to the right. This will move the bit along one place, and if it falls off the end of the byte it will end up in the processor&rsquo;s carry bit. From there, if we rotate right the same row-byte of the next character ($200c) the bit will move from the carry into the most signficant bit of the next character&rsquo;s byte. we can repeat this process, with a special case for the last character since it needs to wrap around back to the first one if the carry is set.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="n">:update_starfield</span>
+<span class="w">	</span><span class="n">clc</span><span class="w"> </span><span class="c1">; clear carry bit</span>
+<span class="w">	</span><span class="c1">; ror our little guy through memory</span>
+<span class="w">	</span><span class="p">(</span><span class="n">fori</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">{</span><span class="n">ror</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">$2004</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="mi">8</span><span class="p">))})</span>
+<span class="w">	</span><span class="n">bcc</span><span class="w"> </span><span class="n">end+</span><span class="w">	</span>
+<span class="w">	</span><span class="n">ror</span><span class="w"> </span><span class="n">$2004</span>
+<span class="n">:end</span><span class="w">    </span>
+<span class="w">	</span><span class="n">rts</span><span class="w">	</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We will call this subroutine once each video frame. To achieve this we will burn cycles until the raster hits the bottom of the screen-ish (since we don&rsquo;t want to update whilst the VIC is rendering!), call this procedure, and then wait again. Usually you&rsquo;d do this with raster interrupts since obviously sitting waiting for the screen means you can&rsquo;t do anything else, but it will suffice for this example.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">		</span><span class="n">lda</span><span class="w"> </span><span class="n">@$ff</span>
+<span class="n">:loop</span><span class="w"> 		</span><span class="n">cmp</span><span class="w"> </span><span class="n">$d012</span><span class="w"> </span><span class="c1">; wait for line 256</span>
+<span class="w">		</span><span class="n">bne</span><span class="w"> </span><span class="n">loop-</span>
+<span class="w">		</span><span class="n">jsr</span><span class="w"> </span><span class="n">update_starfield+</span>
+<span class="w">		</span><span class="c1">; do nothing for a while so </span>
+<span class="w">		</span><span class="c1">; this doesn&#39;t trigger more than</span>
+<span class="w">		</span><span class="c1">; once on the same frame!</span>
+<span class="w">		</span><span class="p">(</span><span class="n">fori</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">{</span><span class="n">nop</span><span class="p">})</span>
+<span class="w">		</span><span class="n">lda</span><span class="w"> </span><span class="n">@$ff</span>
+<span class="w">		</span><span class="n">jmp</span><span class="w"> </span><span class="n">loop-</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<div class="figure"><img src="../../../../../img/asi/asi2.gif" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="making-it-not-terrible">Making it not terrible</h2>
+
+<p>As amazing as the single pixel going across the screen in a lockstep obviously repeated pattern is, we can probably do better. The obvious problems are:</p>
+
+<ul>
+ <li>There is only one lonely pixel</li>
+ <li>The pixels should travel at different speeds to produce a parallax effect</li>
+ <li>The tiling should be broken up into different perumations on each row</li></ul>
+
+<p>If we had more pixels, it would mean more RORing of the relevant bytes. To make them move faster, we&rsquo;d have to repeat the whole ROR cycle more than once. Clearly, this quickly escalates into tons of boring and hard to change code. Instead, we will get racket to help us out by writing a function that can generate a starfield update to our specifications. We will pass it a memory location of the character set, the amount of characters to rotate through, a list of tuples that indicate which rows of the character need rotating and at what speed.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">starbank</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="n">rows</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">generate-starfield-updates-1</span><span class="w"> </span><span class="n">starbank</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">;location - charset location where the first starfield char is</span>
+<span class="w">  </span><span class="c1">;len      - how many chars to ROL through</span>
+<span class="w">  </span><span class="c1">;rows     - which rows of the character contain stars (no point ROLing them otherwise)</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">starbank-location</span><span class="w"> </span><span class="n">starbank</span><span class="p">)</span><span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="n">i</span><span class="p">)))</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">row</span><span class="w"> </span><span class="p">(</span><span class="n">starbank-rows</span><span class="w"> </span><span class="n">starbank</span><span class="p">)])</span>
+<span class="w">    </span><span class="c1">;extract the row number and speed</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">row</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">row</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">speed</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cadr))" style="color: inherit">cadr</a></span><span class="w"> </span><span class="n">row</span><span class="p">)])</span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">s</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">speed</span><span class="p">)])</span>
+<span class="w">      	</span><span class="c1">;repeat the ror cycle for speed times</span>
+<span class="w">        </span><span class="p">{</span><span class="n">clc</span><span class="w"> </span><span class="c1">; clear the carry bit!</span>
+<span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">char</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">starbank-len</span><span class="w"> </span><span class="n">starbank</span><span class="p">))])</span>
+<span class="w">           </span><span class="c1">;now we just ror each character in turn</span>
+<span class="w">           </span><span class="p">{</span><span class="n">ror</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="n">char</span><span class="p">)</span><span class="w"> </span><span class="n">row</span><span class="p">)})</span>
+<span class="w">         </span><span class="c1">; special wrap-around case</span>
+<span class="w">         </span><span class="n">bcc</span><span class="w"> </span><span class="n">end+</span>
+<span class="w">         </span><span class="n">ror</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">row</span><span class="p">)</span>
+<span class="w">     </span><span class="n">:end</span><span class="w"> </span><span class="n">rts</span><span class="w"> </span><span class="p">}))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is pretty cool. It basically writes the same code as we did manually last time except now it can do it for multiple rows at different speeds. This makes it really easy to tinker with the values to produce a nice looking starfield.</p>
+
+<p>What if we wanted to scroll the stars left instead of right? The basic principle is the same, we still need to rotate the pixels through memory, except we must rotate left, the wrap around goes from the first to the last character, and the characters must be processed in reverse. Since racket is allowing us to conditionally generate assembly code, we can interleave this as an option into our generator</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define-struct.html#(form._((lib._racket/private/base..rkt)._struct))" style="color: inherit">struct</a></span><span class="w"> </span><span class="n">starbank</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/xml/index.html#(def._((lib._xml/main..rkt)._location))" style="color: inherit">location</a></span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="n">rows</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">generate-starfield-updates</span><span class="w"> </span><span class="n">starbank</span><span class="w"> </span><span class="n">going-right?</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">starbank-location</span><span class="w"> </span><span class="n">starbank</span><span class="p">)</span><span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._*))" style="color: inherit">*</a></span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="n">i</span><span class="p">)))</span>
+
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">row</span><span class="w"> </span><span class="p">(</span><span class="n">starbank-rows</span><span class="w"> </span><span class="n">starbank</span><span class="p">)])</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">row</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">row</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">speed</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cadr))" style="color: inherit">cadr</a></span><span class="w"> </span><span class="n">row</span><span class="p">)])</span>
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">s</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">speed</span><span class="p">)])</span><span class="w">        </span>
+<span class="w">        </span><span class="p">{</span><span class="n">clc</span><span class="w"> </span>
+<span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">char</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">going-right?</span>
+<span class="w">                         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">starbank-len</span><span class="w"> </span><span class="n">starbank</span><span class="p">))</span>
+<span class="w">                         </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="p">(</span><span class="n">starbank-len</span><span class="w"> </span><span class="n">starbank</span><span class="p">)</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="mi">-1</span><span class="p">))])</span>
+<span class="w">           </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">going-right?</span>
+<span class="w">               </span><span class="p">{</span><span class="n">ror</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="n">char</span><span class="p">)</span><span class="w"> </span><span class="n">row</span><span class="p">)}</span>
+<span class="w">               </span><span class="p">{</span><span class="n">rol</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="n">char</span><span class="p">)</span><span class="w"> </span><span class="n">row</span><span class="p">)}))</span>
+
+<span class="w">         </span><span class="c1">;finally wrap around if the carry is et</span>
+<span class="w">         </span><span class="n">bcc</span><span class="w"> </span><span class="n">end+</span>
+<span class="w">         </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((quote._~23~25kernel)._if))" style="color: inherit">if</a></span><span class="w"> </span><span class="n">going-right?</span>
+<span class="w">             </span><span class="p">{</span><span class="n">ror</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">row</span><span class="p">)}</span>
+<span class="w">             </span><span class="p">{</span><span class="n">rol</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">char-index</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="p">(</span><span class="n">starbank-len</span><span class="w"> </span><span class="n">starbank</span><span class="p">)</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="n">row</span><span class="p">)})</span>
+<span class="w">         </span><span class="n">:end</span><span class="p">}))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>It&rsquo;s pretty much the same code, it just produces rols instead of rors and processes the things backwards.</p>
+
+<p>You could extend this to also create the chracter memory for you, and have it return two functions that you can call and label somewhere in the program, one for generating and the other for updating. You can probably see how this could quickly become a build-your-own-tailored-compiler-kit if you wanted it to.</p>
+
+<p>The last part was to re-arrange to video memory so each row has a different permuatation of the 0 1 2 3 4 sequence. There&rsquo;s a number of ways we could do this of course. Randomness doens&rsquo;t work very well, so I messed around a bit until I found a good pattern, and hardcoded it at compile-time.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">	</span><span class="n">*=</span><span class="w"> </span><span class="n">$0c00</span><span class="w"> </span><span class="c1">;asssemble at video memory location</span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">perm1</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">perm2</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="mi">4</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">perm3</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">perm4</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="p">)]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">order</span><span class="w"> </span><span class="o">'</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">4</span>
+<span class="w">                     </span><span class="mi">1</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">4</span>
+<span class="w">                     </span><span class="mi">1</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">4</span>
+<span class="w">                     </span><span class="mi">1</span><span class="p">)])</span>
+
+<span class="w">      </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="w"> </span><span class="p">([</span><span class="n">next</span><span class="w"> </span><span class="n">order</span><span class="p">])</span>
+<span class="w">        </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for))" style="color: inherit">for</a></span><span class="p">([</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/list..rkt)._count))" style="color: inherit">count</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">8</span><span class="p">)])</span>
+<span class="w">          </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/case.html#(form._((lib._racket/private/more-scheme..rkt)._case))" style="color: inherit">case</a></span><span class="w"> </span><span class="n">next</span>
+<span class="w">            </span><span class="p">[(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="n">perm1</span><span class="p">)]</span>
+<span class="w">            </span><span class="p">[(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="n">perm2</span><span class="p">)]</span>
+<span class="w">            </span><span class="p">[(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="n">perm3</span><span class="p">)]</span>
+<span class="w">            </span><span class="p">[(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="n">perm4</span><span class="p">)]))))</span><span class="w">                   </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Omitting the code to stick some more pixels in our character set,our new update code becomes</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">		</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">sb1</span><span class="w"> </span><span class="p">(</span><span class="n">starbank</span><span class="w"> </span><span class="n">$2000</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="o">'</span><span class="p">((</span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="mi">5</span><span class="w"> </span><span class="mi">4</span><span class="p">))))</span>
+<span class="w">		</span><span class="n">lda</span><span class="w"> </span><span class="n">@$ff</span>
+<span class="n">:loop</span><span class="w"> 		</span><span class="n">cmp</span><span class="w"> </span><span class="n">$d012</span><span class="w"> </span><span class="c1">; wait for line 256</span>
+<span class="w">		</span><span class="n">bne</span><span class="w"> </span><span class="n">loop-</span>
+<span class="w">		</span><span class="n">jsr</span><span class="w"> </span><span class="n">update-starfield</span>
+<span class="w">		</span><span class="c1">; do nothing for a while so </span>
+<span class="w">		</span><span class="c1">; this doesn&#39;t trigger more than</span>
+<span class="w">		</span><span class="c1">; once on the same frame!</span>
+<span class="w">		</span><span class="p">(</span><span class="n">fori</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">{</span><span class="n">nop</span><span class="p">})</span>
+<span class="w">		</span><span class="n">lda</span><span class="w"> </span><span class="n">@$ff</span>
+<span class="w">		</span><span class="n">jmp</span><span class="w"> </span><span class="n">loop-</span>
+<span class="n">:update-starfield</span>
+<span class="w">		</span><span class="p">(</span><span class="n">generate-starfield-updates</span><span class="w"> </span><span class="n">sb1</span><span class="w"> </span><span class="no">#t</span><span class="p">)</span>
+<span class="w">		</span><span class="n">rts</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The final result, I think you will agree is much better looking, even if it is still a bit rubbish! (actually, the gif is kinda terrible, it looks a lot better on the emulator and much better still on the real thing!)</p>
+
+<div class="figure"><img src="../../../../../img/asi/asi3.gif" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Asi64 brings racket and 6502 together in a (hopefully!) glorious fusion. It is by no means finished, and will likely be rewritten again at least one more time. This is basically my first proper Racket project so I still have much to learn, but it is a lot more fun to program the Commodore 64 now ! (You could also use this to program the NES!). Comments are welcome.</p>
+
+<p>Here is a picture of the lovely starfield running on the real hardware :)</p>
+
+<div class="figure"><img src="../../../../../img/asi/asi4.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>The full code for this example can be found at the github repo <a href="https://github.com/pezipink/asi64/blob/master/samples/starfield.rkt">here</a></p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\08\04\racket-macros-scurry/">&larr; <em>Racket Macros : Scurry</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\03\31\c64-programming-invader-fractal-2/"><em>C64 Programming - Invader Fractal #2</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2017\05\30\asi64/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

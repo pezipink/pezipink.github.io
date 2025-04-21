@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Reversing - Bakunawa</title>
+    <meta name="description" content="In this post we'll look at another crackme, Bakunawa!      This one was listed as level 5 (Very Hard) and certainly was not without its difficulties!  Featuring a sort-of virtual machine executing real x86 instructions encoded into an odd binary file as a...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="cracking, reverse engineering">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2021\04\04\reversing-bakunawa/">
+    <link rel="next" href="/blog\2020\07\25\slope-function-generator/">
+    <link rel="prev" href="/blog\2021\09\29\reversing-sabloomtext-v6/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2021\09\29\reversing-sabloomtext-v6/">&larr; <em>Reversing - SabloomText_v6</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2020\07\25\slope-function-generator/"><em>Slope / Function Generator</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Reversing - Bakunawa</h1>
+    <p class='date-and-tags'>
+<time datetime="2021-04-04" pubdate="true">2021-04-04</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>In this post we&rsquo;ll look at another crackme, Bakunawa!</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/title.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This one was listed as level 5 (Very Hard) and certainly was not without its difficulties!</p>
+
+<p>Featuring a sort-of virtual machine executing real x86 instructions encoded into an odd binary file as a point of obsfucation, this took me quite a long time to figure out. I built some tools in the process and finally a Keygen program once the algorithm was identified and reversed.</p>
+
+<p>Major spoilers follow, <a href="https://crackmes.one/crackme/5b135f4033c5d41557b02271">here&rsquo;s the link</a> if you want to have a go yourself!</p>
+
+<p>Tools used today are x64dbg, PEStudio, IDA Pro, F# and C++</p>
+<!-- more-->
+
+<h2 id="first-impressions">First Impressions</h2>
+
+<p>PE Studio identfiies the executable as a normal, non-packed Windows program. Poking around a bit we can see it was compiled with C++ 8 and uses some abnormal libraries such as <code>DirectSound</code> and <code>Winmm</code>.</p>
+
+<p>Looking at the resources (consuming 57% of the executable size) we can see a bunch of images, that appear to be music files, and a rather large binary file called &ldquo;naga&rdquo;. We&rsquo;ll dump this binary to file now since it looks like it will be important.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/pe2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Moving onto imports / exports it seems to have statically linked the <a href="http://mikmod.sourceforge.net/doc/mikmod-3.3.11.html">MilkMod library</a> so it seems we can indeed expect some music.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/pe1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Having a quick look over the strings reveals some fun looking bits, almost like a choose-your-own-adventure!</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/pe3.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="fire-it-up">Fire it up</h2>
+
+<p>Running the executable we are presented with a very cool key entry screen accompanied by some great chiptune music.</p>
+
+<p>If you run it with the debugger attached, however, you do not get the screen and instead it plays a chiptune version of <a href="https://www.youtube.com/watch?v=ESViOhqRdlE">The Birdie Song</a>, which is hilairious. Only a RickRoll would have been better!</p>
+
+<p>A quick brekapoint on <code>IsDebuggerPresent</code> leads to a simple check which when bypassed, enters a Windows event loop and launches the UI as normal.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/db1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Next up is to find where it is reading the username and password. I&rsquo;m expecting it&rsquo;s going to load the mysterious Naga resource at some point as well, so perhaps a good starting place is to put breakpoints on the Windows <code>LoadResource</code> function and see what comes up.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/db2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>As expected, after a name and password is set and the Verify button is pressed, it attempts to load the resource &ldquo;Naga&rdquo; as seen above.</p>
+
+<p>At this stage it&rsquo;s easy to trace through the code and simply bypass the final check that happens</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/db3.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>That&rsquo;s not much fun, let&rsquo;s try and work out how the serial check works and build a keygen for it.</p>
+
+<h2 id="enter-the-dragon">Enter The Dragon</h2>
+
+<p>There&rsquo;s quite a lot of stuff happening in this main function. After quite some analysis, two procedures stand out in particular. The first is a function that loads the Naga resource, and has a ton of code that parses the data into structures / classes. We&rsquo;ll come back to that..</p>
+
+<p>The second is where the magic happens.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/valloc1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>After a bunch of stuff, several calls to <code>VirtualAlloc</code> happen. The first is a large section of read/write memory. After it has been allocated, a pointer is stored to the bottom of the memory. Shortly it will transpire that this area of memory is to be used as the CPU stack. The program will copy a pointer to the username and password that was entered into the bottom of this stack area.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/valloc2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>A little further on we see more calls to <code>VirtualAlloc</code>, which have execute permissions. If we poke around in this code for a bit we will see that this area of memory has x86 code copied in to it, presumably from the structures read in from the Naga file. However, it only ever executes small pieces of code at any one time. A clever bit of design here essentially backs up all the CPU registers and moves the CPU stack pointer to the virtual stack location, restoring them at the end of the snippet. In this way it behaves much like a thread does.</p>
+
+<p>However, because it only executes small bits of code at a time, it is very hard to see what it is actually doing. We can however wait for it to finish processing instructions and have a look at the resulting stack area to reveal some interesting infromation</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/stack.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>here we can see it has created some kind of alphabet to use in its keygen, and we can see what looks to be a generated serial in the lower part of the memory. Let&rsquo;s try this serial in the program and see what happens:</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/sergood.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>As suspected, it is indeed the serial (though it needed the <code>-</code> character added). Perhaps we won&rsquo;t need to understand the entire virtual program if we can work out what it&rsquo;s doing in this last part.</p>
+
+<p>Since we know the area of memory that the serial is written to (as an offset from the virtual stack) then during debugging, after we know the stack location, we can setup a hardware breakpoint to trigger when that location is written to. Doing this and having it trigger a few times leads to this tasty looking morsel.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/xor1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>It looks like we have struck gold here. Analysing this code shows that is divides some value and uses the remainder to index into the alphabet that is used to write the next serial value. Unfortunately, this is only one iteration of the loop, and after a few iterations the mysterious number changes completely. We are not going to be able to write a keygen without knowing where those numbers are coming from.</p>
+
+<h2 id="how-to-train-your-dragon">How to Train Your Dragon</h2>
+
+<p>We need to be able to see the entire virtual program. To do so means we are going to have to reverse engineer and understand this mysterious binary file format that holds the machine code in it. Having observed the virtual machine&rsquo;s behaviour, it is also apparent it knows where Call instructions are and some other bits and bobs. Time to roll up the sleeves and get reversing&hellip;</p>
+
+<p>Many hours of work later reveal something like following structure which we can parse in F#</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">naga</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">File</span><span class="p">.</span><span class="n">ReadAllBytes</span><span class="w"> </span><span class="s">"c:/repos/crackme/bin/bakuawna/naga.dump"</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">inline</span><span class="w"> </span><span class="n">printHex</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">printfn</span><span class="w"> </span><span class="s">"%X"</span><span class="w"> </span><span class="n">x</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">getByte</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">naga</span><span class="o">.[</span><span class="n">index</span><span class="o">]</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">getBytei</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">uint32</span><span class="w"> </span><span class="n">naga</span><span class="o">.[</span><span class="n">index</span><span class="o">]</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">getInt</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="o">(</span><span class="n">getBytei</span><span class="w"> </span><span class="n">index</span><span class="o">)</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="o">(</span><span class="n">getBytei</span><span class="w"> </span><span class="o">(</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="mi">8</span><span class="o">)</span><span class="w">    </span>
+<span class="w">    </span><span class="o">|||</span><span class="w"> </span><span class="o">(</span><span class="n">getBytei</span><span class="w"> </span><span class="o">(</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="o">)</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="o">(</span><span class="n">getBytei</span><span class="w"> </span><span class="o">(</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">3</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="mi">24</span><span class="o">)</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">getIntw</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">uint64</span><span class="w"> </span><span class="o">(</span><span class="n">getInt</span><span class="w"> </span><span class="n">index</span><span class="o">)</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">getWord</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">((</span><span class="n">getIntw</span><span class="w"> </span><span class="n">index</span><span class="o">))</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="o">(</span><span class="n">getIntw</span><span class="w"> </span><span class="o">(</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="mi">32</span><span class="o">)</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">startId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getWord</span><span class="w"> </span><span class="mi">9</span><span class="w">  </span><span class="c1">// first instruction id stored in header</span>
+<span class="k">let</span><span class="w"> </span><span class="nv">numIns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getInt</span><span class="w"> </span><span class="mi">5</span><span class="w">    </span><span class="c1">// 515 total instructions</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">Dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Jump</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">uint64</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Call</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="kt">uint64</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">Instruction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">id</span><span class="o">:</span><span class="w"> </span><span class="kt">uint64</span><span class="w">          </span><span class="c1">// ID of this isntruction</span>
+<span class="w">    </span><span class="n">nid</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">uint64</span><span class="w"> </span><span class="n">option</span><span class="w"> </span><span class="c1">// pointer to next instruction</span>
+<span class="w">    </span><span class="n">len</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">byte</span><span class="w">          </span><span class="c1">// amount of opcode data</span>
+<span class="w">    </span><span class="n">opcodes</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="n">array</span><span class="c1">// opcode data</span>
+<span class="w">    </span><span class="n">dest</span><span class="o">:</span><span class="w"> </span><span class="n">Dest</span><span class="w"> </span><span class="n">option</span><span class="w">   </span><span class="c1">// call or jump target</span>
+<span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>It seems each individual instruction is encoded with a unique ID, the ID of the next instruction, and some extra data that says if the instruction is a jump or call, and if so, the ID of the instruction it routes to. The actual x86 opcode data for the instruction and its operands are encoded directly.</p>
+
+<p>The header has a magic number and some other useless bits, the only relevant parts are the starting instruction id and the total instruction count.</p>
+
+<p>There&rsquo;s a bunch of other code that creates linked lists of all the nodes and strings it all together. There are four such lists in the core of the program that the machine uses; I don&rsquo;t know exactly how since it&rsquo;s far too much to look at it all, but I think this is enough warm up F# and have a go at parsing the data.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">rawInstructions</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">mutable</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="n">x11</span>
+<span class="w">    </span><span class="n">seq</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">0</span><span class="o">..</span><span class="w"> </span><span class="o">(</span><span class="n">int</span><span class="w"> </span><span class="n">numIns</span><span class="o">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getWord</span><span class="w"> </span><span class="n">index</span>
+<span class="w">            </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">nid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getWord</span><span class="w"> </span><span class="n">index</span>
+<span class="w">            </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getByte</span><span class="w"> </span><span class="n">index</span>
+<span class="w">            </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="c1">// len is 16 bits but second byte is always blank</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">ocs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[|</span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">int</span><span class="w"> </span><span class="o">(</span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1uy</span><span class="o">)</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>
+<span class="w">                            </span><span class="k">let</span><span class="w"> </span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getByte</span><span class="w"> </span><span class="n">index</span>
+<span class="w">                            </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                            </span><span class="k">yield</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">|]</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">isCall</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getByte</span><span class="w"> </span><span class="n">index</span>
+<span class="w">            </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="c1">// 16 bit as above</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="n">isCall</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0uy</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>
+<span class="w">                    </span><span class="k">let</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getWord</span><span class="w"> </span><span class="n">index</span>
+<span class="w">                    </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span>
+<span class="w">                    </span><span class="n">Some</span><span class="w"> </span><span class="o">(</span><span class="n">Call</span><span class="w"> </span><span class="n">data</span><span class="o">)</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="n">None</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">isJump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getByte</span><span class="w"> </span><span class="n">index</span>
+<span class="w">            </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w">  </span><span class="c1">// 16 bit as above</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">isJump</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0uy</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">isCall</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0uy</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">failwith</span><span class="w"> </span><span class="s">"!"</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="n">isJump</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0uy</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>
+<span class="w">                    </span><span class="k">let</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getWord</span><span class="w"> </span><span class="n">index</span>
+<span class="w">                    </span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span>
+<span class="w">                    </span><span class="n">Some</span><span class="w"> </span><span class="o">(</span><span class="n">Jump</span><span class="w"> </span><span class="n">data</span><span class="o">)</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="n">data</span>
+<span class="w">            </span><span class="k">yield</span><span class="w"> </span><span class="o">{</span>
+<span class="w">                </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id</span>
+<span class="w">                </span><span class="n">nid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">nid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0UL</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">Some</span><span class="w"> </span><span class="n">nid</span>
+<span class="w">                </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">len</span>
+<span class="w">                </span><span class="n">opcodes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ocs</span>
+<span class="w">                </span><span class="n">dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span>
+<span class="w">            </span><span class="o">}</span><span class="w">             </span>
+<span class="w">    </span><span class="o">}</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toList</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">instructionMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="n">rawInstructions</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">map</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="o">,</span><span class="w"> </span><span class="n">r</span><span class="o">)</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Map</span><span class="p">.</span><span class="n">ofList</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Here you can see a the first extracted record alongside the binary dump</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/struct2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Performing some analysis on the parsed data reveals some useful information</p>
+
+<ul>
+ <li>There are 8 distinct subroutine calls (unique IDs pointed to by instructions marked as Call)</li>
+ <li>The entrypoint is its own subroutine, so 9 in total</li>
+ <li>All of the Call instructions use the same opcode / addressing mode of <code>E8</code> (near, relative)</li>
+ <li>All of the Jump instructions have relative offsets already encoded and presumably stay in-procedure</li>
+ <li>There are several different jump and conditional jump opcodes, with 1, 5 and 6 operands</li></ul>
+
+<p>To produce the working program we&rsquo;ll have to decide on a memory layout for it. Some of the Call instructions have large relative offsets which would not work with an entry point at location 0x0, so we&rsquo;ll need to re-write their relative offsets with a location we decide on. We could do the same with the jumps, but it&rsquo;s best to keep them with their currently encoded targets if possible. That means we will need to parse and understand their relative offset addresses in order to write the target code at the correct place in memory.</p>
+
+<p>First then is to decide where each subroutine will sit in the memory space. To do this we&rsquo;ll need to know the size of each. To calculate the size, we&rsquo;ll need to recusrively follow the <code>next</code> pointers, storing any jump targets along the way. Once we are out of instructions, recursively repeat the process on the collected jump targets. It is possible for more than one jump to target the same instruction so we&rsquo;ll need to make sure they are only visited once.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">subs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="c1">// 8 subroutines</span>
+<span class="w">    </span><span class="n">rawInstructions</span><span class="w"> </span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">choose</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">i</span><span class="o">.</span><span class="n">dest</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Some</span><span class="o">(</span><span class="n">Call</span><span class="w"> </span><span class="n">dest</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Some</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">None</span><span class="o">)</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">distinct</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">map</span><span class="w"> </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">i</span><span class="o">])</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">collectFullInstructions</span><span class="w"> </span><span class="n">rootInstruction</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="c1">// navigate all "next" pointers </span>
+<span class="w">    </span><span class="c1">// for jumps, add their destinations to the list resursively</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">seen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">System</span><span class="p">.</span><span class="nn">Collections</span><span class="p">.</span><span class="nn">Generic</span><span class="p">.</span><span class="n">HashSet</span><span class="o">&lt;</span><span class="kt">uint64</span><span class="o">&gt;</span><span class="bp">()</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">aux</span><span class="w"> </span><span class="n">instr</span><span class="w"> </span><span class="n">jumps</span><span class="w"> </span><span class="n">collected</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">seen</span><span class="o">.</span><span class="n">Contains</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>
+<span class="w">            </span><span class="k">match</span><span class="w"> </span><span class="n">jumps</span><span class="w"> </span><span class="k">with</span><span class="w"> </span>
+<span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">aux</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="n">collected</span><span class="w">   </span>
+<span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="bp">[]</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">collected</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="k">let</span><span class="w"> </span><span class="nv">jumps</span><span class="w"> </span><span class="o">=</span>
+<span class="w">            </span><span class="k">match</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">dest</span><span class="w"> </span><span class="k">with</span>
+<span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="n">Some</span><span class="o">(</span><span class="n">Jump</span><span class="w"> </span><span class="n">dest</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">dest</span><span class="o">]</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">jumps</span>
+<span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">jumps</span>
+<span class="w">        </span><span class="n">seen</span><span class="o">.</span><span class="n">Add</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span>
+<span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">nid</span><span class="o">,</span><span class="w"> </span><span class="n">jumps</span><span class="w"> </span><span class="k">with</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">Some</span><span class="w"> </span><span class="n">nid</span><span class="o">,</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">            </span><span class="n">aux</span><span class="w"> </span><span class="o">(</span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">nid</span><span class="o">])</span><span class="w"> </span><span class="n">jumps</span><span class="w"> </span><span class="o">(</span><span class="n">instr</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">collected</span><span class="o">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">None</span><span class="o">,</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">aux</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">(</span><span class="n">instr</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">collected</span><span class="o">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">collected</span>
+<span class="w">    </span><span class="n">aux</span><span class="w"> </span><span class="n">rootInstruction</span><span class="w"> </span><span class="bp">[]</span><span class="w"> </span><span class="bp">[]</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">rootLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">startId</span><span class="o">]</span><span class="w"> </span>
+<span class="w">    </span><span class="n">i</span><span class="o">,</span><span class="w"> </span><span class="n">collectFullInstructions</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">sumBy</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">int32</span><span class="w"> </span><span class="n">i</span><span class="o">.</span><span class="n">len</span><span class="o">)</span>
+
+<span class="k">let</span><span class="w"> </span><span class="nv">subLens</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">subs</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">map</span><span class="w"> </span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">i</span><span class="o">,</span><span class="w"> </span><span class="n">collectFullInstructions</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">sumBy</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">int32</span><span class="w"> </span><span class="n">i</span><span class="o">.</span><span class="n">len</span><span class="o">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>With the lengths calculated, we can assign them starting memory locations, with a little bit of blank space between each.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">programLayout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="o">((</span><span class="mi">0</span><span class="o">,</span><span class="bp">[]</span><span class="o">),</span><span class="w"> </span><span class="n">rootLen</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">subLens</span><span class="o">)</span>
+<span class="w">    </span><span class="o">||&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">fold</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">last</span><span class="o">,</span><span class="n">res</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">instr</span><span class="o">,</span><span class="w"> </span><span class="n">subLen</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">subLen</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">10</span><span class="o">,</span><span class="w"> </span><span class="o">(</span><span class="n">last</span><span class="o">,</span><span class="w"> </span><span class="n">instr</span><span class="o">)</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">)</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">snd</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">List</span><span class="p">.</span><span class="n">map</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">addr</span><span class="o">,</span><span class="n">i</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">i</span><span class="o">.</span><span class="n">id</span><span class="o">,</span><span class="w"> </span><span class="n">addr</span><span class="o">)</span>
+<span class="w">    </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Map</span><span class="p">.</span><span class="n">ofList</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This creates a map indexed by the starting instruction id that we can use when assembling.</p>
+
+<p>We need a way or parsing the jump target opcodes so we can calculate their position in memory</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">getJumpOffset</span><span class="w"> </span><span class="n">instr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.</span><span class="n">Length</span><span class="w"> </span><span class="k">with</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">int32</span><span class="w"> </span><span class="o">(</span><span class="kt">sbyte</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">1</span><span class="o">])</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="c1">// 5 len jmp, operand in last 4 bytes</span>
+<span class="w">        </span><span class="o">((</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">),</span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">1</span><span class="o">..])</span><span class="w"> </span>
+<span class="w">        </span><span class="o">||&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">fold</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">i</span><span class="o">,</span><span class="n">tot</span><span class="o">)</span><span class="w"> </span><span class="n">oc</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">,</span><span class="n">tot</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="o">(((</span><span class="kt">int32</span><span class="w"> </span><span class="n">oc</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="o">))))</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">snd</span><span class="w">         </span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="c1">// 6 len jnb, operand in last 4 bytes</span>
+<span class="w">        </span><span class="o">((</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">),</span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">2</span><span class="o">..])</span><span class="w"> </span>
+<span class="w">        </span><span class="o">||&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">fold</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">i</span><span class="o">,</span><span class="n">tot</span><span class="o">)</span><span class="w"> </span><span class="n">oc</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">,</span><span class="n">tot</span><span class="w"> </span><span class="o">|||</span><span class="w"> </span><span class="o">(((</span><span class="kt">int32</span><span class="w"> </span><span class="n">oc</span><span class="o">)</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="o">))))</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">snd</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Have to be careful with this stuff, it&rsquo;s easy to get tripped up with signed and unsigned data. It is important in the preceeding code that the result is treated as signed, since we&rsquo;ll be using it to re-calcuate addresses and we need negative numbers to work properly.</p>
+
+<p>Finally we are left with the task of writing the assembler itself, which will</p>
+
+<ul>
+ <li>Create an array of bytes for the resulting program</li>
+ <li>For each subroutine in our memory layout ..</li>
+ <li>Change the instruction pointer to our subroutine location</li>
+ <li>Follow the instruction trail, writing the relevant opcode bytes into the array</li>
+ <li>When we hit a Call, we must calculate the new relative offset from where we are to the location of the routine from our memory map</li>
+ <li>When we hit a Jump, we must parse its operands and calculate where it should be assembled, then add it to the &ldquo;to be assembled&rdquo; list like we did when calculating the subroutine lengths earlier</li>
+ <li>Don&rsquo;t assemble jumps more than once</li></ul>
+
+<p>Here&rsquo;s the fist version I got working, a lovely mix of mutable and immutable code that I&rsquo;m sure purists everywhere will approve of</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">assemble</span><span class="bp">()</span><span class="w">  </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">program</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">Array</span><span class="p">.</span><span class="n">create</span><span class="w"> </span><span class="o">(</span><span class="mi">0</span><span class="n">x1000</span><span class="o">)</span><span class="w"> </span><span class="mi">0uy</span><span class="w"> </span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">seen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">System</span><span class="p">.</span><span class="nn">Collections</span><span class="p">.</span><span class="nn">Generic</span><span class="p">.</span><span class="n">HashSet</span><span class="o">&lt;</span><span class="kt">uint64</span><span class="o">&gt;</span><span class="bp">()</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">mutable</span><span class="w"> </span><span class="n">eip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">copyBytes</span><span class="w"> </span><span class="n">arr</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">arr</span><span class="w"> </span><span class="k">do</span><span class="w">          </span>
+<span class="w">            </span><span class="n">program</span><span class="o">.[</span><span class="n">eip</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">b</span>
+<span class="w">            </span><span class="n">eip</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">eip</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">aux</span><span class="w"> </span><span class="kt">list</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="kt">list</span><span class="w"> </span><span class="k">with</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="o">(</span><span class="n">addr</span><span class="o">,</span><span class="n">instr</span><span class="o">)</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">rest</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">            </span><span class="n">eip</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">addr</span>
+<span class="w">             </span><span class="c1">// recursively assemble via nip </span>
+<span class="w">             </span><span class="c1">// collect any jump targets along the way,</span>
+<span class="w">             </span><span class="c1">// and rewrite Call targets </span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">rec</span><span class="w"> </span><span class="n">aux2</span><span class="w"> </span><span class="n">instr</span><span class="w"> </span><span class="n">targets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">                </span><span class="k">let</span><span class="w"> </span><span class="nv">targets</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                    </span><span class="k">match</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">dest</span><span class="w"> </span><span class="k">with</span>
+<span class="w">                    </span><span class="o">|</span><span class="w"> </span><span class="n">Some</span><span class="o">(</span><span class="n">Jump</span><span class="w"> </span><span class="n">dest</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="n">seen</span><span class="o">.</span><span class="n">Contains</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">targets</span><span class="w"> </span>
+<span class="w">                        </span><span class="k">else</span>
+<span class="w">                            </span><span class="n">seen</span><span class="o">.</span><span class="n">Add</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span>
+<span class="w">                            </span><span class="c1">// calculate where this jump ends up. </span>
+<span class="w">                            </span><span class="k">let</span><span class="w"> </span><span class="nv">offset2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getJumpOffset</span><span class="w"> </span><span class="n">instr</span>
+<span class="w">                            </span><span class="k">let</span><span class="w"> </span><span class="nv">finalOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">offset2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="o">(</span><span class="kt">int32</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">len</span><span class="o">)</span>
+<span class="w">                            </span><span class="o">(</span><span class="n">eip</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">finalOffset</span><span class="o">,</span><span class="w"> </span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">dest</span><span class="o">])</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="n">targets</span>
+<span class="w">                    </span><span class="o">|</span><span class="w"> </span><span class="n">Some</span><span class="o">(</span><span class="n">Call</span><span class="w"> </span><span class="n">dest</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">   </span><span class="c1">// use this branch for side-effect only, lovely!             </span>
+<span class="w">                        </span><span class="k">let</span><span class="w"> </span><span class="nv">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">programLayout</span><span class="o">.[</span><span class="n">dest</span><span class="o">]</span>
+<span class="w">                        </span><span class="k">let</span><span class="w"> </span><span class="nv">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eip</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="o">(</span><span class="kt">int32</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">len</span><span class="o">)</span><span class="w"> </span>
+<span class="w">                        </span><span class="k">let</span><span class="w"> </span><span class="nv">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">current</span>
+<span class="w">                        </span><span class="c1">// write call target into the opcode data</span>
+<span class="w">                        </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">1</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">(</span><span class="n">offset</span><span class="w">          </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">xFF</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">2</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">((</span><span class="n">offset</span><span class="w"> </span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="mi">8</span><span class="o">)</span><span class="w">  </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">xFF</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">3</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">((</span><span class="n">offset</span><span class="w"> </span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="mi">16</span><span class="o">)</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">xFF</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span><span class="o">.[</span><span class="mi">4</span><span class="o">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">((</span><span class="n">offset</span><span class="w"> </span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="mi">24</span><span class="o">)</span><span class="w"> </span><span class="o">&amp;&amp;&amp;</span><span class="w"> </span><span class="mi">0</span><span class="n">xFF</span><span class="o">)</span>
+<span class="w">                        </span><span class="n">targets</span>
+<span class="w">                    </span><span class="o">|</span><span class="w"> </span><span class="o">_</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">targets</span>
+<span class="w">                </span><span class="n">copyBytes</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">opcodes</span>
+<span class="w">                </span><span class="k">match</span><span class="w"> </span><span class="n">instr</span><span class="o">.</span><span class="n">nid</span><span class="w"> </span><span class="k">with</span>
+<span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="n">Some</span><span class="w"> </span><span class="n">nip</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">aux2</span><span class="w"> </span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">nip</span><span class="o">]</span><span class="w"> </span><span class="n">targets</span>
+<span class="w">                </span><span class="o">|</span><span class="w"> </span><span class="n">None</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">targets</span>
+<span class="w">            </span><span class="k">let</span><span class="w"> </span><span class="nv">targets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">aux2</span><span class="w"> </span><span class="n">instr</span><span class="w"> </span><span class="n">rest</span>
+<span class="w">            </span><span class="n">aux</span><span class="w"> </span><span class="n">targets</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="bp">[]</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="bp">[]</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">kvp</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">programLayout</span><span class="w"> </span><span class="k">do</span>
+<span class="w">        </span><span class="n">aux</span><span class="w"> </span><span class="o">[</span><span class="n">kvp</span><span class="o">.</span><span class="n">Value</span><span class="o">,</span><span class="n">instructionMap</span><span class="o">.[</span><span class="n">kvp</span><span class="o">.</span><span class="n">Key</span><span class="o">]]</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="w">    </span>
+<span class="w">    </span><span class="n">program</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now we can write out the array as a binary file and we should have the fully re-constructed virtual program that we can disassemble and reverse engineer.</p>
+
+<h2 id="dragon-masters">Dragon Masters</h2>
+
+<p>IDA Pro sucessfully disassembles the program ready for static analysis. It&rsquo;s about 500 lines or so of assembler code.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/ida1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Here we can see some of functions after they have been analysed and renamed. You can see I found <code>strlen</code> and <code>memset</code> equivalents, along with a few functions <code>xor1</code> and <code>xor2</code> that are called in various ways before <code>core_keygen</code> does the work of actually producing the serial.</p>
+
+<p>It is way too much to show here of course (please ask if you are interested!) but here&rsquo;s the piece of code we saw earlier where it was indexing into the alphabet, with some of its surrounding code.</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/alpha_rev.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>I won&rsquo;t explain how the algorithm works exactly. Rather I have re-written the core of it, somewhat different since I have no need to programmatically generate the alphabet and such things. It is in C/C++ of course since it far easier to write all this very unsafe pointer stuff and bitwise manipulations.</p>
+
+<div class="brush: C">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">  1</span>
+<span class="normal">  2</span>
+<span class="normal">  3</span>
+<span class="normal">  4</span>
+<span class="normal">  5</span>
+<span class="normal">  6</span>
+<span class="normal">  7</span>
+<span class="normal">  8</span>
+<span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"dragon_slayer"</span><span class="p">;</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mh">0x44</span><span class="p">];</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">serial</span><span class="p">[</span><span class="mh">0x24</span><span class="p">];</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">magic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x811C9DC5</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">magic2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x1000193</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">magic3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x7FFFFFFF</span><span class="p">;</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">things1</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">things2</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+<span class="kt">char</span><span class="w"> </span><span class="n">alpha</span><span class="p">[</span><span class="mi">36</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">,</span><span class="sc">&#39;1&#39;</span><span class="p">,</span><span class="sc">&#39;2&#39;</span><span class="p">,</span><span class="sc">&#39;3&#39;</span><span class="p">,</span><span class="sc">&#39;4&#39;</span><span class="p">,</span><span class="sc">&#39;5&#39;</span><span class="p">,</span><span class="sc">&#39;6&#39;</span><span class="p">,</span><span class="sc">&#39;7&#39;</span><span class="p">,</span><span class="sc">&#39;8&#39;</span><span class="p">,</span><span class="sc">&#39;9&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="sc">&#39;A&#39;</span><span class="p">,</span><span class="sc">&#39;B&#39;</span><span class="p">,</span><span class="sc">&#39;C&#39;</span><span class="p">,</span><span class="sc">&#39;D&#39;</span><span class="p">,</span><span class="sc">&#39;E&#39;</span><span class="p">,</span><span class="sc">&#39;F&#39;</span><span class="p">,</span><span class="sc">&#39;G&#39;</span><span class="p">,</span><span class="sc">&#39;H&#39;</span><span class="p">,</span><span class="sc">&#39;I&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="sc">&#39;J&#39;</span><span class="p">,</span><span class="sc">&#39;K&#39;</span><span class="p">,</span><span class="sc">&#39;L&#39;</span><span class="p">,</span><span class="sc">&#39;M&#39;</span><span class="p">,</span><span class="sc">&#39;N&#39;</span><span class="p">,</span><span class="sc">&#39;O&#39;</span><span class="p">,</span><span class="sc">&#39;P&#39;</span><span class="p">,</span><span class="sc">&#39;Q&#39;</span><span class="p">,</span><span class="sc">&#39;R&#39;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">      </span><span class="sc">&#39;S&#39;</span><span class="p">,</span><span class="sc">&#39;T&#39;</span><span class="p">,</span><span class="sc">&#39;U&#39;</span><span class="p">,</span><span class="sc">&#39;V&#39;</span><span class="p">,</span><span class="sc">&#39;W&#39;</span><span class="p">,</span><span class="sc">&#39;X&#39;</span><span class="p">,</span><span class="sc">&#39;Y&#39;</span><span class="p">,</span><span class="sc">&#39;Z&#39;</span><span class="w"> </span><span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">xor2</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">magic</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">buf</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">magic</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">magic</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span><span class="w">    </span>
+<span class="w">    </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_rotl</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mh">0x10</span><span class="p">);</span><span class="w"> </span><span class="c1">// ROL 10</span>
+<span class="w">    </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="w">    </span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">magic2</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">xor1</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x44</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">;</span>
+<span class="w">    </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">magic</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">nameLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">nameLen</span><span class="p">;</span><span class="w"> </span><span class="n">cnt1</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">str</span><span class="p">[</span><span class="n">cnt1</span><span class="p">];</span>
+<span class="w">        </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">magic2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">cnt1</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">rem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xor2</span><span class="p">(</span><span class="n">magic2</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">);</span>
+<span class="w">        </span><span class="n">rem</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">magic2</span><span class="p">;</span>
+<span class="w">        </span><span class="n">things1</span><span class="p">[</span><span class="n">cnt1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rem</span><span class="p">;</span>
+<span class="w">        </span><span class="n">rem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xor2</span><span class="p">(</span><span class="n">magic3</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">);</span>
+<span class="w">        </span><span class="n">rem</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">magic3</span><span class="p">;</span>
+<span class="w">        </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rem</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">core_keygen</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">nameLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">nameLen</span><span class="p">;</span><span class="w"> </span><span class="n">cnt1</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">[</span><span class="n">cnt1</span><span class="p">];</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x1</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x2</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x4</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x8</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x10</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit6</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x20</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">bit7</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x40</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">bit2</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">bit3</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">bit4</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">c</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="p">(</span><span class="n">xor2</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt2</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">cnt2</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit1</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span><span class="w">                </span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w">  </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">xor2</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit2</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="p">(</span><span class="n">xor2</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">)));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">bit3</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span><span class="w">  </span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="p">(</span><span class="n">xor2</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">)));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit4</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="p">(</span><span class="n">xor2</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">buf</span><span class="p">)));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit5</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit6</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bit7</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt2</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">cnt2</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">]</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">things1</span><span class="p">[</span><span class="n">cnt2</span><span class="p">];</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt2</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">cnt2</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">the_most_magic_of_all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">things2</span><span class="p">[</span><span class="n">cnt2</span><span class="p">];</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">cnt3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">cnt3</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span><span class="w"> </span><span class="n">cnt3</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">div</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">the_most_magic_of_all</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mh">0x24</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">rem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">the_most_magic_of_all</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mh">0x24</span><span class="p">;</span>
+<span class="w">            </span><span class="n">the_most_magic_of_all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">div</span><span class="p">;</span>
+<span class="w">            </span><span class="n">serial</span><span class="p">[</span><span class="n">cnt2</span><span class="o">*</span><span class="mi">7</span><span class="o">+</span><span class="n">cnt3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alpha</span><span class="p">[</span><span class="n">rem</span><span class="p">];</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">xor1</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="n">core_keygen</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Once this program has finished, it leaves the calucalted serial in <code>serial[]</code> Bakunawa execpts it to be entered in two parts separated by a - character. Let&rsquo;s try it!</p>
+
+<div class="figure"><img src="../../../../../img/bakunawa/win.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This was a very cool crackme that obviously had a great deal of time spent designing and writing it. It took me a couple of solid days&rsquo; work plus a few smaller sessions to finally achieve the end goal of writing and testing it. Most of the time was spent trying to understand the binary format. Thanks to Frank2 for writing it. It also includes several very cool chiptune tracks, though I was quite sick of them in the end and worked out which thread I needed to suspend to stop them from playing all the time!</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2021\09\29\reversing-sabloomtext-v6/">&larr; <em>Reversing - SabloomText_v6</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2020\07\25\slope-function-generator/"><em>Slope / Function Generator</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2021\04\04\reversing-bakunawa/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

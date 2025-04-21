@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Monads to help with COM cleanup</title>
+    <meta name="description" content="I currently do a lot of Office type automation work where I scan a bunch of email from exchange, download excel attachments, open and transform a bunch of data from them, reconcile these against databases using FLinq, produce graphs and charts with the re...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2012\12\01\monads-to-help-with-com-cleanup/">
+    <link rel="next" href="/blog\2012\07\13\pezhack-abstracting-flow-control-with-monads/">
+    <link rel="prev" href="/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/">&larr; <em>Microsoft Dynamics CRM Type Provider preview</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2012\07\13\pezhack-abstracting-flow-control-with-monads/"><em>PezHack–Abstracting flow control with monads</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Monads to help with COM cleanup</h1>
+    <p class='date-and-tags'>
+<time datetime="2012-12-01" pubdate="true">2012-12-01</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a></span></p>
+  </header>
+
+<p>I currently do a lot of Office type automation work where I scan a bunch of email from exchange, download excel attachments, open and transform a bunch of data from them, reconcile these against databases using FLinq, produce graphs and charts with the results using FSharpChart, and so forth.</p>
+
+<p>(p.s - as a side note, F# is <em>awesome</em>at doing this kind of thing, I can knock all kinds of stuff out super fast. p.p.s - Active patterns with Excel = win)</p>
+
+<p>As anyone who has done any office automation will know, cleaning up the COM objects is a right pain. Any object you bind to a value be it a workbook, sheet, cell, range or anything at all has to be explicitly freed with Marshal.FinalReleaseComObject. If you are not really careful with this you will end up with memory leaks, and EXCEL.EXE (or whatever) running forever in the background even once your program has shut down. The problem actually goes further than this, if you use the . . . notation to traverse the object models, all the intermediate objects are also bound and need freeing up. However, these ones as they were not explicitly bound you can get away with calling GC.Collect() andGC.WaitForPendingFinalizers().</p>
+
+<p>You can see any number of articles on the interwebs about this issue and all solutions are ugly. F# to the rescue! Here is a simple computation expression I use to deal with this problem. It is not optimal but the interop is horribly slow anyway so it makes no difference.</p>
+<!-- more-->
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">type</span><span class="w"> </span><span class="nc">ComCleaner</span><span class="o">(</span><span class="n">cleanUp</span><span class="o">)</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">objects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nn">System</span><span class="p">.</span><span class="nn">Collections</span><span class="p">.</span><span class="nn">Generic</span><span class="p">.</span><span class="n">HashSet</span><span class="o">&lt;</span><span class="kt">obj</span><span class="o">&gt;</span><span class="bp">()</span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">mutable</span><span class="w"> </span><span class="n">isDisposed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">false</span>
+
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Zero</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="n">this</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IDisposable</span><span class="o">).</span><span class="n">Dispose</span><span class="bp">()</span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Delay</span><span class="o">(</span><span class="n">f</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f</span><span class="bp">()</span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Bind</span><span class="o">(</span><span class="n">x</span><span class="o">,</span><span class="w"> </span><span class="n">f</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">        </span><span class="n">objects</span><span class="o">.</span><span class="n">Add</span><span class="w"> </span><span class="o">(</span><span class="n">box</span><span class="w"> </span><span class="n">x</span><span class="o">)</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span>
+<span class="w">        </span><span class="n">f</span><span class="o">(</span><span class="n">x</span><span class="o">)</span>
+<span class="w">    </span><span class="k">member</span><span class="w"> </span><span class="n">this</span><span class="p">.</span><span class="nf">Return</span><span class="o">(</span><span class="n">x</span><span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w">         </span>
+<span class="w">        </span><span class="o">(</span><span class="n">this</span><span class="w"> </span><span class="o">:&gt;</span><span class="w"> </span><span class="n">IDisposable</span><span class="o">).</span><span class="n">Dispose</span><span class="bp">()</span>
+<span class="w">        </span><span class="n">x</span>
+<span class="w">    </span><span class="k">interface</span><span class="w"> </span><span class="nn">System</span><span class="p">.</span><span class="n">IDisposable</span><span class="w"> </span><span class="k">with</span>
+<span class="w">        </span><span class="k">member</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="nf">Dispose</span><span class="bp">()</span><span class="w"> </span><span class="o">=</span><span class="w">  </span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">isDisposed</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                </span><span class="n">isDisposed</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">true</span>
+<span class="w">                </span><span class="n">objects</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">iter</span><span class="w"> </span><span class="o">(</span><span class="nn">Marshal</span><span class="p">.</span><span class="n">FinalReleaseComObject</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="o">)</span>
+<span class="w">                </span><span class="k">match</span><span class="w"> </span><span class="n">cleanUp</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="n">Some</span><span class="o">(</span><span class="n">f</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">f</span><span class="bp">()</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">None</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="bp">()</span><span class="w">        </span>
+<span class="w">                </span><span class="nn">GC</span><span class="p">.</span><span class="n">Collect</span><span class="bp">()</span>
+<span class="w">                </span><span class="nn">GC</span><span class="p">.</span><span class="n">WaitForPendingFinalizers</span><span class="bp">()</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>I thought this was a fairly interesting use of the disposable pattern, by implementing it on the builder class itself. Any objects bound with let! are added to a object hashset. When Zero or Return is hit dispose is called. This also means the whole thing can be bound with the use keyword to ensure dispose really will get called even if an unhandled exception is raised. This is the simplest version - it is relatively easy to add support for combine, looping constructs and so on.</p>
+
+<p>The builder takes a parameter <em>cleanUp</em> - this is a optional function that can be passed in which will be executed on dispose. This facilitates building custom versions of the com cleanup monad, for example here is one I use for Excel.</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">xlCom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="c1">// excel com cleaner that closes and frees all workbooks then quits and frees excel</span>
+<span class="w">    </span><span class="k">fun</span><span class="w"> </span><span class="o">(</span><span class="n">app</span><span class="o">:</span><span class="nn">Excel</span><span class="p">.</span><span class="n">Application</span><span class="o">)</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ComCleaner</span><span class="o">(</span><span class="n">Some</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="bp">()</span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">app</span><span class="o">.</span><span class="n">Workbooks</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="k">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">app</span><span class="o">.</span><span class="n">Workbooks</span><span class="o">.</span><span class="n">Count</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="n">app</span><span class="o">.</span><span class="n">Workbooks</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">Workbook</span><span class="o">&gt;</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">iter</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">Close</span><span class="o">(</span><span class="k">false</span><span class="o">))</span>
+<span class="w">            </span><span class="n">app</span><span class="o">.</span><span class="n">Quit</span><span class="bp">()</span>
+<span class="w">            </span><span class="nn">Marshal</span><span class="p">.</span><span class="n">FinalReleaseComObject</span><span class="w"> </span><span class="n">app</span><span class="w"> </span><span class="o">|&gt;</span><span class="w"> </span><span class="n">ignore</span><span class="o">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>As you can see this performs a whole shutdown of excel and forces proper cleanup of the application object. I also have a function that creates aComCleanerwith no function :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">com</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="bp">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ComCleaner</span><span class="o">(</span><span class="n">None</span><span class="o">)</span><span class="w"> </span><span class="c1">// com cleaner that performs no additional cleanup</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now the basic use for an entire excel data extraction looks like this</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="k">let</span><span class="w"> </span><span class="nv">excelData</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">xl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">Common</span><span class="p">.</span><span class="nn">Excel</span><span class="p">.</span><span class="n">excelApp</span><span class="bp">()</span>
+<span class="w">    </span><span class="k">use</span><span class="w"> </span><span class="n">xlc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xlCom</span><span class="w"> </span><span class="n">xl</span>
+<span class="w">    </span><span class="n">xlc</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>
+<span class="w">        </span><span class="k">let!</span><span class="w"> </span><span class="nv">wb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xl</span><span class="o">.</span><span class="n">Workbooks</span><span class="o">.</span><span class="n">Open</span><span class="o">(</span><span class="n">file</span><span class="o">)</span>
+<span class="w">        </span><span class="k">let!</span><span class="w"> </span><span class="nv">ws</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wb</span><span class="o">.</span><span class="n">Worksheets</span><span class="o">.[</span><span class="mi">1</span><span class="o">]</span><span class="w"> </span><span class="o">:?&gt;</span><span class="w"> </span><span class="n">Worksheet</span>
+<span class="w">        </span><span class="k">let!</span><span class="w"> </span><span class="nv">rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ws</span><span class="o">.</span><span class="n">Rows</span>
+<span class="w">        </span><span class="k">return</span>
+<span class="w">            </span><span class="n">rows</span>
+<span class="w">            </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">Range</span><span class="o">&gt;</span>
+<span class="w">            </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">takeWhile</span><span class="o">(</span><span class="k">fun</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">row</span><span class="o">.</span><span class="n">Cellsft</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="s">""</span><span class="o">)</span>
+<span class="w">            </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">choose</span><span class="o">(</span><span class="k">do</span><span class="w"> </span><span class="n">something</span><span class="w"> </span><span class="n">here</span><span class="o">)</span>
+<span class="w">            </span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">toList</span><span class="w"> </span><span class="o">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>If you need to bind / free some stuff in one of the lambda functions then you can easily use the normal com cleaner inside like so</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">|&gt;</span><span class="w"> </span><span class="nn">Seq</span><span class="p">.</span><span class="n">choose</span><span class="o">(</span><span class="w"> </span><span class="k">fun</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">com</span><span class="bp">()</span><span class="w"> </span><span class="o">{</span><span class="w">  </span><span class="k">do</span><span class="w"> </span><span class="n">something</span><span class="w"> </span><span class="o">}</span><span class="w"> </span><span class="o">)</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Things to be wary of are returning unevaluated sequences (obviously) and let! bindings to objects that are already in the hashset or not COM objects at all - in both cases you will get an exception but I prefer it this way as it's a good indicator you have done something very wrong! You will also need to be careful it if you need to return a COM object, you can do it but will need to not let! bind it and then make sure it is dealt with properly later on. Generally it should be avoided.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2012\12\30\microsoft-dynamics-crm-type-provider-preview/">&larr; <em>Microsoft Dynamics CRM Type Provider preview</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2012\07\13\pezhack-abstracting-flow-control-with-monads/"><em>PezHack–Abstracting flow control with monads</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2012\12\01\monads-to-help-with-com-cleanup/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Visualizing LINQ with GraphViz</title>
+    <meta name="description" content="After my talk last night, several people expressed an interest in the script I was using to draw the LINQ expression trees. I have uploadedhere on github.  This is just a script I use in development. It doesn't visualize every node by a long shot, and doe...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, sqlprovider, type providers">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2014\01\17\visualizing-linq-with-graphviz/">
+    <link rel="next" href="/blog\2013\12\24\sql-provider-new-stuff-including-postgresql-support-and-option-types/">
+    <link rel="prev" href="/blog\2014\02\01\fun-with-a-toy-robotic-arm/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\02\01\fun-with-a-toy-robotic-arm/">&larr; <em>Fun with a toy robotic arm!</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2013\12\24\sql-provider-new-stuff-including-postgresql-support-and-option-types/"><em>SQL Provider - new stuff including PostgreSQL support and option types!</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Visualizing LINQ with GraphViz</h1>
+    <p class='date-and-tags'>
+<time datetime="2014-01-17" pubdate="true">2014-01-17</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\sqlprovider.html">sqlprovider</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<p>After my talk last night, several people expressed an interest in the script I was using to draw the LINQ expression trees. I have uploaded<a href="https://github.com/pezipink/SQLProvider/blob/master/src/scripts/GraphViz.fsx">here on github</a>.</p>
+
+<p>This is just a script I use in development. It doesn't visualize every node by a long shot, and does a fair bit of name replacing to make some of the very long generic type names readable. You will need <a href="http://www.graphviz.org/">GraphViz</a>installed to use this script. You might need to point the function that does the generation at the location where you've installed it.</p>
+
+<p>You can use it like this from FSI :</p>
+
+<div class="brush: fsharp">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="o">#</span><span class="n">load</span><span class="w"> </span><span class="s">"GraphViz.fsx"</span>
+<span class="nn">FSharp</span><span class="p">.</span><span class="nn">Data</span><span class="p">.</span><span class="nn">Sql</span><span class="p">.</span><span class="nn">Common</span><span class="p">.</span><span class="nn">QueryEvents</span><span class="p">.</span><span class="n">LinqExpressionEvent</span>
+<span class="o">|&gt;</span><span class="w"> </span><span class="nn">Observable</span><span class="p">.</span><span class="n">add</span><span class="w"> </span><span class="nn">GraphViz</span><span class="p">.</span><span class="n">toGraph</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now, whenever you evaluate a query expression, it will pop up a bunch of images with whatever your machine uses to view SVG files, like this rather lovely one below. Have fun.</p>
+
+<p><em>edit; this will spam your temp directory with svg files!</em></p>
+
+<p></p>
+
+<p><img src="../../../../../img/old/Picture1.gif" alt="" /></p>
+<!-- more-->
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2014\02\01\fun-with-a-toy-robotic-arm/">&larr; <em>Fun with a toy robotic arm!</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2013\12\24\sql-provider-new-stuff-including-postgresql-support-and-option-types/"><em>SQL Provider - new stuff including PostgreSQL support and option types!</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2014\01\17\visualizing-linq-with-graphviz/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

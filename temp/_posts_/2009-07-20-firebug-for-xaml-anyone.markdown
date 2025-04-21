@@ -1,0 +1,6 @@
+    Title: Firebug for XAML anyone?
+    Date: 2009-07-20T23:10:00
+    Tags: .NET, programming tools, XAML, WPF
+<!-- more -->
+
+<p>Sad is the time when all those web-related layout CSS and HTML issues come headlong together with desktop applications, but for anyone who has used XAML (or extensible camels as I like to call it/them) with WPF / .NET 3.5 will know exactly what I mean. <br /><br />However all is not lost, no need to re-compile your project 100 times to try and move an arrow or change the colour of a label which after 2 hours transpires it is being modified by 6 different styles and properties from all over the place.... Snoop to the resuce! No longer will you get the hump with those camels (as much!)<br /><br />DAMN THOSE CAMELS! http://www.blois.us/Snoop/<br /><br />This is essentially firebug for WPF / Camels. Complete with inspect button, full camel tree view, style heirachy and the ability to add/modify stuff on the fly. And it's open source Cool<br /><br />It's sad this should be required but 'tis the way of the future apparently !</p>

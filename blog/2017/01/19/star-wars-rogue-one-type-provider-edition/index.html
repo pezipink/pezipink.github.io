@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Star Wars : Rogue One, Type Provider edition</title>
+    <meta name="description" content="A LONG TIME AGO, IN A GALAXY FAR AWAY…..:...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="fsharp, type providers">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/">
+    <link rel="next" href="/blog\2017\01\14\programming-in-racket-1/">
+    <link rel="prev" href="/blog\2017\02\28\c64-programming-invader-fractal/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\02\28\c64-programming-invader-fractal/">&larr; <em>C64 Programming - Invader Fractal</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\01\14\programming-in-racket-1/"><em>Programming in Racket #1</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Star Wars : Rogue One, Type Provider edition</h1>
+    <p class='date-and-tags'>
+<time datetime="2017-01-19" pubdate="true">2017-01-19</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<h2>A LONG TIME AGO, IN A GALAXY FAR AWAY…..</h2>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/r11.png"><img title="r11" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; margin: 8px 0px 12px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="r11" src="../../../../../img/old/r11_thumb.png" width="640" height="341" /></a></p>
+<!-- more-->
+
+<p>Having infiltrated the Empire’s data centre, you are not overly surprised to discover they are using some ancient system from the old republic days.&#160; A brief look around reveals a monstrous legacy Empire Enterprise system.&#160; It has a ORM you thought had died out millennia ago.&#160; You can immediately see no less than 13 layers of inheritance, 6 levels of dependency injection, and some complete bastard has spread the evil EmpireAutoLogger all over the place</p>
+
+<p> 
+ <p>Thankfully, being a Jedi fighting for the Rebellion, you have access to both the force and the latest database access technology, F# type providers.&#160; Using this power, you are able to access the remote database controls, where a large crane/arm can be manoeuvred in order to pickup the legacy hard drive containing the Death Star plans.</p> 
+ <p>There is one problem.&#160; The lag here is terrible, the Empire are onto you, and the location of the disk in questionable.&#160; In fact, it seems the longer you take to get the crane into position (IN REAL TIME!), the more likely the disk is to change position completely.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/r12.png"><img title="r12" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; margin: 8px 0px 12px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="r12" src="../../../../../img/old/r12_thumb.png" width="462" height="480" /></a></p> 
+ <p>Can you grab the disk before it is too late?</p> 
+ <h3>TO HELP THE REBELLION!</h3> 
+ <p>(NOTE. You MUST change your tooltip font to a monospace font. I suggest Lucida Console in at least 16pt.)</p> 
+ <p><a href="https://github.com/pezipink/InteractiveProvider">Grab the InteractiveProvider from my github here</a>, build it, then create a script file and reference the type provider. Since the InteractiveProvider dynamically loads assemblies that contain types implementing the interfaces it is looking for, you will have to tell it as a static parameter the directory that the rogue one dll resides in.</p> 
+ <p><a href="http://www.pinksquirrellabs.com/img/old/r3.png"><img title="r3" style="margin: 8px 0px 12px; display: inline" alt="r3" src="../../../../../img/old/r3_thumb.png" width="1024" height="169" /></a></p> 
+ <p>May the force be with you, always.</p></p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2017\02\28\c64-programming-invader-fractal/">&larr; <em>C64 Programming - Invader Fractal</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2017\01\14\programming-in-racket-1/"><em>Programming in Racket #1</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

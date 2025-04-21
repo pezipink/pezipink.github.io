@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>C64 Macro State Machine</title>
+    <meta name="description" content="In this post we will see how asi64's (Racket's) macro system can massively reduce the amount of 6502 assembly code you have to write, beyond what a typical macro assembler can achieve....">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="C64, asi64, macros, 6502, racket">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2018\10\05\c64-macro-state-machine/">
+    <link rel="next" href="/blog\2018\09\17\c64-sprite-previewer/">
+    <link rel="prev" href="/blog\2018\11\21\c64-remote-programmer/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2018\11\21\c64-remote-programmer/">&larr; <em>C64 Remote Programmer</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2018\09\17\c64-sprite-previewer/"><em>C64 Sprite Previewer</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>C64 Macro State Machine</h1>
+    <p class='date-and-tags'>
+<time datetime="2018-10-05" pubdate="true">2018-10-05</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\asi64.html">asi64</a>, <a href="/tags\macros.html">macros</a>, <a href="/tags\6502.html">6502</a>, <a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>In this post we will see how <a href="http://www.pinksquirrellabs.com/blog/2017/05/30/asi64/">asi64&rsquo;s</a> (<a href="[https://racket-lang.org/">Racket&rsquo;s</a>) macro system can massively reduce the amount of 6502 assembly code you have to write, beyond what a typical macro assembler can achieve.</p>
+<!-- more-->
+
+<h2 id="state-machines">State Machines</h2>
+
+<p>I am currently writing my first little game for the C64. In it, the player&rsquo;s sprite has fairly complex movement behaviour which is represented by a state machine that has no less than 13 different states. In order to transition between the states, the player uses some combination of joystick controls, or something outside such as collision detection forces a state change.</p>
+
+<p>In this post we will concentrate on state changes from the joystick. Programming these state machines can be tricky due to the amount of different possible transitions from one state to another and the priority in which they are checked. To show this we will look at a reduced and simplified view using 3 of the 13 states and the interactions between them.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">;some constants</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="c1">; joy masks</span>
+<span class="w">  </span><span class="n">joy-up</span><span class="w">    </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">%00000001</span>
+<span class="w">  </span><span class="n">joy-down</span><span class="w">  </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">%00000010</span>
+<span class="w">  </span><span class="n">joy-left</span><span class="w">  </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">%00000100</span>
+<span class="w">  </span><span class="n">joy-right</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">%00001000</span>
+<span class="w">  </span><span class="n">joy-fire</span><span class="w">  </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">%00010000</span>
+<span class="w">  </span>
+<span class="w">  </span><span class="c1">;machine states</span>
+<span class="w">  </span><span class="n">state-standing</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">$0</span>
+<span class="w">  </span><span class="n">state-walking-right</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">$1</span>
+<span class="w">  </span><span class="n">state-crouching</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">$2</span>
+
+<span class="w">  </span><span class="c1">; variables</span>
+<span class="w">  </span><span class="n">current-state</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3d))" style="color: inherit">=</a></span><span class="w"> </span><span class="n">$f0</span>
+<span class="p">}</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The above code defines some constants for the three different states, a location to store the current state, and some masks used to detect which buttons on the joysticks are pressed when reading the joystick register.</p>
+
+<p>The states that are defined represent the player standing still, walking to the right, and crouching. A graph of these transitions looks like this :</p>
+
+<div class="figure"><img src="../../../../../img/asi/state-graph.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Even in this simple example, complexity rears its head. Notice that you cannot transition from walking right into a crouch, since I don&rsquo;t want the player to enter that state accidentally as they are walking along if they happen to pull the joystick down and right at the same time. Additionally, there has to be some inverse logic for button presses to make some transitions, for example, when walking right, NOT holding right puts you back into the standing state. You can imagine with 13 states this can start to get very complex.</p>
+
+<p>Programming this in 6502 asm is not particularly difficult, it&rsquo;s just long, boring and very repetitive which in turns makes it a chore to change and maintain (more on the ineffeciency of this approach in the closing thoughts&hellip;) Here&rsquo;s an example for the standing state :</p>
+
+<div class="brush: ca65">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">:</span><span class="n">update</span><span class="o">-</span><span class="n">machine</span><span class="w"> </span>
+<span class="w">     </span><span class="k">ldy</span><span class="w"> </span><span class="n">current</span><span class="o">-</span><span class="n">state</span><span class="w">    </span><span class="c1">; load current state</span>
+<span class="w">     </span><span class="k">cpy</span><span class="w"> </span><span class="n">@state</span><span class="o">-</span><span class="n">standing</span><span class="w">  </span><span class="c1">; is it the standing state?</span>
+<span class="w">     </span><span class="k">bne</span><span class="w"> </span><span class="n">next</span><span class="o">-</span><span class="n">state</span><span class="o">+</span><span class="w">      </span><span class="c1">; if not then go to the next check...</span>
+<span class="w">     </span><span class="k">lda</span><span class="w"> </span><span class="mh">$dc00</span><span class="w">            </span><span class="c1">; load the joystick state</span>
+<span class="w">     </span><span class="k">tax</span><span class="w">                  </span><span class="c1">; preserve it in X so we can look at it again later..</span>
+<span class="w">     </span><span class="k">and</span><span class="w"> </span><span class="n">@joy</span><span class="o">-</span><span class="n">right</span><span class="w">       </span><span class="c1">; test joystick (1 is not pressed, 0 is pressed)</span>
+<span class="w">     </span><span class="k">bne</span><span class="w"> </span><span class="n">skip</span><span class="o">+</span><span class="w">            </span><span class="c1">; if not, move to next joystick check</span>
+<span class="w">     </span><span class="k">ldx</span><span class="w"> </span><span class="n">@state</span><span class="o">-</span><span class="n">walking</span><span class="o">-</span><span class="n">right</span>
+<span class="w">     </span><span class="k">jsr</span><span class="w"> </span><span class="n">change</span><span class="o">-</span><span class="n">state</span><span class="o">-</span><span class="w">    </span><span class="c1">; call the function that changes the state </span>
+<span class="w">     </span><span class="k">rts</span><span class="w">                  </span><span class="c1">; early exit from function</span>
+<span class="p">:</span><span class="n">skip</span>
+<span class="w">     </span><span class="k">txa</span><span class="w">                  </span><span class="c1">; reload the joy data</span>
+<span class="w">                          </span><span class="c1">; repeat all the above the for next direction</span>
+<span class="w">     </span><span class="k">and</span><span class="w"> </span><span class="n">@joy</span><span class="o">-</span><span class="n">down</span><span class="w"> </span>
+<span class="w">     </span><span class="k">bne</span><span class="w"> </span><span class="n">skip</span><span class="o">+</span><span class="w">            </span>
+<span class="w">     </span><span class="k">ldx</span><span class="w"> </span><span class="n">@tstate</span><span class="o">-</span><span class="n">crouching</span>
+<span class="w">     </span><span class="k">jsr</span><span class="w"> </span><span class="n">change</span><span class="o">-</span><span class="n">state</span><span class="o">-</span>
+<span class="p">:</span><span class="n">skip</span>
+<span class="w">     </span><span class="k">rts</span><span class="w">                   </span><span class="c1">; return from function</span>
+<span class="p">:</span><span class="n">next</span><span class="o">-</span><span class="n">state</span><span class="w">     </span>
+<span class="w">     </span><span class="k">cpy</span><span class="w"> </span><span class="n">@state</span><span class="o">-</span><span class="n">walking</span><span class="o">-</span><span class="n">right</span>
+<span class="w">     </span><span class="c1">; .... repeat all the code for each state and each transition</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>You can see this is going to extremely long winded with 13 different states each with multiple transitions, sometimes with more complex trigger logic (eg, combinations of joystick button being pressed, things not being pressed and so on).</p>
+
+<p>In addition to this, since this is the update function for the machine, this is also where logic will take place that affects the game depending on the state, e.g. the walking right section needs to actually update the player&rsquo;s X co-ordinate.</p>
+
+<p>The final salt in the wound is that some state transitions need to execute some logic after the transition actually takes effect, for example resetting some variables or switching on / off some additional sprites.</p>
+
+<p>Whilst I enjoy writing assembly code, I don&rsquo;t so much enjoy maintaining a monster like this. I takes forever to try changes or introduce new states and it is very easy to introduce subtle, silly bugs that you don&rsquo;t notice until later.</p>
+
+<h2 id="macros-to-the-resuce">Macros to the resuce!</h2>
+
+<p>Racket&rsquo;s amazing macro system can help us out here. Wherever you see replication of code, macros are ready to lend you a helping hand. In this example we won&rsquo;t even see any of the really fancy stuff racket can do, just basic macros.</p>
+
+<p>The way I like to write macros is to first write down the syntax I would like to be able to write, then work backwards from that point to make it happen. Let&rsquo;s keep it simple to start with, and forget about having to execute game logic and pre-transition logic. In fact let&rsquo;s also forget about the actual machine states and just concentrate of the repetitve bit in the middle which is the checking of joystick states.</p>
+
+<p>As an inital concept, let&rsquo;s say it would be nice to write this :</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="n">:update-machine</span><span class="w"> </span>
+<span class="w">     </span><span class="n">ldy</span><span class="w"> </span><span class="n">current-state</span><span class="w">        </span>
+<span class="w">     </span><span class="n">cpy</span><span class="w"> </span><span class="n">@state-standing</span><span class="w"> </span>
+<span class="w">     </span><span class="n">bne</span><span class="w"> </span><span class="n">next-state+</span><span class="w">     </span>
+<span class="w">    </span><span class="p">(</span><span class="n">generate-joy-transitions</span>
+<span class="w">      </span><span class="p">([</span><span class="n">joy-right</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-walking-right</span><span class="p">]</span>
+<span class="w">       </span><span class="p">[</span><span class="n">joy-down</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-crouching</span><span class="p">]))</span>
+<span class="w">     </span><span class="n">rts</span>
+<span class="n">:next-state</span>
+<span class="w">     </span><span class="c1">; .....</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The macro <code>generate-joy-transitions</code> will take a list of lists, each inner list has three elements. The first is the bit pattern to test against the joystick register, the second is a boolean that indicates if the button should be tested against being pressed or NOT being pressed, and finally the last part is the target state.</p>
+
+<p>Let&rsquo;s have a frst go at writing it :</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">generate-joy-transitions</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="p">([</span><span class="n">test</span><span class="w"> </span><span class="n">is-pressed?</span><span class="w"> </span><span class="n">target</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+<span class="w">   </span><span class="o">#'</span><span class="p">{</span><span class="n">lda</span><span class="w"> </span><span class="n">$dc00</span><span class="w">          </span><span class="c1">; load joystick register</span>
+<span class="w">      </span><span class="n">tax</span><span class="w">                </span><span class="c1">; preserve it in x</span>
+<span class="w">      </span><span class="p">{</span><span class="w">    </span>
+<span class="w">       </span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="n">@test</span><span class="w">         </span><span class="c1">; test bits</span>
+<span class="w">       </span><span class="c1">; ?? how do we perform the branch?</span>
+<span class="w">       </span><span class="n">ldx</span><span class="w"> </span><span class="n">@target</span><span class="w">       </span><span class="c1">; perform state transition</span>
+<span class="w">       </span><span class="n">jsr</span><span class="w"> </span><span class="n">change-state-</span>
+<span class="w">       </span><span class="n">rts</span><span class="w">               </span><span class="c1">; exit function</span>
+<span class="w">       </span><span class="n">:skip</span><span class="w">             </span>
+<span class="w">       </span><span class="n">txa</span><span class="w">               </span><span class="c1">; restore joytsick data</span>
+<span class="w">       </span><span class="p">}</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span>
+<span class="w">      </span><span class="p">}</span><span class="w">                  </span><span class="c1">; repeat ...</span>
+<span class="w">   </span><span class="p">])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>This is not a terrible first attempt, we simply pattern match on the inner list, extracting the parameters into the names <code>test</code> <code>is-pressed?</code> and <code>target</code>, the ellipsis <code>...</code> that follows tells racket that any amount of these lists may appear here.</p>
+
+<p>The first two asm instructions are generated only once - the inner section which is wrapped in a nested 6502 block using <code>{ }</code> is repeated for each set of arguments thanks to the <code>...</code> that follows the block.</p>
+
+<p>A problem remains though - after the AND test, we must use a different branch instruction depending on if we are checking that the button was pressed or not pressed via the <code>is-pressed?</code> parameter (<code>bne</code> and <code>beq</code> respectively). How can we do this? We can&rsquo;t simply replace <code>is-pressed?</code> in the pattern match with <code>#t</code> and then replicate the pattern and macro output with another case for <code>#f</code>, because that would mean ALL of the provided arguments would have to be same, which is no good.</p>
+
+<h2 id="macros-in-yer-macros">Macros in yer macros..</h2>
+
+<p>Likely there are many ways to skin this cat - Racket generally likes you to be declarative about these things, so one way is to simply define another macro that takes care of it.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">joy-branch</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="no">#t</span><span class="p">)</span><span class="w"> </span><span class="o">#'</span><span class="p">{</span><span class="n">bne</span><span class="w"> </span><span class="n">skip+</span><span class="p">}]</span><span class="w"> </span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="no">#f</span><span class="p">)</span><span class="w"> </span><span class="o">#'</span><span class="p">{</span><span class="n">beq</span><span class="w"> </span><span class="n">skip+</span><span class="p">}])</span>
+<span class="w">            </span>
+<span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">generate-joy-transitions</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="p">([</span><span class="n">test</span><span class="w"> </span><span class="n">is-pressed?</span><span class="w"> </span><span class="n">target</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+<span class="w">   </span><span class="o">#'</span><span class="p">{</span><span class="n">lda</span><span class="w"> </span><span class="n">$dc00</span>
+<span class="w">      </span><span class="n">tax</span><span class="w">      </span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">       </span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="n">@test</span>
+<span class="w">       </span><span class="p">(</span><span class="n">joy-branch</span><span class="w"> </span><span class="n">is-presed?</span><span class="p">)</span><span class="w">  </span><span class="c1">; call the other macro here</span>
+<span class="w">       </span><span class="n">ldx</span><span class="w"> </span><span class="n">@target</span>
+<span class="w">       </span><span class="n">jsr</span><span class="w"> </span><span class="n">change-state-</span>
+<span class="w">       </span><span class="n">rts</span>
+<span class="w">       </span><span class="n">:skip</span>
+<span class="w">       </span><span class="n">txa</span>
+<span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="p">])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Cool, now it works as expected. Infact, since we haven&rsquo;t told Racket to expect any particular types (eg, expressions, integers) as the parameters, it is totally possible to pass expressions into <code>test</code> and <code>target</code>, which is very handy if you wanted for example to test a combined bitmask for more than one button at once:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">    </span><span class="p">(</span><span class="n">generate-joy-transitions</span>
+<span class="w">      </span><span class="p">([(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._bitwise-ior))" style="color: inherit">bitwise-ior</a></span><span class="w"> </span><span class="n">joy-right</span><span class="w"> </span><span class="n">joy-down</span><span class="p">)</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">some-state</span><span class="p">]))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Very nice! We basically got that for free. For the final piece of this section we wished to be able to execute some arbitary code after the transition has finished. However, we dont always want to do this, and Racket has just the answer by allowing us to put in an optional parameter that will be defaulted to an empty block if not supplied.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">generate-joy-transitions</span><span class="w"> </span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="p">([</span><span class="n">test</span><span class="w"> </span><span class="n">is-pressed?</span><span class="w"> </span><span class="n">target</span><span class="w"> </span>
+<span class="w">        </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/stxparse-patterns.html#(form._((lib._syntax/parse..rkt)._~7eoptional))" style="color: inherit">~optional</a></span><span class="w"> </span><span class="n">extra</span><span class="w"> </span><span class="kd">#:defaults</span><span class="w"> </span><span class="p">([</span><span class="n">extra</span><span class="w"> </span><span class="o">#'</span><span class="p">{}</span><span class="w"> </span><span class="p">]))]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+<span class="w">   </span><span class="o">#'</span><span class="p">{</span><span class="n">lda</span><span class="w"> </span><span class="n">$dc00</span>
+<span class="w">      </span><span class="n">tax</span><span class="w">      </span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">       </span><span class="k"><a href="http://docs.racket-lang.org/reference/if.html#(form._((lib._racket/private/letstx-scheme..rkt)._and))" style="color: inherit">and</a></span><span class="w"> </span><span class="n">@test</span>
+<span class="w">       </span><span class="p">(</span><span class="n">joy-branch</span><span class="w"> </span><span class="n">is-pressed?</span><span class="p">)</span><span class="w"> </span>
+<span class="w">       </span><span class="n">ldx</span><span class="w"> </span><span class="n">@target</span>
+<span class="w">       </span><span class="n">jsr</span><span class="w"> </span><span class="n">change-state-</span>
+<span class="w">       </span><span class="n">extra</span><span class="w">              </span><span class="c1">; stick the extra code in here</span>
+<span class="w">       </span><span class="n">rts</span>
+<span class="w">       </span><span class="n">:skip</span>
+<span class="w">       </span><span class="n">txa</span>
+<span class="w">       </span><span class="p">}</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="p">])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now we can write</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w">    </span><span class="p">(</span><span class="n">generate-joy-transitions</span>
+<span class="w">      </span><span class="p">([</span><span class="n">joy-right</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-walking-right</span><span class="p">]</span>
+<span class="w">       </span><span class="p">[</span><span class="n">joy-down</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-crouching</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="c1">; some asm code...</span>
+<span class="w">                    </span><span class="p">}]))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Of course, a 6502 block is inlined in the above example, but it could equally call a function that generates some code, calls another macro, or whatever.</p>
+
+<h1 id="macros-in-yer-macros-in-yer-macros-">Macros in yer macros in yer macros &hellip;</h1>
+
+<p>The final icing on the cake is to get rid of the state machine branching logic completely. To do this we need to :</p>
+
+<ul>
+ <li>Create essentially the <code>switch</code> statement for each state</li>
+ <li>Allow some arbitary code be executed</li>
+ <li>Check all joystick transitions as above</li></ul>
+
+<p>So, what we want to be able to write is :</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n">generate-state-machine</span>
+<span class="w"> </span><span class="p">([</span><span class="n">state-standing</span>
+<span class="w">   </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="w">   </span><span class="p">([</span><span class="n">joy-right</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-walking-right</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="n">joy-left</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-walking-left</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="n">joy-down</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-crouching</span>
+<span class="w">              </span><span class="p">{</span><span class="w"> </span><span class="n">some</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="w"> </span><span class="p">}])]</span>
+<span class="w">               </span>
+<span class="w">  </span><span class="p">[</span><span class="n">state-walking-right</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">; move sprite right</span>
+<span class="w">    </span><span class="n">inc</span><span class="w"> </span><span class="n">$d000</span>
+<span class="w">    </span><span class="n">inc</span><span class="w"> </span><span class="n">$d000</span>
+<span class="w">   </span><span class="p">}</span><span class="w">    </span>
+<span class="w">   </span><span class="p">([</span><span class="n">joy-left</span><span class="w"> </span><span class="no">#t</span><span class="w"> </span><span class="n">state-walking-left</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="n">joy-right</span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="n">state-standing</span><span class="p">])]</span>
+
+<span class="w">  </span><span class="c1">; more cases ...</span>
+<span class="w">  </span><span class="p">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Following the patterns above this pretty much writes itself:</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">generate-state-machine</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="p">([</span><span class="n">state-number</span>
+<span class="w">        </span><span class="n">update-code</span>
+<span class="w">        </span><span class="n">joy-cases</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+<span class="w">   </span><span class="o">#'</span><span class="p">{</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">       </span><span class="n">ldy</span><span class="w"> </span><span class="n">current-state</span><span class="w">  </span><span class="c1">;load current state</span>
+<span class="w">       </span><span class="n">cpy</span><span class="w"> </span><span class="n">@state-number</span><span class="w">  </span>
+<span class="w">       </span><span class="n">bne</span><span class="w"> </span><span class="n">next-state+</span><span class="w">    </span>
+<span class="w">       </span><span class="n">update-code</span><span class="w">        </span><span class="c1">; insert update code here</span>
+
+<span class="w">       </span><span class="c1">;call the joystick macro with the cases</span>
+<span class="w">       </span><span class="p">(</span><span class="n">generate-joy-transitions</span><span class="w"> </span><span class="n">joy-cases</span><span class="p">)</span>
+
+<span class="w">     </span><span class="n">:next-state</span>
+<span class="w">       </span><span class="p">}</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">     </span><span class="p">}])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>And we are done.</p>
+
+<h2 id="closing-thoughts">Closing Thoughts</h2>
+
+<p>Macros are a super powerful way to help introduce new syntax over the top of the assembler, and this is really just scratching the surface of it.</p>
+
+<p>This example is kept simple, it has some obvious problems such as the &ldquo;switch&rdquo; statement uses branching instructions that can only go +/&ndash; 127 bytes and it will break if there is too much code between the branch and the label. It also has to check each state until it finds what it is looking for - a nicer way would be to use a lookup table and jump to the correct address, which is totally possible with a little more macrology &hellip;</p>
+
+<p>Happy assembling!</p>
+
+<h2 id="additional-edit">Additional Edit!</h2>
+
+<p>Since I posted this earlier today, I have changed the switch-statement type affair into a much more effecient lookup table, and I thought it might be interesting to show how it works, since it uses the assembler&rsquo;s open architecture by directly calling into some of the functionality it provides rather than using the assembler syntax.</p>
+
+<p>The idea is to do the following</p>
+
+<ul>
+ <li>Load the current state number</li>
+ <li>Using the number as an index, lookup the low address byte where the code for that state lives. Store this number somewhere</li>
+ <li>Repeat to lookup the high address byte, store it next to the low byte</li>
+ <li>Use the indirect jump op-code to jump to this address.</li></ul>
+
+<p>In order to do this we will have to know the location of each state&rsquo;s code that we assemble and put their locations into lookup tables split by their low and high bytes. There are a few ways to do this, the easiest is to label each section of state code, then later extract the address details into lookup tabes. Here&rsquo;s how it looks :</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Defining_Simple_Macros.html#(form._((lib._syntax/parse/define..rkt)._define-syntax-parser))" style="color: inherit">define-syntax-parser</a></span><span class="w"> </span><span class="n">generate-state-machine</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="p">([</span><span class="n">state-number</span>
+<span class="w">        </span><span class="n">update-code</span>
+<span class="w">        </span><span class="n">joy-cases</span><span class="p">]</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">))</span>
+<span class="w">     </span><span class="o">#'</span><span class="p">{</span>
+<span class="w">        </span><span class="n">ldx</span><span class="w"> </span><span class="n">tc-state</span><span class="w">            </span><span class="c1">; load current state</span>
+<span class="w">        </span><span class="n">lda</span><span class="w"> </span><span class="n">state-machine-lo:</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="c1">; use lookup table and setup</span>
+<span class="w">        </span><span class="n">sta</span><span class="w"> </span><span class="n">jump-vector-lo+</span><span class="w">     </span><span class="c1">; 16 bit address pointer</span>
+<span class="w">        </span><span class="n">lda</span><span class="w"> </span><span class="n">state-machine-hi:</span><span class="w"> </span><span class="n">x</span>
+<span class="w">        </span><span class="n">sta</span><span class="w"> </span><span class="n">jump-vector-hi+</span>
+<span class="w">        </span><span class="n">jmpi</span><span class="w"> </span><span class="n">jump-vector-lo:</span><span class="w">    </span><span class="c1">; jump to target state</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c1">; write out the states </span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">         </span><span class="c1">;set jump location</span>
+<span class="w">         </span><span class="p">(</span><span class="n">set-jump-source-current</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="w"> </span><span class="s2">"state~a"</span><span class="w"> </span><span class="n">state-number</span><span class="p">))</span><span class="w"> </span>
+<span class="w">         </span><span class="n">update-code</span>
+<span class="w">         </span><span class="p">(</span><span class="n">generate-joy-transitions</span><span class="w"> </span><span class="n">joy-cases</span><span class="p">)</span>
+<span class="w">         </span><span class="n">rts</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+
+<span class="w">       </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">jump-labels</span>
+<span class="w">         </span><span class="p">(</span><span class="n">~&gt;&gt;</span>
+<span class="w">          </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._list))" style="color: inherit">list</a></span><span class="w"> </span><span class="n">state-number</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">          </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._format))" style="color: inherit">format</a></span><span class="w"> </span><span class="s2">"state~a"</span><span class="w"> </span><span class="n">n</span><span class="p">)))</span>
+<span class="w">          </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">find-closest-label</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">here</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="ss"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="p">)))))</span>
+<span class="w">          </span>
+<span class="w">        </span><span class="n">:state-machine-lo</span>
+<span class="w">        </span><span class="p">(</span><span class="n">write-values</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="n">lo-byte</span><span class="w"> </span><span class="n">jump-labels</span><span class="p">))</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="n">:state-machine-hi</span>
+<span class="w">        </span><span class="p">(</span><span class="n">write-values</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="n">hi-byte</span><span class="w"> </span><span class="n">jump-labels</span><span class="p">))</span>
+
+<span class="w">        </span><span class="n">:jump-vector-lo</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="n">$FF</span><span class="p">)</span>
+<span class="w">        </span><span class="n">:jump-vector-hi</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="n">$FF</span><span class="p">)</span>
+
+<span class="w">        </span><span class="p">}])</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>The first lines of code load in the current state, perfom the indexed lookups into the tables and store the address in the jump-vector. Then, the code jumps via this vector and begins executing the code for the current state.</p>
+
+<p>The code that writes out the states directly calls the internal assembler function to add a label <code>set-jump-source-current</code>, and it names the label <code>state-n</code> where <code>n</code> is the number of the state it is processing.</p>
+
+<p>At the bottom of the macro, we take ALL the numbers together <code>(list state-number ... )</code> re-format them into the label names, call another internal assembler function that locates a label from a given location <code>find-closest-label</code> and finally extracts the low or high bytes from it. These are then written out as lookup data.</p>
+
+<p>Finally, the last two lines label a couple of bytes to use as a jump vector that is written to from the jumping logic.</p>
+
+<p>This is really cool! Now the state machine is much more effecient and has no worries about branching limitations. Most importantly, you can add and remove states withouht ever having to worry about moving loads of code and numbers around, and making far less mistakes because of it.</p>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2018\11\21\c64-remote-programmer/">&larr; <em>C64 Remote Programmer</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2018\09\17\c64-sprite-previewer/"><em>C64 Sprite Previewer</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2018\10\05\c64-macro-state-machine/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

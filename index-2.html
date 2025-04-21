@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Pink Squirrel Labs (page 2)</title>
+    <meta name="description" content="Pink Squirrel Labs (page 2)">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="squirrels, fpga, digital logic, fairylog, C64, 6502, reverse engineering, books, xrm, cracking, racket, asi64, sqlprovider, macros, C, compilers, game programming, drey, raspberry pi, type providers, roguelike, all, electronics, scurry, robotics, fsharp, programming languages, D">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/index-2.html">
+
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <h2><a href='/blog\2018\01\31\-fixed-memory-pool-design/'>&ldquo;Fixed&rdquo; Memory Pool Design</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2018-01-31" pubdate="true">2018-01-31</time> :: <span class="tags"><a href="/tags\drey.html">drey</a>, <a href="/tags\C.html">C</a></span></p>
+  </header>
+
+<p>This post describes a memory allocation strategy I call a &ldquo;fixed&rdquo; size memory pool.</p>
+
+<p>Recently I decided to re-write my virtual machine Drey almost completely in the C programming language, using no external libraries except for the networking via ZeroMQ. This is mostly for fun, to see if I can remember how to program in C again and write a load of low-level stuff (apologies if my C is currently terrible!.)</p>
+
+<p>Drey executes programs written in a much higher level language (typically Scurry), its purpose being to remove all low level details and provide an experience for the author focused on game logic only. As such, the virtual machine implementation must manage the memory itself, not knowing how much of what size memory it will need up front.</p>
+
+<p>Since the system calls malloc/free are relatively slow and will fragment the heap, especially for lots of small object allocations, a memory management system will be required.</p>
+
+<p>(actually, I could probably get away with using malloc since performance doesn&rsquo;t really matter in Drey, but where&rsquo;s the fun in that!)</p>
+  <footer>
+    <a href='/blog\2018\01\31\-fixed-memory-pool-design/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2018\01\01\reversing-lcm6-exe/'>Reversing - lcm6.exe</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2018-01-01" pubdate="true">2018-01-01</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>As an entertaining start to the new year, this post will cover the basics of reverse engineering a program and breaking its password protection. Of course, I do not advocate software piracy in any way, and the program in question is called a <code>crackme</code> which is a program designed to broken, with various measures to make it harder for you. They come in different levels of difficulty, the one under the microsope today is a relatively easy one - however, breaking even the simplest program requires a fairly deep understanding of computers, and the process might be quite interesting if you don&rsquo;t know how it&rsquo;s done. Let&rsquo;s have a look at it:</p>
+
+<div class="figure"><img src="../../../../../img/reverse1/1.png" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2018\01\01\reversing-lcm6-exe/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\08\10\lexical-scoping-and-redefining-function-application/'>Lexical scoping and redefining function application</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-08-10" pubdate="true">2017-08-10</time> :: <span class="tags"><a href="/tags\scurry.html">scurry</a>, <a href="/tags\drey.html">drey</a>, <a href="/tags\racket.html">racket</a>, <a href="/tags\macros.html">macros</a>, <a href="/tags\programming-languages.html">programming languages</a>, <a href="/tags\compilers.html">compilers</a></span></p>
+  </header>
+
+<p><a href="http://pinksquirrellabs.com/blog/2017/08/04/racket-macros-scurry/">The previous post</a> layed the foundations of creating a language and &ldquo;compiler&rdquo; using Racket macros.</p>
+
+<p>This is all very nice, but utimately it is just a bunch of macros. The &ldquo;language&rdquo; itself doesn&rsquo;t have any form of enforced semantics. You can introduce whatever syntax and macros you want, and use them however you like, even if it makes no sense at all.</p>
+
+<p>Whilst this is nice in a way (and can lead to some .. interesting .. &ldquo;features&rdquo;) it is often more of a pain than it&rsquo;s worth. Most of the errors we make in our day to day programming are picked up immediately by the background compiler, or the full compilation. Silly things like &ldquo;clipboard inheritance&rdquo; or typos attempting to use bindings that aren&rsquo;t in scope are high on the list of culprits here.</p>
+
+<p>In this post we will see how Racket can be used to help out by doing some lexical scope &ldquo;analysis&rdquo; in a slightly different way from a traditional compiler. We will also see how Racket can redefine its entire notion of function application, which will allow us to introduce some very nifty new syntax into Scurry itself.</p>
+  <footer>
+    <a href='/blog\2017\08\10\lexical-scoping-and-redefining-function-application/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\08\04\racket-macros-scurry/'>Racket Macros : Scurry</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-08-04" pubdate="true">2017-08-04</time> :: <span class="tags"><a href="/tags\racket.html">racket</a>, <a href="/tags\scurry.html">scurry</a>, <a href="/tags\drey.html">drey</a>, <a href="/tags\compilers.html">compilers</a>, <a href="/tags\programming-languages.html">programming languages</a>, <a href="/tags\macros.html">macros</a></span></p>
+  </header>
+
+<p>This post will be about <a href="http://docs.racket-lang.org/guide/macros.html">Racket macros</a>. As a delivery mechanism, I will be using bits of my latest project, which is a virtual machine designed for emulating multiplayer networked board games via <a href="http://zeromq.org/">ZeroMQ</a>. drey-vm executes compiled bytecode files - much like the CLR or JVM - using an instruction set of my design.</p>
+
+<p>The design of the computer is out of the scope of this post (maybe another post if people are interested in it - let me know in the comments!?) suffice to stay it is written in D and is mostly a stack based computer, supporting functional and imperative programming. It has a string/object dictionary as its primary type,like lua and js.</p>
+
+<p>Much like <a href="http://pinksquirrellabs.com/blog/2017/05/30/asi64/">asi64</a>, I wrote an assembler for the virtual machine in Racket. On top of that assembler I can now build a language (scurry). To start with, I am just creating a Racket language that is still a lisp - Racket has the fantasic power of being able to build macros on macros, gradually introducing higher level syntatic forms. In this way, I don&rsquo;t really need write an actual compiler. Racket gives me the front end of the compiler for free (being lisp), and the macros-over-assembler method is a very fun and flexibile way to build up a language.</p>
+  <footer>
+    <a href='/blog\2017\08\04\racket-macros-scurry/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\05\30\asi64/'>Asi64</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-05-30" pubdate="true">2017-05-30</time> :: <span class="tags"><a href="/tags\6502.html">6502</a>, <a href="/tags\C64.html">C64</a>, <a href="/tags\racket.html">racket</a>, <a href="/tags\asi64.html">asi64</a></span></p>
+  </header>
+
+<p>In my last few posts, I detailed some of my experience learning <a href="http://6502.org/">6502</a> assembler for the Commodore 64. I started off using <a href="http://dasm-dillon.sourceforge.net/">DASM</a>, which seems to be quite a nice assembler, severely lacking in documentation. Then I discovered the very awesome <a href="http://www.theweb.dk/KickAssembler/Main.html#frontpage">KickAssembler</a>, which includes a full blown scripting language on top of java, lots of other very nice features, and great documentation. This made me realise what a powerful modern assembler could be like - and perhaps I could go one step further with it.</p>
+
+<p>Asi64 extends <a href="http://racket-lang.org/">Racket</a> to become a 6502 assembler. No need for scripting languages or half baked macro systems here - you have literally all of Racket and its amazing macro system on your side. It also has direct support for <a href="http://vice-emu.sourceforge.net/">Vice</a>, a popular Commodore 64 emulator, passing your labels and breakpoints along enabling a fluid programming and debugging cycle. Hats off to the fantasic KickAssembler, I have stolen many ideas from it :)</p>
+
+<div class="figure"><img src="../../../../../img/asi/asi0.png" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2017\05\30\asi64/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\03\31\c64-programming-invader-fractal-2/'>C64 Programming - Invader Fractal #2</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-03-31" pubdate="true">2017-03-31</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\6502.html">6502</a></span></p>
+  </header>
+
+<p>In the <a href="http://pinksquirrellabs.com/blog/2017/02/28/c64-programming-invader-fractal/">last post</a> we discovered how to decode 15-bit symmetric invaders into a chacrater set. This time around we will make them fractal!</p>
+
+<p>The invaders from the last post occupy exactly one character each. The aim is to now select an invader at random, and then draw it one size bigger, using other random invaders as its &ldquo;pixels&rdquo; like this</p>
+
+<div class="figure"><img src="../../../../../img/invaders/7.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Then, the process can be repeated again, drawing an even bigger invader which is formed by drawing even bigger &ldquo;pixels&rdquo; which are composed of the size 2 invaders, like this!</p>
+
+<div class="figure"><img src="../../../../../img/invaders/8.png" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <a href='/blog\2017\03\31\c64-programming-invader-fractal-2/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\02\28\c64-programming-invader-fractal/'>C64 Programming - Invader Fractal</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-02-28" pubdate="true">2017-02-28</time> :: <span class="tags"><a href="/tags\C64.html">C64</a>, <a href="/tags\6502.html">6502</a></span></p>
+  </header>
+
+<p>I have recently been getting into programming the Commodore 64. It&rsquo;s lots of fun to work in such a restricted environment, where you have to use various hardware tricks to achieve your goals. Every machine cycle and byte of memory counts!</p>
+
+<p>I have not programmed in 6502 assembler or the C64 before. I am using the popular C64 emulator <a href="http://vice-emu.sourceforge.net/">WinVice</a> and an assembler called <a href="http://dasm-dillon.sourceforge.net/">DASM</a>. Having messed around a bit and learnt the basics of the instruction set and the hardware/memory layout, I programmed a couple of effects such as the basic text scroller. I have an idea in mind for my first demo, and part of it revolves around the <a href="http://levitated.net/daily/levInvaderFractal.html"><em>invader fractal</em></a>. I have implemented this in various langauages (F# and D being the most recent) and figured it would be a nice fit for the C64.</p>
+
+<h3 id="invaders">Invaders</h3>
+
+<p>The invader fractal is a very simpe idea, based on the observation that the classic space invaders are symmetrical. Given a 5x5 grid, we can observe that the middle column is static, whilst columns 4 and 5 are columns 1 and 2 flipped around:</p>
+
+<div class="figure"><img src="../../../../../img/invaders/1.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>This means we can store the information for each row in just 3 bits, multiplied for each row gives us 15 bits to encode an entire invader. 15 bits gives a total of 2^15=32,768 unique invaders. &ldquo;Real&rdquo; space invaders are a little bit bigger than 5x5, but we will stick with their smaller cousins.</p>
+  <footer>
+    <a href='/blog\2017\02\28\c64-programming-invader-fractal/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/'>Star Wars : Rogue One, Type Provider edition</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-01-19" pubdate="true">2017-01-19</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<h2>A LONG TIME AGO, IN A GALAXY FAR AWAY…..</h2>
+
+<p><a href="http://www.pinksquirrellabs.com/img/old/r11.png"><img title="r11" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; margin: 8px 0px 12px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="r11" src="../../../../../img/old/r11_thumb.png" width="640" height="341" /></a></p>
+  <footer>
+    <a href='/blog\2017\01\19\star-wars-rogue-one-type-provider-edition/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2017\01\14\programming-in-racket-1/'>Programming in Racket #1</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2017-01-14" pubdate="true">2017-01-14</time> :: <span class="tags"><a href="/tags\racket.html">racket</a></span></p>
+  </header>
+
+<p>Over the last few days I have been learning <a href="http://docs.racket-lang.org/index.html">Racket</a>, a language derived from Scheme.&#160; The main selling point of Racket is its <a href="http://docs.racket-lang.org/reference/Macros.html">extensive macro system</a> that lets you do everything from the simplest macros through to redefining the entire language (yes you can even get rid of the parens!).&#160; It is a programming language programming language. In fact, Racket is more of a customisable programming language infrastructure / engine with a default language on top of it.</p>
+  <footer>
+    <a href='/blog\2017\01\14\programming-in-racket-1/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
+    <h2><a href='/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/'>Don Syme 2.0 : Cow Herding Edition Type Provider</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2016-08-23" pubdate="true">2016-08-23</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
+  </header>
+
+<p>Though the mystery man Don Syme, Father of F#, is generally heralded for various software based innovations and other computer related things, it transpires he has talents in other unrelated areas&hellip;</p>
+  <footer>
+    <a href='/blog\2016\08\23\don-syme-2-0-cow-herding-edition-type-provider/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<footer>
+ <ul class="pagination">
+  <li class="page-item"><a class="page-link" href="/index.html">
+    <quote>&larr;</quote></a></li>
+  <li class="page-item"><a class="page-link" href="/index.html">1</a></li>
+  <li class="page-item active"><a class="page-link" href="/index-2.html">2</a></li>
+  <li class="page-item"><a class="page-link" href="/index-3.html">3</a></li>
+  <li class="page-item"><a class="page-link" href="/index-4.html">4</a></li>
+  <li class="page-item"><a class="page-link" href="/index-5.html">5</a></li>
+  <li class="page-item"><a class="page-link" href="/index-3.html">
+    <quote>&rarr;</quote></a></li></ul></footer>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

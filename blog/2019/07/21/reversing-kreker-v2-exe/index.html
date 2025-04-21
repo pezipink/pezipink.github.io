@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Reversing - Kreker_V2.exe</title>
+    <meta name="description" content="In this article we'll look at another crackme. This one was pretty difficult and has a bunch of cool stuff in it, including the injection and execution of obfsucated code into another process....">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="cracking, reverse engineering">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2019\07\21\reversing-kreker-v2-exe/">
+    <link rel="next" href="/blog\2019\05\08\reversing-xor0-crackme-1/">
+    <link rel="prev" href="/blog\2020\07\25\slope-function-generator/">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/atom+xml"
+          href="/feeds\all.atom.xml" title="Atom Feed">
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.atom.xml">Atom</a></li>
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2020\07\25\slope-function-generator/">&larr; <em>Slope / Function Generator</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\05\08\reversing-xor0-crackme-1/"><em>Reversing - xor0_crackme_1</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Reversing - Kreker_V2.exe</h1>
+    <p class='date-and-tags'>
+<time datetime="2019-07-21" pubdate="true">2019-07-21</time> :: <span class="tags"><a href="/tags\cracking.html">cracking</a>, <a href="/tags\reverse-engineering.html">reverse engineering</a></span></p>
+  </header>
+
+<p>In this article we&rsquo;ll look at another crackme. This one was pretty difficult and has a bunch of cool stuff in it, including the injection and execution of obfsucated code into another process.</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/1.png" alt="" />
+ <p class="caption"></p></div>
+<!-- more-->
+
+<h2 id="crackme">Crackme</h2>
+
+<p>The crackme in question <a href="https://crackmes.one/crackme/5c78df5533c5d4776a837d78">is this one</a>, so stop reading now if you want to give it a go yourself!</p>
+
+<p>The crackme asks you to find the serial and / or patch the program.</p>
+
+<p>Initial analysis shows a C++ console program that asks for a password on the command line. It then displays a message box with the text &ldquo;Lose!!&rdquo;.</p>
+
+<h2 id="first-impressions">First Impressions</h2>
+
+<p>With a bit of digging it is fairly easy to find the location where <code>cin</code> is being called. It reads numeric characters and stores the result at the hardcoded memory address of <code>406410</code>. Looking at the imported symbols at this point yields the following (well, some of it):</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/2.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>There are some potentially interesting functions imported from kernel32.dll, perhaps used for some anti-debugging. We can also find the call that shows the message box fairly easily:</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/3.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>We can see that the message box string pointer is hardcoded to <code>406408</code>, and indeed pausing execution whilst looking at the memory shows the &ldquo;Lose!!&rdquo; text. Looking around at the surrounding code doesn&rsquo;t yield any obvious serial checks. Although both the message box string address and the user&rsquo;s input address are hardcoded, a search for code accessing either of those memory locations comes up with nothing. Instead, we can try to set a hardware breakpoint on those bits of memory to trigger when they are written to or read from, hopefully leading us to somewhere related to the serial checking.</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/4.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Unfortunately, the hardware breakpoints do not seem to trigger anything! There are a few techniques to deal with hardware breakpoints, and looking at the special registers DR0&ndash;7 we can see the breakpoint is still in there - it seems the program is not detecting and removing them&hellip;</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/5.png" alt="" />
+ <p class="caption"></p></div>
+
+<h2 id="the-mystery-continues">The Mystery Continues</h2>
+
+<p>Let&rsquo;s have a look at the first part of the function that is called after the password is entered:</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/6.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>It seems to be loading lots of big hardcoded numbers into the floating point registers (xmm), copying them onto the stack and then looping around XORing them with stuff. XORing things is often a sign of decryption, so if we let the first loops run and then look at the stack in the memory dump we will see something interesting revealed &hellip;</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/7.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>&ldquo;kernel32.dll&rdquo; and &ldquo;GetProcessId&rdquo; strings - the name of a win32 library and function. Presumably the program is going to try and use this string with <code>GetProcAddress</code> and then call it. The strings are passed to a function that is a bit long to show here, but it does NOT use <code>GetProcAddress</code>! Instead, it implements its own version of it.</p>
+
+<p>First, it discovers the base module address of kernel32.dll. It does this by navigating through the Thread Information Block, always stored at <code>fs:[0]</code>. From there, it navigates to the Process Information Block, then the Loader Data, and finally to a doubly linked list InMemoryOrderModule. The third entry in here is always kernel32.dll. Here&rsquo;s the code, annotated for your viewing pleasure:</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/8.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Now it has a handle to the base of the module, it can locate and search the module&rsquo;s function export table to locate a given function. It is too much code to show here, but essentially there is a function that:</p>
+
+<ul>
+ <li>Takes a library name and function name</li>
+ <li>Takes arguments for the function</li>
+ <li>Finds the kernel32.dll base module handle (as above)</li>
+ <li>Walks the export table to find LoadLibraryW in kernel32.dll</li>
+ <li>Calls LoadLibraryW with the passed library name (even if it is also kernel32.dll)</li>
+ <li>Walks the export table of the returned module to find the passed function name</li>
+ <li>Calls the function with the given arguments</li></ul>
+
+<p>This is quite a sneaky piece of code since it avoids most of the normal methods of detecting libraries and functions that are dynamically loaded.</p>
+
+<p>With all this in place, the original piece of decrypted data was trying to call <code>GetProcessId</code>. It mysteriously hangs onto this id for quite some time whilst it busily decrypts a whole bunch more stuff. This time it is not a string - it looks more like opcode data - but we&rsquo;ll come back to that shortly. It writes the retrieved process id into a particular location within the decrypted data.</p>
+
+<p>The dynamic execute function is then used to do a bunch more stuff:</p>
+
+<ul>
+ <li>Calls <code>SHGetSpecialFolderPath</code> in Shell32.dll, returning c:\windows\syswow64</li>
+ <li>Calls <code>CreateProcess</code> appending <code>notepad.exe</code> to the above system path</li>
+ <li>Calls <code>VirtualAllocEx</code>, creating some heap memory in the new notepad process</li>
+ <li>Calls <code>WriteProcessMemory</code>, copying a block of data into the new heap memory (more on this in a moment)</li>
+ <li>Some calls to <code>GetThreadContext</code> and <code>SetThreadContext</code>, causing the block of data to be executed</li>
+ <li>Some cleanup code, closing handles</li></ul>
+
+<h2 id="the-injected-data">The Injected Data</h2>
+
+<p>Let&rsquo;s have a look at the block of data that is copied into notepad.exe and executed. It is a simple matter to pause before the function is executed and note the start address and length parameters of the data to be copied</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/9.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Here we can see the location of the data is <code>19FB68</code> of <code>340</code> length.</p>
+
+<p>If we view this in the disassembler we will see a decrypted program appear. It is a bit too long to list here, in essence it has some machinery similar to the parent program that allows it to locate kernel32.dll and find functions by their names. It calls a bunch of functions, which are dynamically executed much like in the parent process. In particular, they are:</p>
+
+<ul>
+ <li><code>OpenProcess</code></li>
+ <li><code>ReadProcessMemory</code></li>
+ <li><code>WriteProcessMemory</code></li>
+ <li><code>ExitProcess</code></li></ul>
+
+<p>Can you guess what it does? The process id from the parent earlier was written into this program. It opens the parent process, and reads the area of memory where the password was entered from <code>cin</code>. Because <code>ReadProcessMemory</code> is in another process, our hardware breakpoint does not trigger (I think!). It then performs a serial check and finally writes a result back to the parent process&rsquo; memory, in the location where the message box will read its text from, again not triggering our breakpoint. Let&rsquo;s look at a bit of it:</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/10.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>Here you can see the actual serial check - it is simply the hardcoded number of <code>23D4</code>!</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This was a really cool crackme, and was pretty tough! The author put in a lot of effort in order to obfsucate a simple hardcoded serial number. Sneaky tricks abound, I particularly like the program injection and writing back into the parent&rsquo;s memory.</p>
+
+<div class="figure"><img src="../../../../../img/reverse3/11.png" alt="" />
+ <p class="caption"></p></div>
+  <footer>
+    <ul class="pager">
+    <li class="previous">
+      <a href="/blog\2020\07\25\slope-function-generator/">&larr; <em>Slope / Function Generator</em></a>
+    </li>
+    <li class="next">
+      <a href="/blog\2019\05\08\reversing-xor0-crackme-1/"><em>Reversing - xor0_crackme_1</em> &rarr;</a>
+    </li>
+    </ul>
+    <script type="text/javascript">
+      !function(d,s,id){
+          var js,fjs=d.getElementsByTagName(s)[0];
+          if(!d.getElementById(id)){
+              js=d.createElement(s);
+              js.id=id;
+              js.src="//platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js,fjs);
+          }
+      }(document,"script","twitter-wjs");
+    </script>
+    <a href="https://twitter.com/share"
+       class="twitter-share-button"
+       data-url="http://www.pinksquirrellabs.com/blog\2019\07\21\reversing-kreker-v2-exe/"
+       data-dnt="true">
+      "Tweet"</a>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+        <p><a href="https://twitter.com/pezi_pink"
+              class="twitter-follow-button"
+              data-show-count="false"
+              data-lang="en">
+             "Follow pezi_pink"
+           </a>
+           <script type="text/javascript">
+             !function(d,s,id){
+                 var js,fjs=d.getElementsByTagName(s)[0];
+                 if(!d.getElementById(id)){
+                     js=d.createElement(s);
+                     js.id=id;
+                     js.src="//platform.twitter.com/widgets.js";
+                     fjs.parentNode.insertBefore(js,fjs);
+                 }
+             }(document,"script","twitter-wjs");
+           </script></p>
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>
