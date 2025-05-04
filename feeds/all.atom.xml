@@ -47,19 +47,19 @@
 
 &lt;p&gt;Another common way to detect if the debugger is present is to check the &lt;code&gt;DebuggerPresent&lt;/code&gt; flag in &lt;a href="https://en.wikipedia.org/wiki/Process_Environment_Block"&gt;PEB&lt;/a&gt; block which we can find at &lt;code&gt;[fs:30] + 2&lt;/code&gt;. We can use a hardware breakpoint at this location to pause execution when something reads this memory. This leads to the follow piece of anti-debugging code&lt;/p&gt;
 
-&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/AntiDebug1.png" alt="" /&gt;
+&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/antidebug1.png" alt="" /&gt;
  &lt;p class="caption"&gt;&lt;/p&gt;&lt;/div&gt;
 
 &lt;p&gt;Which we can neutralise&lt;/p&gt;
 
-&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/AntiDebug2.png" alt="" /&gt;
+&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/antidebug2.png" alt="" /&gt;
  &lt;p class="caption"&gt;&lt;/p&gt;&lt;/div&gt;
 
 &lt;p&gt;After this patch, the program is able to start with the debugger. I did discover another similar check later in the code, though it did not cause any trouble.&lt;/p&gt;
 
 &lt;p&gt;The next task is to find where the username and serial are being checked. To do this I searched for the &lt;code&gt;GetDlgItemText&lt;/code&gt; functions, since they are often used to read from input boxes. This led me straight to the following code that performs the serial check:&lt;/p&gt;
 
-&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/DlgTxt.png" alt="" /&gt;
+&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/dlgtxt.png" alt="" /&gt;
  &lt;p class="caption"&gt;&lt;/p&gt;&lt;/div&gt;
 
 &lt;p&gt;All easy so far, let&amp;rsquo;s have a look at the checking function!&lt;/p&gt;
@@ -75,7 +75,7 @@
 
 &lt;p&gt;This is a zoomed-out picture of some of the code&lt;/p&gt;
 
-&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/passwordLong.png" alt="" /&gt;
+&lt;div class="figure"&gt;&lt;img src="../../../../../img/sabloom/passwordlong.png" alt="" /&gt;
  &lt;p class="caption"&gt;&lt;/p&gt;&lt;/div&gt;
 
 &lt;p&gt;As you can see, it is quite long. The code was quite obsfucated and was doing something simple; essentially this:&lt;/p&gt;
