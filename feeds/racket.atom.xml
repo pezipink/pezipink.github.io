@@ -4,7 +4,92 @@
  <link rel="self" href="http://www.pinksquirrellabs.com/feeds\racket.atom.xml" />
  <link href="http://www.pinksquirrellabs.com/tags\racket.html" />
  <id>urn:http-www-pinksquirrellabs-com:-tags-racket-html</id>
- <updated>2019-04-23T09:27:04Z</updated>
+ <updated>2025-06-04T07:01:20Z</updated>
+ <entry>
+  <title type="text">Flat - Resurrection!</title>
+  <link rel="alternate" href="http://www.pinksquirrellabs.com/blog\2025\06\04\flat-resurrection/?utm_source=racket&amp;utm_medium=Atom" />
+  <id>urn:http-www-pinksquirrellabs-com:-blog-2025-06-04-flat-resurrection</id>
+  <published>2025-06-04T07:01:20Z</published>
+  <updated>2025-06-04T07:01:20Z</updated>
+  <author>
+   <name>pezi</name></author>
+  <content type="html">
+&lt;p&gt;Flat is a project from way back in 2019. The idea was to build a .NET language in Racket, surfacing the Racket macro system alongside a .NET runtime.&lt;/p&gt;
+
+&lt;div class="figure"&gt;&lt;img src="../../../../../img/flat/flat-example.png" alt="" /&gt;
+ &lt;p class="caption"&gt;&lt;/p&gt;&lt;/div&gt;
+
+&lt;p&gt;(sorry for the rubbish picture, the scaling killed it)&lt;/p&gt;
+&lt;!-- more--&gt;
+
+&lt;h2 id="intro"&gt;Intro&lt;/h2&gt;
+
+&lt;p&gt;Flat, like &lt;a href="https://lexi-lambda.github.io/hackett"&gt;Hackett&lt;/a&gt;, implements a &lt;a href="http://www.ccs.neu.edu/home/stchang/pubs/ckg-popl2017.pdf"&gt;type system in the macro expander&lt;/a&gt;. The code it emits does so over the FSharp.Core primitives (FSharpFastFunc, OptimizedClosures, FSharpList, etc). The result is an F# like type system with a lisp syntax and programmable macros that have access to type information.&lt;/p&gt;
+
+&lt;div class="brush: racket"&gt;
+ &lt;div class="highlight"&gt;
+  &lt;table class="highlighttable"&gt;
+   &lt;tbody&gt;
+    &lt;tr&gt;
+     &lt;td class="linenos"&gt;
+      &lt;div class="linenodiv"&gt;
+       &lt;pre&gt;&lt;span class="normal"&gt; 1&lt;/span&gt;
+&lt;span class="normal"&gt; 2&lt;/span&gt;
+&lt;span class="normal"&gt; 3&lt;/span&gt;
+&lt;span class="normal"&gt; 4&lt;/span&gt;
+&lt;span class="normal"&gt; 5&lt;/span&gt;
+&lt;span class="normal"&gt; 6&lt;/span&gt;
+&lt;span class="normal"&gt; 7&lt;/span&gt;
+&lt;span class="normal"&gt; 8&lt;/span&gt;
+&lt;span class="normal"&gt; 9&lt;/span&gt;
+&lt;span class="normal"&gt;10&lt;/span&gt;
+&lt;span class="normal"&gt;11&lt;/span&gt;
+&lt;span class="normal"&gt;12&lt;/span&gt;
+&lt;span class="normal"&gt;13&lt;/span&gt;
+&lt;span class="normal"&gt;14&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+     &lt;td class="code"&gt;
+      &lt;div&gt;
+       &lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;#lang &lt;/span&gt;&lt;span class="nn"&gt;flat&lt;/span&gt;
+
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;macro&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;print-and-apply&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;[(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit"&gt;_&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit"&gt;...&lt;/a&gt;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="o"&gt;#'&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit"&gt;begin&lt;/a&gt;&lt;/span&gt;
+&lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._print))" style="color: inherit"&gt;print&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit"&gt;...&lt;/a&gt;&lt;/span&gt;
+&lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._print))" style="color: inherit"&gt;print&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit"&gt;+&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit"&gt;...&lt;/a&gt;&lt;/span&gt;&lt;span class="p"&gt;)))])&lt;/span&gt;
+
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/module.html#(form._((quote._~23~25kernel)._module))" style="color: inherit"&gt;module&lt;/a&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit"&gt;let&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;capture&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;42&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;&lt;a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit"&gt;λ&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit"&gt;+&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;capture&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;))]&lt;/span&gt;
+&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;add10&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
+
+&lt;span class="w"&gt;      &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;print-and-apply&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;add10&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;23&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;45&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;465&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;You can see here nice features such as partial application, automatic generalization, closures, full type inference and typed macros. It also supports unification over F# style (with lisp syntax &amp;hellip;) lists and tuples, not seen here. Hopefully I will get to writing about the implementation of such a system in future posts.&lt;/p&gt;
+
+&lt;p&gt;The first iteration of this project was macros-over-assembler style like &lt;a href="https://pinksquirrellabs.com/blog/2017/05/30/asi64"&gt;Asi64&lt;/a&gt;, except it produced text files that the .NET ilasm tool would accept. This approach worked ok, but ran into a problem early on which is that of type and metadata discovery.&lt;/p&gt;
+
+&lt;p&gt;To call a method on a type in some assembly, you need to know the exact metadata details. This information is available via the Reflection library, assuming you are already in .NET land, which we are not.&lt;/p&gt;
+
+&lt;p&gt;To solve this I put &amp;ldquo;reflection on an endpoint&amp;rdquo;. A C# service on a ZeroMQ endpoint that provides metadata discovery. It also accepts a json object that includes a bunch of lookups and il instruction streams, and will define an assembly and construct types and methods from it.&lt;/p&gt;
+
+&lt;p&gt;This also works ok, but the Racket macro expander doesn&amp;rsquo;t particularly like using a ZeroMQ endpoint, it is slow, and overall it was a band-aid to prove the project could work at all. I was much more interested in experimenting with implementing the type system in the macro expander. The other stuff was just a means to an end.&lt;/p&gt;
+
+&lt;p&gt;Additionally, the macros-over-assembler technique is fun, but without some sort of AST it is hard to implement a lot of common compiler optimisations and techniques, not to mention it starts to get quite slow. A better version would have the macros generating as little code as possible, with another runtime layer (or two) to do the heavier compiler work.&lt;/p&gt;
+
+&lt;h2 id="a-new-plan"&gt;A New Plan!&lt;/h2&gt;
+
+&lt;p&gt;I have recently resurrected this project, and spent a bunch of time getting the language server to work again and understanding how far I had come. The type system has legs and lots of the hard problems like closure generation and generic type support were solved, and the language is working, albeit a very early prototype. The things holding it back are the language server and the direct generation of il from the macros. What I need is, both at expansion and possibly at runtime, the ability to natively load and parse .NET assemblies for their metadata, and also write CLR executables directly. Essentially, to implement a Racket native .NET Reflection library and compiler / assembler / linker.&lt;/p&gt;
+
+&lt;h2 id="getting-started"&gt;Getting Started&lt;/h2&gt;
+
+&lt;p&gt;This probably sounds like a lot of work. Never look at the mountain! Armed with my &lt;a href="https://www.abebooks.com/9780321154934/Common-Language-Infrastructure-Annotated-Standard-0321154932/plp"&gt;trusty&lt;/a&gt; &amp;ldquo;The Common Language Infrastructure Annotated Standard&amp;rdquo; (I&amp;rsquo;m super fun at parties) and a &lt;a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/standards"&gt;slighty more recent CLI spec&lt;/a&gt; I have all the information required. I have always intuitively embraced the &amp;ldquo;tracer bullet&amp;rdquo; style of development - in this case, work out the smallest path to writing a hello world executable file. It won&amp;rsquo;t need a proper il assembler to start with, but it will need the (rather extensive!) metadata from the BCL to call System.Console.WriteLine, and the layout of the executable will need to be understood, even if a lot can be ignored in the beginning. It is still a lot of work.&lt;/p&gt;
+
+&lt;p&gt;A good place to start is parsing types from mscorlib (BCL) with a focus on performance. It will (eventually) be called at compile time so it needs to be as fast as possible.&lt;/p&gt;
+
+&lt;p&gt;More on that next time - stay tuned if you are interested in how the very low level CLI executables and metadata storage works.&lt;/p&gt;</content></entry>
  <entry>
   <title type="text">Fairylog : Multiplexer Macros</title>
   <link rel="alternate" href="http://www.pinksquirrellabs.com/blog\2019\04\23\fairylog-multiplexer-macros/?utm_source=racket&amp;utm_medium=Atom" />

@@ -124,6 +124,20 @@
 
           <article>
   <header>
+    <h2><a href='/blog\2014\04\17\solving-puzzle-quest-with-f-part-1/'>Solving Puzzle Quest with F# Part 1</a></h2>
+    <p class='date-and-tags'>
+<time datetime="2014-04-17" pubdate="true">2014-04-17</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a></span></p>
+  </header>
+
+<p><a href="http://tomasp.net/blog/2014/puzzling-fsharp/index.html">Tomas Petricek posted an article recently</a> about how he used F# to solve a puzzle he had been given for Christmas. This reminded me of several similar mini-projects I have developed in the past, the most recent being a program to help solve a specific sort of puzzle in the game <a href="http://store.steampowered.com/app/12500/">Puzzle Quest</a>, which I shall now describe.</p>
+
+<p>Puzzle Quest is a match-3 game, with various game modes. One game mode in particular, &ldquo;Capture&rdquo;, has a specific layout of tiles which can be matched in a certain way to leave no tiles behind at the end. Some of these are really quite tricky, and I thought it would be fun to write a program to solve them. Here is a example of a puzzle:</p>
+  <footer>
+    <a href='/blog\2014\04\17\solving-puzzle-quest-with-f-part-1/'>&hellip; more &hellip;</a>
+  </footer>
+</article>
+<article>
+  <header>
     <h2><a href='/blog\2014\02\21\the-don-syme-type-provider/'>The Don Syme type provider</a></h2>
     <p class='date-and-tags'>
 <time datetime="2014-02-21" pubdate="true">2014-02-21</time> :: <span class="tags"><a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\type-providers.html">type providers</a></span></p>
@@ -654,30 +668,6 @@ query{ for emp in ctx.``[dbo].[Employees]`` do
 <p>To create the data file I wrote an amazing C# GUI, if you want to create a file yourself and would like the program to work with then mail me :)</p>
   <footer>
     <a href='/blog\2013\07\29\choose-your-own-adventure-type-provider/'>&hellip; more &hellip;</a>
-  </footer>
-</article>
-<article>
-  <header>
-    <h2><a href='/blog\2013\07\04\last-fi/'>Last-Fi</a></h2>
-    <p class='date-and-tags'>
-<time datetime="2013-07-04" pubdate="true">2013-07-04</time> :: <span class="tags"><a href="/tags\digital-logic.html">digital logic</a>, <a href="/tags\electronics.html">electronics</a>, <a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\raspberry-pi.html">raspberry pi</a></span></p>
-  </header>
-
-<h1>Introduction</h1>
-
-<p>This article will introduce Last-Fi &ndash; an F# powered internet radio player that uses a <a href="http://www.raspberrypi.org/">Raspberry Pi</a> and <a href="http://www.last.fm/">Last.Fm</a> services. The motivation behind this work was to both build something fun and useful for the Raspberry Pi that interfaces with various pieces of hardware, but can also show off some features that F# is great at within a hardware context.</p>
-
-<p>The result is Last-Fi &ndash; a highly asynchronous and stable music player. It is based around Last.Fm, but because it uses <a href="http://mpd.wikia.com/wiki/Clients">MPD</a>to play music it only requires a few minor adjustments that will allow it to work with any music source, whilst retaining the ability to obtain artist information from Last.Fm. In terms of the hardware, you are able to control various aspects of Last.Fi with a controller from the 1980&rsquo;s Nintendo Entertainment System. Various information is displayed on a 2x16 back-lit LCD display. In addition to this, the program also hosts a <a href="http://www.servicestack.net/">ServiceStack</a> webservice, and uses <a href="https://github.com/ZachBray/FunScript">FunScript</a>, an F# to JavaScript compiler, in order to host a website that shows various information and allows direct control from any device on the same network.</p>
-
-<p>I presented a talk on this work at SkillsMatter in London (<a href="http://skillsmatter.com/podcast/scala/last-fi-an-f-powered-raspberry-pi-internet-radio">here's the video</a>), and you can find the slide deck <a href="http://www.slideshare.net/RossMcKinlay1/last-fi">here</a>. The code is all open source and you can find it on GitHub <a href="http://github.com/pezipink/Last.Fi/">here</a> (disclaimer: this code is highly subject to change and is largely a toy project of mine)</p>
-
-<p>Last-Fi illustrates an extremely powerful programming language doing some of what it does best, the entire stack from the HTTP Last.FM API, to the hardware programming and even the JavaScript is written in F# code. Not only that, it is almost all concurrent and completely immutable &ndash; I have yet to experience a single problem with any of the software. The entire project is less than 800 lines of F#. If you are new to F# be sure to check out <a href="http://www.fsharp.org">www.fsharp.org</a> and you can find instructions on how to get the Pi running with F# in a previous post I made <a href="http://www.pinksquirrellabs.com/post/2013/03/02/F-meets-the-Raspberry-Pi-.aspx">here</a>.</p>
-
-<p><img src="../../../../../img/old/last-fi_case_small.jpg" alt="" /></p>
-
-<p><img src="../../../../../img/old/last-fi_small.jpg" alt="" /></p>
-  <footer>
-    <a href='/blog\2013\07\04\last-fi/'>&hellip; more &hellip;</a>
   </footer>
 </article>
 <footer>

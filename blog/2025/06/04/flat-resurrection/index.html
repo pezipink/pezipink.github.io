@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Flat - Resurrection!</title>
+    <meta name="description" content="Flat is a project from way back in 2019. The idea was to build a .NET language in Racket, surfacing the Racket macro system alongside a .NET runtime.      (sorry for the rubbish picture, the scaling killed it)...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="racket, fsharp, compilers, macros, programming languages">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2025\06\04\flat-resurrection/">
+    <link rel="next" href="/blog\2021\09\29\reversing-sabloomtext-v6/">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/blog\2021\09\29\reversing-sabloomtext-v6/"><em>Reversing - SabloomText_v6</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Flat - Resurrection!</h1>
+    <p class='date-and-tags'>
+<time datetime="2025-06-04" pubdate="true">2025-06-04</time> :: <span class="tags"><a href="/tags\racket.html">racket</a>, <a href="/tags\fsharp.html">fsharp</a>, <a href="/tags\compilers.html">compilers</a>, <a href="/tags\macros.html">macros</a>, <a href="/tags\programming-languages.html">programming languages</a></span></p>
+  </header>
+
+<p>Flat is a project from way back in 2019. The idea was to build a .NET language in Racket, surfacing the Racket macro system alongside a .NET runtime.</p>
+
+<div class="figure"><img src="../../../../../img/flat/flat-example.png" alt="" />
+ <p class="caption"></p></div>
+
+<p>(sorry for the rubbish picture, the scaling killed it)</p>
+<!-- more-->
+
+<h2 id="intro">Intro</h2>
+
+<p>Flat, like <a href="https://lexi-lambda.github.io/hackett">Hackett</a>, implements a <a href="http://www.ccs.neu.edu/home/stchang/pubs/ckg-popl2017.pdf">type system in the macro expander</a>. The code it emits does so over the FSharp.Core primitives (FSharpFastFunc, OptimizedClosures, FSharpList, etc). The result is an F# like type system with a lisp syntax and programmable macros that have access to type information.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="kn">#lang </span><span class="nn">flat</span>
+
+<span class="p">(</span><span class="n">macro</span><span class="w"> </span><span class="n">print-and-apply</span>
+<span class="w">  </span><span class="p">[(</span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit">_</a></span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)</span>
+<span class="w">   </span><span class="o">#'</span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+<span class="w">       </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._print))" style="color: inherit">print</a></span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="n">arg</span><span class="p">))</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span>
+<span class="w">       </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._print))" style="color: inherit">print</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="n">arg</span><span class="p">)</span><span class="w"> </span><span class="k"><a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit">...</a></span><span class="p">)))])</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/module.html#(form._((quote._~23~25kernel)._module))" style="color: inherit">module</a></span>
+<span class="w">    </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n">capture</span><span class="w"> </span><span class="mi">42</span><span class="p">]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">add</span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="n">capture</span><span class="w"> </span><span class="n">y</span><span class="p">))]</span>
+<span class="w">          </span><span class="p">[</span><span class="n">add10</span><span class="w"> </span><span class="p">(</span><span class="n">add</span><span class="w"> </span><span class="mi">10</span><span class="p">)])</span>
+
+<span class="w">      </span><span class="p">(</span><span class="n">print-and-apply</span><span class="w"> </span><span class="n">add10</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">23</span><span class="w"> </span><span class="mi">45</span><span class="w"> </span><span class="mi">465</span><span class="w"> </span><span class="mi">6</span><span class="p">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>You can see here nice features such as partial application, automatic generalization, closures, full type inference and typed macros. It also supports unification over F# style (with lisp syntax &hellip;) lists and tuples, not seen here. Hopefully I will get to writing about the implementation of such a system in future posts.</p>
+
+<p>The first iteration of this project was macros-over-assembler style like <a href="https://pinksquirrellabs.com/blog/2017/05/30/asi64">Asi64</a>, except it produced text files that the .NET ilasm tool would accept. This approach worked ok, but ran into a problem early on which is that of type and metadata discovery.</p>
+
+<p>To call a method on a type in some assembly, you need to know the exact metadata details. This information is available via the Reflection library, assuming you are already in .NET land, which we are not.</p>
+
+<p>To solve this I put &ldquo;reflection on an endpoint&rdquo;. A C# service on a ZeroMQ endpoint that provides metadata discovery. It also accepts a json object that includes a bunch of lookups and il instruction streams, and will define an assembly and construct types and methods from it.</p>
+
+<p>This also works ok, but the Racket macro expander doesn&rsquo;t particularly like using a ZeroMQ endpoint, it is slow, and overall it was a band-aid to prove the project could work at all. I was much more interested in experimenting with implementing the type system in the macro expander. The other stuff was just a means to an end.</p>
+
+<p>Additionally, the macros-over-assembler technique is fun, but without some sort of AST it is hard to implement a lot of common compiler optimisations and techniques, not to mention it starts to get quite slow. A better version would have the macros generating as little code as possible, with another runtime layer (or two) to do the heavier compiler work.</p>
+
+<h2 id="a-new-plan">A New Plan!</h2>
+
+<p>I have recently resurrected this project, and spent a bunch of time getting the language server to work again and understanding how far I had come. The type system has legs and lots of the hard problems like closure generation and generic type support were solved, and the language is working, albeit a very early prototype. The things holding it back are the language server and the direct generation of il from the macros. What I need is, both at expansion and possibly at runtime, the ability to natively load and parse .NET assemblies for their metadata, and also write CLR executables directly. Essentially, to implement a Racket native .NET Reflection library and compiler / assembler / linker.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>This probably sounds like a lot of work. Never look at the mountain! Armed with my <a href="https://www.abebooks.com/9780321154934/Common-Language-Infrastructure-Annotated-Standard-0321154932/plp">trusty</a> &ldquo;The Common Language Infrastructure Annotated Standard&rdquo; (I&rsquo;m super fun at parties) and a <a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/standards">slighty more recent CLI spec</a> I have all the information required. I have always intuitively embraced the &ldquo;tracer bullet&rdquo; style of development - in this case, work out the smallest path to writing a hello world executable file. It won&rsquo;t need a proper il assembler to start with, but it will need the (rather extensive!) metadata from the BCL to call System.Console.WriteLine, and the layout of the executable will need to be understood, even if a lot can be ignored in the beginning. It is still a lot of work.</p>
+
+<p>A good place to start is parsing types from mscorlib (BCL) with a focus on performance. It will (eventually) be called at compile time so it needs to be as fast as possible.</p>
+
+<p>More on that next time - stay tuned if you are interested in how the very low level CLI executables and metadata storage works.</p>
+  <footer>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/blog\2021\09\29\reversing-sabloomtext-v6/"><em>Reversing - SabloomText_v6</em> &rarr;</a>
+    </li>
+    </ul>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>
