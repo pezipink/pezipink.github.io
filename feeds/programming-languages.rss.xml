@@ -24,7 +24,7 @@
 
 &lt;h2 id="intro"&gt;Intro&lt;/h2&gt;
 
-&lt;p&gt;Flat, like &lt;a href="https://lexi-lambda.github.io/hackett"&gt;Hackett&lt;/a&gt;, implements a &lt;a href="http://www.ccs.neu.edu/home/stchang/pubs/ckg-popl2017.pdf"&gt;type system in the macro expander&lt;/a&gt;. The code it emits does so over the FSharp.Core primitives (FSharpFastFunc, OptimizedClosures, FSharpList, etc). The result is an F# like type system with a lisp syntax and programmable macros that have access to type information.&lt;/p&gt;
+&lt;p&gt;Flat, like &lt;a href="https://lexi-lambda.github.io/hackett"&gt;Hackett&lt;/a&gt;, implements a &lt;a href="http://www.ccs.neu.edu/home/stchang/pubs/ckg-popl2017.pdf"&gt;type system in the Racket macro expander&lt;/a&gt;. The code it emits does so over the FSharp.Core primitives (FSharpFastFunc, OptimizedClosures, FSharpList, etc). The result is an F# like type system with a lisp syntax and programmable macros that have access to type information.&lt;/p&gt;
 
 &lt;div class="brush: racket"&gt;
  &lt;div class="highlight"&gt;
@@ -87,7 +87,7 @@
 
 &lt;p&gt;This probably sounds like a lot of work. Never look at the mountain! Armed with my &lt;a href="https://www.abebooks.com/9780321154934/Common-Language-Infrastructure-Annotated-Standard-0321154932/plp"&gt;trusty&lt;/a&gt; &amp;ldquo;The Common Language Infrastructure Annotated Standard&amp;rdquo; (I&amp;rsquo;m super fun at parties) and a &lt;a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/standards"&gt;slighty more recent CLI spec&lt;/a&gt; I have all the information required. I have always intuitively embraced the &amp;ldquo;tracer bullet&amp;rdquo; style of development - in this case, work out the smallest path to writing a hello world executable file. It won&amp;rsquo;t need a proper il assembler to start with, but it will need the (rather extensive!) metadata from the BCL to call System.Console.WriteLine, and the layout of the executable will need to be understood, even if a lot can be ignored in the beginning. It is still a lot of work.&lt;/p&gt;
 
-&lt;p&gt;A good place to start is parsing types from mscorlib (BCL) with a focus on performance. It will (eventually) be called at compile time so it needs to be as fast as possible.&lt;/p&gt;
+&lt;p&gt;A good place to start is parsing types from mscorlib (BCL) with a focus on performance. It will (eventually) be called at macro-expansion time so it needs to be as fast as possible.&lt;/p&gt;
 
 &lt;p&gt;More on that next time - stay tuned if you are interested in how the very low level CLI executables and metadata storage works.&lt;/p&gt;</description></item>
   <item>
