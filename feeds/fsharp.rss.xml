@@ -24,7 +24,7 @@
 
 &lt;h2 id="intro"&gt;Intro&lt;/h2&gt;
 
-&lt;p&gt;Flat, like &lt;a href="https://lexi-lambda.github.io/hackett"&gt;Hackett&lt;/a&gt;, implements a &lt;a href="http://www.ccs.neu.edu/home/stchang/pubs/ckg-popl2017.pdf"&gt;type system in the Racket macro expander&lt;/a&gt;. The code it emits does so over the FSharp.Core primitives (FSharpFastFunc, OptimizedClosures, FSharpList, etc). The result is an F# like type system with a lisp syntax and programmable macros that have access to type information.&lt;/p&gt;
+&lt;p&gt;Flat, like &lt;a href="https://lexi-lambda.github.io/hackett"&gt;Hackett&lt;/a&gt;, implements a &lt;a href="http://www.ccs.neu.edu/home/stchang/pubs/ckg-popl2017.pdf"&gt;type system in the Racket macro expander&lt;/a&gt;. The code it emits does so over the FSharp.Core primitives (&lt;code&gt;FSharpFastFunc&lt;/code&gt;, &lt;code&gt;OptimizedClosures&lt;/code&gt;, &lt;code&gt;FSharpList&lt;/code&gt;, etc). The result is an F# like type system with a lisp syntax and programmable macros that have access to type information.&lt;/p&gt;
 
 &lt;div class="brush: racket"&gt;
  &lt;div class="highlight"&gt;
@@ -46,22 +46,32 @@
 &lt;span class="normal"&gt;11&lt;/span&gt;
 &lt;span class="normal"&gt;12&lt;/span&gt;
 &lt;span class="normal"&gt;13&lt;/span&gt;
-&lt;span class="normal"&gt;14&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
+&lt;span class="normal"&gt;14&lt;/span&gt;
+&lt;span class="normal"&gt;15&lt;/span&gt;
+&lt;span class="normal"&gt;16&lt;/span&gt;
+&lt;span class="normal"&gt;17&lt;/span&gt;
+&lt;span class="normal"&gt;18&lt;/span&gt;
+&lt;span class="normal"&gt;19&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;
      &lt;td class="code"&gt;
       &lt;div&gt;
        &lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;#lang &lt;/span&gt;&lt;span class="nn"&gt;flat&lt;/span&gt;
-
+&lt;span class="c1"&gt;; full racket macros and all of compile-time racket&lt;/span&gt;
 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;macro&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;print-and-apply&lt;/span&gt;
 &lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;[(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt).__))" style="color: inherit"&gt;_&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit"&gt;...&lt;/a&gt;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="o"&gt;#'&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit"&gt;begin&lt;/a&gt;&lt;/span&gt;
+&lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="c1"&gt;; print (f arg) for each arg&lt;/span&gt;
 &lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._print))" style="color: inherit"&gt;print&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit"&gt;...&lt;/a&gt;&lt;/span&gt;
+&lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="c1"&gt;; print the sum of all (f arg)&lt;/span&gt;
 &lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/Writing.html#(def._((quote._~23~25kernel)._print))" style="color: inherit"&gt;print&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit"&gt;+&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/stx-patterns.html#(form._((lib._racket/private/stxcase-scheme..rkt)._......))" style="color: inherit"&gt;...&lt;/a&gt;&lt;/span&gt;&lt;span class="p"&gt;)))])&lt;/span&gt;
-
+&lt;span class="c1"&gt;; this is all type inferred and generates&lt;/span&gt;
+&lt;span class="c1"&gt;; F# primitives &lt;/span&gt;
 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/module.html#(form._((quote._~23~25kernel)._module))" style="color: inherit"&gt;module&lt;/a&gt;&lt;/span&gt;
 &lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;&lt;a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit"&gt;let&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;capture&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;42&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="c1"&gt;; first class lambda and closure&lt;/span&gt;
 &lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;&lt;a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit"&gt;λ&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;&lt;a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit"&gt;+&lt;/a&gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;capture&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;))]&lt;/span&gt;
+&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="c1"&gt;; partial application / curry&lt;/span&gt;
 &lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;add10&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
-
+&lt;span class="w"&gt;      &lt;/span&gt;&lt;span class="c1"&gt;; macro&lt;/span&gt;
 &lt;span class="w"&gt;      &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;print-and-apply&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;add10&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;23&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;45&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;465&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 
