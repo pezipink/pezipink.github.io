@@ -28,7 +28,7 @@
 
 &lt;p&gt;Yes it will be hard to resist.&lt;/p&gt;
 
-&lt;p&gt;The basic idea is to parse the &lt;a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"&gt;Portable Executable&lt;/a&gt; format, and find the CLI header extension that will point us to the CLR metadata. We only care about a few other bits.&lt;/p&gt;
+&lt;p&gt;The basic idea is to parse the &lt;a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"&gt;Portable Executable&lt;/a&gt; format, and find the CLI header extension that will point us to the CLI metadata. We only care about a few other bits.&lt;/p&gt;
 
 &lt;div class="brush: racket"&gt;
  &lt;div class="highlight"&gt;
