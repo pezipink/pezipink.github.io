@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <title>Rangi!</title>
+    <meta name="description" content="The friendly neighbourhood volcano, and embarking upon a CLR executable metadata jungle expedition...">
+    <meta name="author"      content="pezi">
+    <meta name="keywords"    content="rangi, racket, cli">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <link rel="icon"      href="/favicon.ico">
+    <link rel="canonical" href="http://www.pinksquirrellabs.com/blog\2025\06\12\rangi/">
+    <link rel="next" href="/blog\2025\06\04\flat-resurrection/">
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/pygments.css">
+    <link rel="stylesheet" type="text/css" href="/css/scribble.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <!-- Feeds -->
+    <link rel="alternate" type="application/rss+xml"
+          href="/feeds\all.rss.xml" title="RSS Feed">
+    <!-- JS -->
+
+  </head>
+  <body>
+    <!-- A standard Twitter Bootstrap nav bar -->
+    <header class="navbar navbar-default navbar-inverse"
+            role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button"
+                  class="navbar-toggle"
+                  data-toggle="collapse"
+                  data-target=".our-nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/index.html" class="navbar-brand">Pink Squirrel Labs</a>
+        </div>
+        <div class="collapse navbar-collapse our-nav-collapse"
+             role="navigation">
+          <ul class="nav navbar-nav">
+
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                Tags <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="/index.html">All Posts</a></li>
+
+<li><a href="/tags\6502.html">6502</a></li>
+
+<li><a href="/tags\asi64.html">asi64</a></li>
+
+<li><a href="/tags\books.html">books</a></li>
+
+<li><a href="/tags\C.html">C</a></li>
+
+<li><a href="/tags\C64.html">C64</a></li>
+
+<li><a href="/tags\cli.html">cli</a></li>
+
+<li><a href="/tags\compilers.html">compilers</a></li>
+
+<li><a href="/tags\cracking.html">cracking</a></li>
+
+<li><a href="/tags\D.html">D</a></li>
+
+<li><a href="/tags\digital-logic.html">digital logic</a></li>
+
+<li><a href="/tags\drey.html">drey</a></li>
+
+<li><a href="/tags\electronics.html">electronics</a></li>
+
+<li><a href="/tags\fairylog.html">fairylog</a></li>
+
+<li><a href="/tags\fpga.html">fpga</a></li>
+
+<li><a href="/tags\fsharp.html">fsharp</a></li>
+
+<li><a href="/tags\game-programming.html">game programming</a></li>
+
+<li><a href="/tags\macros.html">macros</a></li>
+
+<li><a href="/tags\programming-languages.html">programming languages</a></li>
+
+<li><a href="/tags\racket.html">racket</a></li>
+
+<li><a href="/tags\rangi.html">rangi</a></li>
+
+<li><a href="/tags\raspberry-pi.html">raspberry pi</a></li>
+
+<li><a href="/tags\reverse-engineering.html">reverse engineering</a></li>
+
+<li><a href="/tags\robotics.html">robotics</a></li>
+
+<li><a href="/tags\roguelike.html">roguelike</a></li>
+
+<li><a href="/tags\scurry.html">scurry</a></li>
+
+<li><a href="/tags\sqlprovider.html">sqlprovider</a></li>
+
+<li><a href="/tags\squirrels.html">squirrels</a></li>
+
+<li><a href="/tags\type-providers.html">type providers</a></li>
+
+<li><a href="/tags\xrm.html">xrm</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="/About.html">About</a>
+            </li> 
+            <li><a href="/feeds\all.rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+
+        <!-- Main column -->
+        <div id="content" class="col-md-12">
+
+
+
+
+
+          <article>
+  <header>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/blog\2025\06\04\flat-resurrection/"><em>Flat - Resurrection!</em> &rarr;</a>
+    </li>
+    </ul>
+    <h1>Rangi!</h1>
+    <p class='date-and-tags'>
+<time datetime="2025-06-12" pubdate="true">2025-06-12</time> :: <span class="tags"><a href="/tags\rangi.html">rangi</a>, <a href="/tags\racket.html">racket</a>, <a href="/tags\cli.html">cli</a></span></p>
+  </header>
+
+<p>The friendly neighbourhood volcano, and embarking upon a CLR executable metadata jungle expedition</p>
+
+<div class="figure"><img src="../../../../../img/rangi/rangitoto.jpg" alt="" />
+ <p class="caption"></p></div>
+<!-- more-->
+
+<h2 id="rangi-roots">Rangi Roots</h2>
+
+<p>Carrying on from the <a href="https://pinksquirrellabs.com/blog/2025/06/04/flat-resurrection/">last post</a>, let&rsquo;s look at reading the data from a Windows .exe or .dll file that has been compiled a CLI tool (ilasm, F#, C#, etc).</p>
+
+<p>The intention of this reader portion is that it will eventually be called at <a href="https://docs.racket-lang.org/guide/phases.html">phase level 1</a> in the macro expander, so it had better be damned fast. For this reason I will be restricting myself to only <code>#lang racket/base</code>, a function or two from <code>racket/string</code> and <code>racket/port</code>, generally preferring <code>define</code> over <code>let</code> and NO MACROS!</p>
+
+<p>Yes it will be hard to resist.</p>
+
+<p>The basic idea is to parse the <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format">Portable Executable</a> format, and find the CLI header extension that will point us to the CLR metadata. We only care about a few other bits.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">all-bytes</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._port-~3ebytes))" style="color: inherit">port-&gt;bytes</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._open-input-file))" style="color: inherit">open-input-file</a></span><span class="w"> </span><span class="n">filename</span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stringport.html#(def._((quote._~23~25kernel)._open-input-bytes))" style="color: inherit">open-input-bytes</a></span><span class="w"> </span><span class="n">all-bytes</span><span class="p">))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We don&rsquo;t want to have file system handles hanging around, so we&rsquo;ll gobble up all the bytes. Then, we can treat the resulting <a href="https://docs.racket-lang.org/guide/bytestrings.html#%28tech._byte._string%29">byte string</a> as a <a href="https://docs.racket-lang.org/guide/i_o.html#%28tech._port%29">port</a> for our parsing adventures.</p>
+
+<p>If you look at the <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format">Portable Executable spec</a> you&rsquo;ll see the file always starts with the old ms dos header stub. We can skip over this completely. Since we&rsquo;ll need to parse a bunch of different areas of mostly boring bytes, we can define some specifications that will read <code>n</code> bytes and turn them into a hash</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">all-bytes</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-lib.html#(def._((lib._racket/port..rkt)._port-~3ebytes))" style="color: inherit">port-&gt;bytes</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/file-ports.html#(def._((lib._racket/private/base..rkt)._open-input-file))" style="color: inherit">open-input-file</a></span><span class="w"> </span><span class="n">filename</span><span class="p">)))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/stringport.html#(def._((quote._~23~25kernel)._open-input-bytes))" style="color: inherit">open-input-bytes</a></span><span class="w"> </span><span class="n">all-bytes</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">ms-dos-header-spec</span>
+<span class="w">  </span><span class="o">'</span><span class="p">((</span><span class="ss">header</span><span class="w"> </span><span class="mi">128</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">pe-file-header-spec</span>
+<span class="w">  </span><span class="o">'</span><span class="p">(</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">sig</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">machine</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">num-secs</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">stamp</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">sym</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">num-sym</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">opt-header-size</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">characteristics</span><span class="w"> </span><span class="mi">2</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">pe-opt-header-spec</span>
+<span class="w">  </span><span class="o">'</span><span class="p">(</span>
+<span class="w">    </span><span class="c1">; standard fields</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">magic</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">lmajor</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="c1">; mooar fields </span>
+<span class="w">    </span><span class="p">(</span><span class="ss">image-base</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="c1">; ...</span>
+<span class="w">    </span><span class="c1">; nt specific fields</span>
+<span class="w">    </span><span class="c1">; ...</span>
+<span class="w">    </span><span class="c1">; data directories</span>
+<span class="w">    </span><span class="c1">; ...</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">cli-header-table-rva</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">cli-header-table-size</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span>
+<span class="w">    </span><span class="c1">; ...</span>
+<span class="w">    </span><span class="p">)</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">read-spec</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="n">port</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span>
+<span class="w">   </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">x</span><span class="p">)]</span>
+<span class="w">                     </span><span class="p">[</span><span class="n">size</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cadr))" style="color: inherit">cadr</a></span><span class="w"> </span><span class="n">x</span><span class="p">)])</span>
+<span class="w">                 </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/Byte_and_String_Input.html#(def._((quote._~23~25kernel)._read-bytes))" style="color: inherit">read-bytes</a></span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="n">port</span><span class="p">))))</span><span class="w"> </span><span class="n">spec</span><span class="p">)))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>the real version won&rsquo;t create hash maps that aren&rsquo;t needed. This is a handy setup to extract, verify and debug what&rsquo;s going on alongside a hex editor. The sequence of <code>ms-dos</code>, <code>pe</code> and <code>optional pe</code> headers can be expressed as a spec of specs.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">file-spec</span>
+<span class="w">  </span><span class="o">`</span><span class="p">(</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">ms-dos</span><span class="w"> </span><span class="o">,</span><span class="n">ms-dos-header-spec</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">pe</span><span class="w"> </span><span class="o">,</span><span class="n">pe-file-header-spec</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">pe-opt</span><span class="w"> </span><span class="o">,</span><span class="n">pe-opt-header-spec</span><span class="p">)))</span><span class="w">    </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>which can be processed in a suspiciously similar looking function</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">pe-headers</span>
+<span class="w">     </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._make-hash))" style="color: inherit">make-hash</a></span>
+<span class="w">      </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((lib._racket/private/map..rkt)._map))" style="color: inherit">map</a></span><span class="w"> </span><span class="p">(</span><span class="n"><a href="http://docs.racket-lang.org/reference/lambda.html#(form._((lib._racket/private/base..rkt)._~ce~bb))" style="color: inherit">λ</a></span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/let.html#(form._((lib._racket/private/letstx-scheme..rkt)._let))" style="color: inherit">let</a></span><span class="w"> </span><span class="p">([</span><span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._car))" style="color: inherit">car</a></span><span class="w"> </span><span class="n">x</span><span class="p">)]</span>
+<span class="w">                        </span><span class="p">[</span><span class="n">spec</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cadr))" style="color: inherit">cadr</a></span><span class="w"> </span><span class="n">x</span><span class="p">)])</span>
+<span class="w">                    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/pairs.html#(def._((quote._~23~25kernel)._cons))" style="color: inherit">cons</a></span><span class="w"> </span><span class="n"><a href="http://docs.racket-lang.org/syntax/Library_Syntax_Classes_and_Literal_Sets.html#(form._((lib._syntax/parse..rkt)._id))" style="color: inherit">id</a></span><span class="w"> </span><span class="p">(</span><span class="n">read-spec</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="n">port</span><span class="p">))))</span><span class="w"> </span><span class="n">file-spec</span><span class="p">)))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>now we have access to <code>cli-header-table-rva</code> and <code>cli-header-table-size</code>. But what is RVA I hear you cry! It&rsquo;s the <em>relative virtual address</em>. We&rsquo;ll come back to that in a moment.</p>
+
+<h2 id="sections">Sections</h2>
+
+<p>Next up there will be a number of section headers. These describe the different areas of the program that hold executable code, data, resources etc. The next 4 bytes hold the number of headers to expect. Up until now we haven&rsquo;t used any of the data, it&rsquo;s just in byte strings. PE files are <a href="https://en.wikipedia.org/wiki/Endianness">little-endian</a> encoded, and we need a way to take 4 bytes and turn it into a 32 bit integer. Racket handily does this for us</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="c1">; unsigned little-endian conversion</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/bytestrings.html#(def._((quote._~23~25kernel)._bytes))" style="color: inherit">bytes</a></span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._integer-bytes-~3einteger))" style="color: inherit">integer-bytes-&gt;integer</a></span><span class="w"> </span><span class="nb"><a href="http://docs.racket-lang.org/reference/bytestrings.html#(def._((quote._~23~25kernel)._bytes))" style="color: inherit">bytes</a></span><span class="w"> </span><span class="no">#f</span><span class="w"> </span><span class="no">#f</span><span class="p">))</span>
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">num-secs</span>
+<span class="w">  </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">pe-headers</span><span class="w"> </span><span class="o">'</span><span class="ss">pe</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="ss">num-secs</span><span class="p">)))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Then follows the headers themselves, of course we have a spec for that</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">pe-section-header-spec</span>
+<span class="w">  </span><span class="o">'</span><span class="p">(</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">name</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">virt-size</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">virt-address</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">size-raw</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">ptr-raw</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">ptr-reloc</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">ptr-linenum</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">num-reloc</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">num-linenum</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">   </span><span class="p">(</span><span class="ss">characteristics</span><span class="w"> </span><span class="mi">4</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">num-secs</span>
+<span class="w">  </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">pe-headers</span><span class="w"> </span><span class="o">'</span><span class="ss">pe</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="ss">num-secs</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">section-headers</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/list))" style="color: inherit">for/list</a></span><span class="w"> </span><span class="p">([</span><span class="n">i</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/sequences.html#(def._((lib._racket/private/base..rkt)._in-range))" style="color: inherit">in-range</a></span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">num-secs</span><span class="p">)])</span><span class="w"> </span><span class="p">(</span><span class="n">read-spec</span><span class="w"> </span><span class="n">pe-section-header-spec</span><span class="w"> </span><span class="n">port</span><span class="p">)))</span><span class="w"> </span>
+<span class="w">   </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Now we have a nice list of the section meta. The parts we care about are <code>virt-size</code>, <code>virt-address</code> and <code>ptr-raw</code>.</p>
+
+<p>When the OS loads the process into a new virtual memory space, it will place the program beginning at <code>image base</code> address as found in the <code>pe optional</code> header above (or maybe not due to <a href="https://en.wikipedia.org/wiki/Address_space_layout_randomization">ALSR</a> but we can ignore that.) The sections are laid out as per <code>virt-address</code>. The <code>ptr-raw</code> is the location the section appears at in the physical file.</p>
+
+<p>That&rsquo;s all very nice but we need to know where the CLI metadata exists in the <strong>physical file</strong> so we can parse it. We have enough information to work it out, though. Given an <em>rva</em> we need to first find which section it is in by comparing it <em>in order</em> to the location and size of each virtual section. If we then subtract the section&rsquo;s virtual address from the rva we will be left with an offset that we can apply to the physical location of the section.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="p">(</span><span class="n">calc-file-pos</span><span class="w"> </span><span class="n">rva</span><span class="p">)</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/for.html#(form._((lib._racket/private/base..rkt)._for/first))" style="color: inherit">for/first</a></span><span class="w"> </span><span class="p">([</span><span class="n">header</span><span class="w"> </span><span class="n">section-headers</span><span class="p">]</span>
+<span class="w">              </span><span class="kd">#:when</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._~3c))" style="color: inherit">&lt;</a></span><span class="w"> </span><span class="n">rva</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">'</span><span class="ss">virt-address</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">'</span><span class="ss">virt-size</span><span class="p">)))))</span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._+))" style="color: inherit">+</a></span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">'</span><span class="ss">ptr-raw</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/generic-numbers.html#(def._((quote._~23~25kernel)._-))" style="color: inherit">-</a></span><span class="w"> </span><span class="n">rva</span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">'</span><span class="ss">virt-address</span><span class="p">))))))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>We&rsquo;ll be passing this function around as it used quite a bit.</p>
+
+<h2 id="cli">CLI</h2>
+
+<p>We finally made it to the CLI header. Rejoice! Naturally, we&rsquo;ll parse it with another spec</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">cli-header-spec</span>
+<span class="w">  </span><span class="o">'</span><span class="p">(</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">size</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">major</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">minor</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">metadata-rva</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">metadata-size</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">flags</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">entry-token</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">res-rva</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">res-size</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">strong-sig</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">codeman</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">vtable-fix</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">export-jumps</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="ss">managed-header</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span>
+<span class="w">    </span><span class="p">))</span>
+
+<span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">cli-header</span>
+<span class="w">  </span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/begin.html#(form._((quote._~23~25kernel)._begin))" style="color: inherit">begin</a></span>
+<span class="w">    </span><span class="c1">; jump in stream</span>
+<span class="w">    </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/port-buffers.html#(def._((quote._~23~25kernel)._file-position))" style="color: inherit">file-position</a></span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="p">(</span><span class="n">calc-file-pos</span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">pe-headers</span><span class="w"> </span><span class="o">'</span><span class="ss">pe-opt</span><span class="p">)</span><span class="w"> </span><span class="o">'</span><span class="ss">cli-header-table-rva</span><span class="p">))))</span>
+<span class="w">    </span><span class="p">(</span><span class="n">read-spec</span><span class="w"> </span><span class="n">cli-header-spec</span><span class="w"> </span><span class="n">port</span><span class="p">)))</span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>Most of this stuff we don&rsquo;t care about, but there are some tasty looking morsels in <code>metadata-rva</code> and <code>metadata-size</code>. This is the <strong>metadata root</strong> which is an important location that a bunch of forthcoming data are offset from.</p>
+
+<div class="brush: racket">
+ <div class="highlight">
+  <table class="highlighttable">
+   <tbody>
+    <tr>
+     <td class="linenos">
+      <div class="linenodiv">
+       <pre><span class="normal">1</span></pre></div></td>
+     <td class="code">
+      <div>
+       <pre><span></span><span class="p">(</span><span class="k"><a href="http://docs.racket-lang.org/reference/define.html#(form._((lib._racket/private/base..rkt)._define))" style="color: inherit">define</a></span><span class="w"> </span><span class="n">md-root</span><span class="w"> </span><span class="p">(</span><span class="n">calc-file-pos</span><span class="w"> </span><span class="p">(</span><span class="n">to-int</span><span class="w"> </span><span class="p">(</span><span class="nb"><a href="http://docs.racket-lang.org/reference/hashtables.html#(def._((quote._~23~25kernel)._hash-ref))" style="color: inherit">hash-ref</a></span><span class="w"> </span><span class="n">cli-header</span><span class="w"> </span><span class="o">'</span><span class="ss">metadata-rva</span><span class="p">))))</span><span class="w">   </span>
+</pre></div></td></tr></tbody></table></div>
+
+</div>
+
+<p>And here is where we say goodbye to our old friend <code>read-spec</code>. The way ahead is fraught with great peril which it is ill-equipped to deal with. W&rsquo;ll leave the expedition on that cliffhanger, you&rsquo;ll have to wait until the exciting next episode of adventures into the CLI metadata jungle.</p>
+
+<p>I know what you&rsquo;re thinking - what&rsquo;s all this about volcanos? The answer is <a href="https://en.wikipedia.org/wiki/Rangitoto_Island">Rangitoto</a> my friendly neighbourhood volcano. Because what do you name things?</p>
+  <footer>
+    <ul class="pager">
+
+    <li class="next">
+      <a href="/blog\2025\06\04\flat-resurrection/"><em>Flat - Resurrection!</em> &rarr;</a>
+    </li>
+    </ul>
+
+  </footer>
+</article>
+        </div>
+      </div>
+      <footer>
+        <hr />
+
+      </footer>
+    </div>
+    <!-- </body> JS -->
+    <script type="text/javascript" src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+  </body>
+</html>
