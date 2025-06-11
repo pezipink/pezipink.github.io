@@ -49,7 +49,7 @@
 
 &lt;p&gt;We don&amp;rsquo;t want to have file system handles hanging around, so we&amp;rsquo;ll gobble up all the bytes. Then, we can treat the resulting &lt;a href="https://docs.racket-lang.org/guide/bytestrings.html#%28tech._byte._string%29"&gt;byte string&lt;/a&gt; as a &lt;a href="https://docs.racket-lang.org/guide/i_o.html#%28tech._port%29"&gt;port&lt;/a&gt; for our parsing adventures.&lt;/p&gt;
 
-&lt;p&gt;If you look at the &lt;a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"&gt;Portable Executable spec&lt;/a&gt; you&amp;rsquo;ll see the file always starts with the old ms dos header stub. We can skip over this completely. Since we&amp;rsquo;ll need to parse a bunch of different areas of mostly boring bytes, we can define some specifications that will read &lt;code&gt;n&lt;/code&gt; bytes and turn them into a hash&lt;/p&gt;
+&lt;p&gt;If you look at the &lt;a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format"&gt;Portable Executable spec&lt;/a&gt; you&amp;rsquo;ll see the file always starts with the old ms dos header stub. We can skip over this completely. Since we&amp;rsquo;ll need to parse a bunch of different areas of mostly boring bytes, we can define some specifications that will read &lt;em&gt;n&lt;/em&gt; bytes and turn them into a hash&lt;/p&gt;
 
 &lt;div class="brush: racket"&gt;
  &lt;div class="highlight"&gt;

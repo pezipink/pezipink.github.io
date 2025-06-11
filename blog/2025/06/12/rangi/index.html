@@ -174,7 +174,7 @@
 
 <p>We don&rsquo;t want to have file system handles hanging around, so we&rsquo;ll gobble up all the bytes. Then, we can treat the resulting <a href="https://docs.racket-lang.org/guide/bytestrings.html#%28tech._byte._string%29">byte string</a> as a <a href="https://docs.racket-lang.org/guide/i_o.html#%28tech._port%29">port</a> for our parsing adventures.</p>
 
-<p>If you look at the <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format">Portable Executable spec</a> you&rsquo;ll see the file always starts with the old ms dos header stub. We can skip over this completely. Since we&rsquo;ll need to parse a bunch of different areas of mostly boring bytes, we can define some specifications that will read <code>n</code> bytes and turn them into a hash</p>
+<p>If you look at the <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format">Portable Executable spec</a> you&rsquo;ll see the file always starts with the old ms dos header stub. We can skip over this completely. Since we&rsquo;ll need to parse a bunch of different areas of mostly boring bytes, we can define some specifications that will read <em>n</em> bytes and turn them into a hash</p>
 
 <div class="brush: racket">
  <div class="highlight">
