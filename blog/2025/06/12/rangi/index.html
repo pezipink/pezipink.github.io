@@ -147,7 +147,7 @@
 
 <h2 id="rangi-roots">Rangi Roots</h2>
 
-<p>Carrying on from the <a href="https://pinksquirrellabs.com/blog/2025/06/04/flat-resurrection/">last post</a>, let&rsquo;s look at reading the data from a Windows .exe or .dll file that has been compiled a CLI tool (ilasm, F#, C#, etc).</p>
+<p>Carrying on from the <a href="https://pinksquirrellabs.com/blog/2025/06/04/flat-resurrection/">last post</a>, let&rsquo;s look at reading the data from a Windows .exe or .dll file that has been compiled by a CLI tool (ilasm, F#, C#, etc).</p>
 
 <p>The intention of this reader portion is that it will eventually be called at <a href="https://docs.racket-lang.org/guide/phases.html">phase level 1</a> in the macro expander, so it had better be damned fast. For this reason I will be restricting myself to only <code>#lang racket/base</code>, a function or two from <code>racket/string</code> and <code>racket/port</code>, generally preferring <code>define</code> over <code>let</code> and NO MACROS!</p>
 
