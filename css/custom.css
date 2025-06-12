@@ -12,3 +12,29 @@ pre {
     white-space: pre;
     width: inherit;
 }
+
+css/* NEW: Make the main column narrower */
+.container {
+    max-width: 900px !important;
+}
+
+/* Optional: Make the content area even more focused for better readability */
+.post-content,
+.blog-post,
+.entry-content,
+article {
+    max-width: 65ch; /* About 65 characters wide */
+    margin: 0 auto;
+}
+
+/* Ensure code blocks work well with the narrower layout */
+pre {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Make sure images are responsive within the narrower column */
+img {
+    max-width: 100%;
+    height: auto;
+}
