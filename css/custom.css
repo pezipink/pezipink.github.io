@@ -5,25 +5,27 @@ code {
 }
 
 
-/* When highlighted code blocks are too wide, they wrap. Resulting in the */
-/* line numbers column's rows not lining up with the code rows. Prevent */
-/* wrapping. */
 pre {
     white-space: pre;
     width: inherit;
 }
-
-css/* NEW: Make the main column narrower */
-.container {
+.container,
+.container-fluid {
     max-width: 900px !important;
 }
 
-/* Optional: Make the content area even more focused for better readability */
+.navbar .container,
+.header .container,
+nav .container,
+header .container {
+    max-width: 900px !important;
+}
+
 .post-content,
 .blog-post,
 .entry-content,
 article {
-    max-width: 65ch; /* About 65 characters wide */
+    max-width: 100ch; 
     margin: 0 auto;
 }
 
